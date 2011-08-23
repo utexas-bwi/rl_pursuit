@@ -1,0 +1,12 @@
+{
+  "dims": [20,20],
+  "prey": "random",
+  "predators": [
+    "greedy",
+    "greedy",
+    "greedy",
+    "greedy"
+  ]
+
+  "runs": 1
+}
