@@ -27,6 +27,7 @@ namespace Action {
   };
 
   static Point2D MOVES[NUM_MOVES] = {Point2D(-1,0),Point2D(1,0),Point2D(0,1),Point2D(0,-1),Point2D(0,0)};
+
 }
 
 Point2D movePosition(const Point2D &dims, Point2D pos, Action::Type action);

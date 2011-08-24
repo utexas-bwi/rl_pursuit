@@ -16,9 +16,13 @@ Modified: 2011-08-23
 #include <model/WorldModel.h>
 #include <controller/World.h>
 #include <controller/AgentDummy.h>
-
+  
 const unsigned int STATE_SIZE = 5;
+
 struct State_t {
+
+  State_t() {};
+  State_t(const Observation &obs);
   Point2D positions[STATE_SIZE];
   bool operator<(const State_t &other) const;
 };
@@ -29,6 +33,7 @@ public:
 
   void setState(const State_t &state);
   void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
+  float getRewardRangePerStep();
 
 private:
   boost::shared_ptr<RNG> rng;

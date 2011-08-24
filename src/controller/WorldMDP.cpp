@@ -29,6 +29,15 @@ void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &st
     state.positions[i] = model->getAgentPosition(i);
 }
 
+float WorldMDP::getRewardRangePerStep() {
+  return 1.0;
+}
+
+State_t::State_t(const Observation &obs) {
+  for (unsigned int i = 0; i < STATE_SIZE; i++)
+    positions[i] = obs.positions[i];
+}
+
 bool State_t::operator<(const State_t &other) const{
   for (unsigned int i = 0; i < STATE_SIZE; i++) {
     if (positions[i].x < other.positions[i].x)
@@ -43,3 +52,4 @@ bool State_t::operator<(const State_t &other) const{
   // equal
   return false;
 }
+

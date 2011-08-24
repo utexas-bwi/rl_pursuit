@@ -47,11 +47,12 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
       std::string filename = plannerOptions.asString();
       assert(readJson(filename,plannerOptions));
     }
+    
+    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,plannerOptions);
+    boost::shared_ptr<UCTEstimator<State_t,Action::Type> > uct = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,mdp->getRewardRangePerStep(),plannerOptions);
+    boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(mdp,uct,plannerOptions);
 
-    boost::shared_ptr<UCTEstimator<State_t> > valueEstimator = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,1.0,options);
-    //boost::shared_ptr<MCTS<Observation,Action::Type> > planner = new MCTS<Observation,Action::Type>(model,valueEstimator,options);
-    //return ptr(new PredatorMCTS(rng,dims,planner));
-    return ptr(new PredatorGreedy(rng,dims));
+    return ptr(new PredatorMCTS(rng,dims,mcts));
   } else {
     std::cerr << "createAgent: unknown agent name: " << name << std::endl;
     assert(false);
