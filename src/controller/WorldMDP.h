@@ -17,17 +17,23 @@ Modified: 2011-08-23
 #include <controller/World.h>
 #include <controller/AgentDummy.h>
 
-class WorldMDP: public Model<Observation,Action::Type> {
-public:
-  WorldMDP(boost::shared_ptr<RNG> rng,const Point2D &dims,const Json::Value &options);
+const unsigned int STATE_SIZE = 5;
+struct State_t {
+  Point2D positions[STATE_SIZE];
+  bool operator<(const State_t &other) const;
+};
 
-  void setState(const Observation &state);
-  void takeAction(const Action::Type &action, float &reward, Observation &state, bool &terminal);
+class WorldMDP: public Model<State_t,Action::Type> {
+public:
+  WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent);
+
+  void setState(const State_t &state);
+  void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
 
 private:
   boost::shared_ptr<RNG> rng;
-  boost::shared_ptr<WorldModel> worldModel;
-  boost::shared_ptr<World> worldController;
+  boost::shared_ptr<WorldModel> model;
+  boost::shared_ptr<World> controller;
   boost::shared_ptr<AgentDummy> adhocAgent;
 };
 

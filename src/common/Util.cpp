@@ -13,6 +13,10 @@ double getTime() {
 bool readJson(const std::string &filename, Json::Value &value) {
   Json::Reader reader;
   std::ifstream in(filename.c_str());
+  if (!in.good()) {
+    std::cerr << "readJson: ERROR opening file: " << filename << std::endl;
+    return false;
+  }
   bool parsingSuccessful = reader.parse(in,value);
   in.close();
   if (!parsingSuccessful) {

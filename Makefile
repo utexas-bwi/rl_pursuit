@@ -25,13 +25,13 @@ RM = rm -f
 # source files
 COMMON_SOURCES = Point2D.cpp tinymt32.cpp Util.cpp
 CONTROLLER_SOURCES = PredatorGreedy.cpp PredatorMCTS.cpp World.cpp WorldMDP.cpp
-FACTORY_SOURCES = AgentFactory.cpp WorldFactory.cpp
+FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
 # Headers
 COMMON_HEADERS = DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h
 CONTROLLER_HEADERS = Agent.h AgentDummy.h Prey.h World.h WorldMDP.h
-FACTORY_HEADERS = AgentFactory.h WorldFactory.h
+FACTORY_HEADERS = AgentFactory.h PlanningFactory.h WorldFactory.h
 MODEL_HEADERS = AgentModel.h Common.h WorldModel.h
 PLANNING_HEADERS = MCTS.h Model.h UCTEstimator.h ValueEstimator.h
 #TEST_SOURCES = planningSpeed.cpp
@@ -57,7 +57,7 @@ OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(SOURCES:.cpp=.o))
 TEST_SOURCES_COMBINED = $(SOURCES) $(TEST_SOURCES_PATH)
 TEST_OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(TEST_SOURCES_COMBINED:.cpp=.o))
 # headers
-HEADERS = $(COMMON_HEADERS_PATH) $(CONTROLLER_HEADERS_PATH) $(MODEL_HEADERS_PATH) $(PLANNING_HEADERS_PATH)
+HEADERS = $(COMMON_HEADERS_PATH) $(CONTROLLER_HEADERS_PATH) $(FACTORY_HEADERS_PATH) $(MODEL_HEADERS_PATH) $(PLANNING_HEADERS_PATH)
 
 .PHONY: all test default clean fullclean
 

@@ -1,22 +1,23 @@
 #include "WorldMDP.h"
 
-WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng,const Point2D &dims, const Json::Value &options):
+WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent):
   rng(rng),
-  adhocAgent(new AgentDummy(rng,dims))
+  model(model),
+  controller(controller),
+  adhocAgent(adhocAgent)
 {
-  // add the dummy agent
-  worldController->addAgent(AgentModel(0,0,ADHOC),adhocAgent,true);
 }
 
-void WorldMDP::setState(const Observation &state) {
-  worldModel->setPositionsFromObservation(state);
+void WorldMDP::setState(const State_t &state) {
+  for (unsigned int i = 0; i < STATE_SIZE * 0.5; i++)
+    model->setAgentPosition(i,state.positions[i]);
 }
 
-void WorldMDP::takeAction(const Action::Type &action, float &reward, Observation &state, bool &terminal) {
+void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
   adhocAgent->setAction(action);
-  worldController->step();
+  controller->step();
 
-  if (worldModel->isPreyCaptured()) {
+  if (model->isPreyCaptured()) {
     reward = 1.0;
     terminal = true;
   } else {
@@ -24,5 +25,21 @@ void WorldMDP::takeAction(const Action::Type &action, float &reward, Observation
     terminal = false;
   }
 
-  worldModel->generateObservation(state);
+  for (unsigned int i = 0; i < STATE_SIZE; i++)
+    state.positions[i] = model->getAgentPosition(i);
+}
+
+bool State_t::operator<(const State_t &other) const{
+  for (unsigned int i = 0; i < STATE_SIZE; i++) {
+    if (positions[i].x < other.positions[i].x)
+      return true;
+    else if (positions[i].x > other.positions[i].x)
+      return false;
+    else if (positions[i].y < other.positions[i].y)
+      return true;
+    else if (positions[i].y > other.positions[i].y)
+      return false;
+  }
+  // equal
+  return false;
 }

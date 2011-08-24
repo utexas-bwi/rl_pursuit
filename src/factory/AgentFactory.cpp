@@ -5,9 +5,12 @@
 #include <boost/algorithm/string.hpp>
 
 #include <controller/Prey.h>
+#include <controller/AgentDummy.h>
 #include <controller/PredatorGreedy.h>
 #include <controller/PredatorMCTS.h>
+#include <controller/WorldMDP.h>
 #include <planning/UCTEstimator.h>
+#include <factory/PlanningFactory.h>
 
 bool nameInSet(const std::string &name, ...) {
   va_list vl;
@@ -36,17 +39,20 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
     return ptr(new PreyRandom(rng,dims));
   else if (nameInSet(name,"greedy","gr",NULL))
     return ptr(new PredatorGreedy(rng,dims));
-  //else if (nameInSet(name,"mcts","uct",NULL)) {
-    //Json::Value plannerOptions = options["planner"];
-    //const std::string fileLabel = "file:";
-    //if (plannerOptions.asString().compare(0,fileLabel.size(),fileLabel) == 0) {
-    //}
+  else if (nameInSet(name,"dummy",NULL))
+    return ptr(new AgentDummy(rng,dims));
+  else if (nameInSet(name,"mcts","uct",NULL)) {
+    Json::Value plannerOptions = options["planner"];
+    if (plannerOptions.isString()) {
+      std::string filename = plannerOptions.asString();
+      assert(readJson(filename,plannerOptions));
+    }
 
-    //boost::shared_ptr<UCTEstimator<Observation,Action::Type> > valueEstimator = new UCTEstimator<Observation,Action::Type>(rng,Action::NUM_ACTIONS,options);
+    boost::shared_ptr<UCTEstimator<State_t> > valueEstimator = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,1.0,options);
     //boost::shared_ptr<MCTS<Observation,Action::Type> > planner = new MCTS<Observation,Action::Type>(model,valueEstimator,options);
     //return ptr(new PredatorMCTS(rng,dims,planner));
-  //} 
-  else {
+    return ptr(new PredatorGreedy(rng,dims));
+  } else {
     std::cerr << "createAgent: unknown agent name: " << name << std::endl;
     assert(false);
   }

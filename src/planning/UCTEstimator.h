@@ -22,19 +22,20 @@ Modified: 2011-08-23
 #define BIGNUM 999999
 #define EPS 1e-10
 
-template<class State, class Action>
-class UCTEstimator: public ValueEstimator<State,Action> {
-public:
-  typedef std::pair<State,Action> StateAction;
+typedef unsigned int Action_t;
 
-  UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, float initialStateVisits, float initalStateActionVisits, float unseenValue);
-  //UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, float initialStateVisits, float initalStateActionVisits, float unseenValue);
+template<class State>
+class UCTEstimator: public ValueEstimator<State, unsigned int> {
+public:
+  typedef std::pair<State,Action_t> StateAction;
+
+  UCTEstimator(boost::shared_ptr<RNG> rng, Action_t numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initalStateActionVisits, float unseenValue);
   
-  virtual Action selectWorldAction(const State &state);
-  virtual Action selectPlanningAction(const State &state);
+  virtual Action_t selectWorldAction(const State &state);
+  virtual Action_t selectPlanningAction(const State &state);
   virtual void startRollout(const State &state);
   virtual void finishRollout(bool terminal);
-  virtual void visit(const Action &action, float reward, const State &state);
+  virtual void visit(const Action_t &action, float reward, const State &state);
   virtual void restart();
 
 protected:
@@ -58,15 +59,15 @@ protected:
   
   DefaultMap<StateAction,unsigned int> rolloutVisitCounts;
   std::vector<State> historyStates;
-  std::vector<Action> historyActions;
+  std::vector<Action_t> historyActions;
   std::vector<float> historyRewards;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////
 
-template<class State, class Action>
-UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, float initialStateVisits, float initialStateActionVisits, float unseenValue):
+template<class State>
+UCTEstimator<State>::UCTEstimator(boost::shared_ptr<RNG> rng, Action_t numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initialStateActionVisits, float unseenValue):
   rng(rng),
   numActions(numActions),
   lambda(lambda),
@@ -81,9 +82,10 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   checkInternals();
   rewardBound = rewardRangePerStep / (1.0 - gamma);
 }
+  
 
-template<class State, class Action>
-void UCTEstimator<State,Action>::checkInternals() {
+template<class State>
+void UCTEstimator<State>::checkInternals() {
   if (numActions < 2) {
     std::cerr << "Invalid number of actions, must be at least 2" << std::endl;
     valid = false;
@@ -98,8 +100,8 @@ void UCTEstimator<State,Action>::checkInternals() {
   }
 }
 
-template<class State, class Action>
-void UCTEstimator<State,Action>::startRollout(const State &state) {
+template<class State>
+void UCTEstimator<State>::startRollout(const State &state) {
   historyStates.clear();
   historyActions.clear();
   historyRewards.clear();
@@ -108,8 +110,8 @@ void UCTEstimator<State,Action>::startRollout(const State &state) {
   historyStates.push_back(state);
 }
 
-template<class State, class Action>
-void UCTEstimator<State,Action>::visit(const Action &action, float reward, const State &state) {
+template<class State>
+void UCTEstimator<State>::visit(const Action_t &action, float reward, const State &state) {
   StateAction key(historyStates.back(),action);
 
   rolloutVisitCounts[key]++;
@@ -118,14 +120,14 @@ void UCTEstimator<State,Action>::visit(const Action &action, float reward, const
   historyStates.push_back(state);
 }
 
-template<class State, class Action>
-Action UCTEstimator<State,Action>::selectWorldAction(const State &state) {
-  std::vector<Action> maxActions;
+template<class State>
+Action_t UCTEstimator<State>::selectWorldAction(const State &state) {
+  std::vector<Action_t> maxActions;
   float maxVal = -BIGNUM;
   float val;
   unsigned int na;
 
-  for (Action a = 0; a < numActions; a++) {
+  for (Action_t a = 0; a < numActions; a++) {
     StateAction key(state,a);
     na = stateActionVisits[key];
 
@@ -147,16 +149,16 @@ Action UCTEstimator<State,Action>::selectWorldAction(const State &state) {
   return maxActions[rng->randomInt(0,maxActions.size())];
 }
 
-template<class State, class Action>
-Action UCTEstimator<State,Action>::selectPlanningAction(const State &state) {
-  std::vector<Action> maxActions;
+template<class State>
+Action_t UCTEstimator<State>::selectPlanningAction(const State &state) {
+  std::vector<Action_t> maxActions;
   float maxVal = -BIGNUM;
   float val;
   unsigned int na;
   unsigned int n = stateVisits[state];
   //std::cout << "vals: ";
 
-  for (Action a = 0; a < numActions; a++) {
+  for (Action_t a = 0; a < numActions; a++) {
     StateAction key(state,a);
     na = stateActionVisits[key];
 
@@ -185,19 +187,19 @@ Action UCTEstimator<State,Action>::selectPlanningAction(const State &state) {
   return maxActions[ind];
 }
 
-template<class State, class Action>
-void UCTEstimator<State,Action>::restart() {
+template<class State>
+void UCTEstimator<State>::restart() {
   values.clear();
   stateVisits.clear();
   stateActionVisits.clear();
 }
 
-template<class State, class Action>
-float UCTEstimator<State,Action>::maxValueForState(const State &state) {
+template<class State>
+float UCTEstimator<State>::maxValueForState(const State &state) {
   float maxVal = -BIGNUM;
   float val;
 
-  for (Action a = 0; a < numActions; a++) {
+  for (Action_t a = 0; a < numActions; a++) {
     StateAction key(state,a);
     val = values[key];
     if (val > maxVal)
@@ -206,8 +208,8 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
   return maxVal;
 }
 
-template<class State, class Action>
-float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, float newQ){
+template<class State>
+float UCTEstimator<State>::updateStateAction(const StateAction &key, float newQ){
   float learnRate = 1.0 / (1.0 + stateActionVisits[key]);
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
@@ -217,8 +219,8 @@ float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, floa
   return lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
 }
 
-template<class State, class Action>
-void UCTEstimator<State,Action>::finishRollout(bool terminal) {
+template<class State>
+void UCTEstimator<State>::finishRollout(bool terminal) {
   //std::cerr << "top finishRollout" << std::endl;
   float futureVal = 0;
   float newQ;
