@@ -42,7 +42,7 @@ void World::handleCollisions(std::vector<Point2D> &requestedPositions) {
 void World::randomizePositions() {
   bool collision;
   Point2D pos;
-  for (unsigned int i = 0; i < world->getNumAgents(); i++) {
+  for (unsigned int i = 0; i < agents.size(); i++) {
     do {
       pos.x = rng->randomInt(dims.x);
       pos.y = rng->randomInt(dims.y);
@@ -52,6 +52,12 @@ void World::randomizePositions() {
   } // for loop
 }
 
+void World::restartAgents() {
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    agents[i]->restart();
+  }
+}
+
 bool World::addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition) {
   bool res = world->addAgent(agentModel,ignorePosition);
   if (!res) {
@@ -59,4 +65,8 @@ bool World::addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agen
   }
   agents.push_back(agent);
   return true;
+}
+
+boost::shared_ptr<const WorldModel> World::getModel() {
+  return world;
 }

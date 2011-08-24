@@ -1,6 +1,7 @@
 #include "AgentFactory.h"
 
 #include <cstdarg>
+#include <iostream>
 #include <boost/algorithm/string.hpp>
 
 #include <controller/Prey.h>
@@ -36,12 +37,27 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
   else if (nameInSet(name,"greedy","gr",NULL))
     return ptr(new PredatorGreedy(rng,dims));
   //else if (nameInSet(name,"mcts","uct",NULL)) {
+    //Json::Value plannerOptions = options["planner"];
+    //const std::string fileLabel = "file:";
+    //if (plannerOptions.asString().compare(0,fileLabel.size(),fileLabel) == 0) {
+    //}
+
     //boost::shared_ptr<UCTEstimator<Observation,Action::Type> > valueEstimator = new UCTEstimator<Observation,Action::Type>(rng,Action::NUM_ACTIONS,options);
     //boost::shared_ptr<MCTS<Observation,Action::Type> > planner = new MCTS<Observation,Action::Type>(model,valueEstimator,options);
     //return ptr(new PredatorMCTS(rng,dims,planner));
-  //}
+  //} 
   else {
     std::cerr << "createAgent: unknown agent name: " << name << std::endl;
     assert(false);
   }
+}
+
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, const Json::Value &options) {
+  std::string name = options.get("behavior","NONE").asString();
+  if (name == "NONE") {
+    std::cerr << "createAgent: WARNING: no agent type specified, using random" << std::endl;
+    name = "random";
+  }
+
+  return createAgent(randomSeed,dims,name,options);
 }

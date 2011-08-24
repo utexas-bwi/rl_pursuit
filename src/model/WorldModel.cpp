@@ -44,7 +44,7 @@ bool WorldModel::addAgent(const AgentModel& agent, bool ignorePosition) {
   return true;
 }
 
-bool WorldModel::isPreyCaptured() {
+bool WorldModel::isPreyCaptured() const {
   if (preyInd < 0)
     return true;
   for (int i = 0; i < NUM_NEIGHBORS; i++) {
@@ -55,7 +55,7 @@ bool WorldModel::isPreyCaptured() {
   return true;
 }
 
-int WorldModel::getCollision(const Point2D& pos, int skipInd, int maxInd) {
+int WorldModel::getCollision(const Point2D& pos, int skipInd, int maxInd) const {
   if ((maxInd < 0) || ((unsigned int)maxInd > agents.size()))
     maxInd = agents.size();
   for (int i = 0; i < maxInd; i++) {
@@ -65,11 +65,11 @@ int WorldModel::getCollision(const Point2D& pos, int skipInd, int maxInd) {
   return -1;
 }
 
-Point2D WorldModel::getAgentPosition(unsigned int ind, Action::Type action) {
+Point2D WorldModel::getAgentPosition(unsigned int ind, Action::Type action) const {
   return movePosition(dims,agents[ind].pos,action);
 }
 
-void WorldModel::generateObservation(Observation &obs) {
+void WorldModel::generateObservation(Observation &obs) const {
   obs.preyInd = preyInd;
   obs.myInd = 0;
   obs.positions.clear();

@@ -24,7 +24,9 @@ public:
   void generateObservation(Observation &obs);
   void handleCollisions(std::vector<Point2D> &requestedPositions);
   void randomizePositions();
+  void restartAgents();
   bool addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition=false);
+  boost::shared_ptr<const WorldModel> getModel();
 
 protected:
   boost::shared_ptr<RNG> rng;

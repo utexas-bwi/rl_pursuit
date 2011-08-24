@@ -54,11 +54,11 @@ MCTS<State,Action>::MCTS(boost::shared_ptr<Model<State,Action> > model, boost::s
 
 template<class State, class Action>
 void MCTS<State,Action>::search(const State &startState) {
-  endPlanningTime = Util::getTime() + maxPlanningTime;
+  endPlanningTime = getTime() + maxPlanningTime;
   for (unsigned int i = 0; (numPlayouts == 0) || (i < numPlayouts); i++) {
     //std::cout << "-----------------------------------" << std::endl;
     //std::cout << "ROLLOUT: " << i << std::endl;
-    if ((maxPlanningTime > 0) && (Util::getTime() > endPlanningTime))
+    if ((maxPlanningTime > 0) && (getTime() > endPlanningTime))
       break;
     rollout(startState);
     //std::cout << "-----------------------------------" << std::endl;
@@ -98,7 +98,7 @@ void MCTS<State,Action>::rollout(const State &startState) {
 
   for (unsigned int depth = 0; (depth < maxDepth) || (maxDepth == 0); depth++) {
     //std::cout << "DEPTH: " << depth << std::endl;
-    if (terminal || ((maxPlanningTime > 0) && (Util::getTime() > endPlanningTime)))
+    if (terminal || ((maxPlanningTime > 0) && (getTime() > endPlanningTime)))
       break;
     action = valueEstimator->selectPlanningAction(state);
     model->takeAction(action,reward,state,terminal);

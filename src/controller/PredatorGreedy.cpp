@@ -4,8 +4,6 @@
 #include <common/Util.h>
 #include <iostream>
 
-using Util::sgn;
-
 Point2D getGreedyDesiredPosition(const Point2D &dims, const Observation &obs) {
   unsigned int minDist = -1;
   unsigned int dist;

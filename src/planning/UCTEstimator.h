@@ -28,6 +28,7 @@ public:
   typedef std::pair<State,Action> StateAction;
 
   UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, float initialStateVisits, float initalStateActionVisits, float unseenValue);
+  //UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, float initialStateVisits, float initalStateActionVisits, float unseenValue);
   
   virtual Action selectWorldAction(const State &state);
   virtual Action selectPlanningAction(const State &state);

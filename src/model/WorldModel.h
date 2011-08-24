@@ -20,14 +20,14 @@ class WorldModel {
 public:
   WorldModel(const Point2D &dims);
   bool addAgent(const AgentModel& agent, bool ignorePosition=false);
-  bool isPreyCaptured();
-  int getCollision(const Point2D &pos, int skipInd = -1, int maxInd = -1);
-  inline unsigned int getNumAgents() {return agents.size();}
+  bool isPreyCaptured() const;
+  int getCollision(const Point2D &pos, int skipInd = -1, int maxInd = -1) const;
+  inline unsigned int getNumAgents() const {return agents.size();}
   inline Point2D getDims() const {return dims;}
 
   inline void setAgentPosition(unsigned int ind, const Point2D &pos) {agents[ind].pos = pos;}
-  Point2D getAgentPosition(unsigned int ind, Action::Type action = Action::NOOP);
-  void generateObservation(Observation &obs);
+  Point2D getAgentPosition(unsigned int ind, Action::Type action = Action::NOOP) const;
+  void generateObservation(Observation &obs) const;
   void setPositionsFromObservation(const Observation &obs);
 
 protected:

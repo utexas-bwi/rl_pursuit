@@ -13,7 +13,23 @@ Modified: 2011-08-23
 #include <common/RNG.h>
 #include <model/WorldModel.h>
 #include <controller/World.h>
+#include "AgentFactory.h"
 
-void createWorld(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<WorldModel> &worldModel, boost::shared_ptr<World> &worldController, const Json::Value &options = Json::Value());
+// world models
+boost::shared_ptr<WorldModel> createWorldModel(const Point2D &dims);
+
+// world model + controller
+boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options);
+
+// world model + controller + agents
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options);
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Point2D &dims, const Json::Value &options);
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Json::Value &options);
+
+void createWorldAgents(boost::shared_ptr<World> &worldController, unsigned int randomSeed, const Point2D &dims, const Json::Value &options);
+void createWorldAgents(boost::shared_ptr<World> &worldController, unsigned int randomSeed, const Json::Value &options);
+
+// helpers
+Point2D getDims(const Json::Value &options);
 
 #endif /* end of include guard: WORLDFACTORY_NNNSUN1M */

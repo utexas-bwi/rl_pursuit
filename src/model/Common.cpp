@@ -47,7 +47,7 @@ Point2D getDifferenceToPoint(const Point2D &dims, const Point2D &start, const Po
 std::ostream& operator<<(std::ostream &out, const Observation &obs) {
   out << "<Obs: ";
   for (unsigned int i = 0; i < obs.positions.size(); i++)
-    out << "(" <<  obs.positions[i].x << "," << obs.positions[i].y << ") ";
+    out << obs.positions[i] << " ";
   out << "Prey: " << obs.preyInd << " me: " << obs.myInd;
   out << ">";
   return out;
