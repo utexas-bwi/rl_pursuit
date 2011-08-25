@@ -11,6 +11,8 @@ Modified: 2011-08-23
 
 #include <iostream>
 #include <vector>
+#include <string>
+#include <sstream>
 #include <utility>
 #include <cmath>
 #include <boost/shared_ptr.hpp>
@@ -35,6 +37,7 @@ public:
   virtual void finishRollout(bool terminal);
   virtual void visit(const Action &action, float reward, const State &state);
   virtual void restart();
+  virtual std::string generateDescription(unsigned int indentation = 0);
 
 protected:
   void checkInternals();
@@ -83,7 +86,7 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
       std::cerr << "UCTEstimator: ERROR, both rewardBound and rewardRangePerStep > 0, which one do you want?" << std::endl;
       valid = false;
     }
-    rewardBound = rewardBound;
+    rewardBound = nrewardBound;
   } else {
     if (rewardRangePerStep <= 0) {
       std::cerr << "UCTEstimator: ERROR, both rewardBound and rewardRangePerStep <= 0, must specify at least one" << std::endl;
@@ -255,4 +258,15 @@ void UCTEstimator<State,Action>::finishRollout(bool terminal) {
   //std::cerr << "bottom finishRollout" << std::endl;
 }
 
+template<class State, class Action>
+std::string UCTEstimator<State,Action>::generateDescription(unsigned int indentation) {
+  std::stringstream ss;
+  ss << indent(indentation) + "UCTEstimator:\n";
+  std::string prefix = indent(indentation+1);
+  ss << prefix << "lambda: " << lambda << "\n";
+  ss << prefix << "gamma: " << gamma << "\n";
+  ss << prefix << "rewardBound: " << rewardBound << "\n";
+  ss << prefix << "unseenValue: " << unseenValue;// << "\n";
+  return ss.str();
+}
 #endif /* end of include guard: UCTESTIMATOR_8N1RY426 */

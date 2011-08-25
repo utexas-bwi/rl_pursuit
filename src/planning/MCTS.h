@@ -11,6 +11,7 @@ Modified: 2011-08-23
 
 #include <boost/shared_ptr.hpp>
 #include <iostream>
+#include <sstream>
 #include "Model.h"
 #include "ValueEstimator.h"
 #include <common/Util.h>
@@ -24,6 +25,7 @@ public:
   void search(const State &startState);
   Action selectWorldAction(const State &state);
   void restart();
+  std::string generateDescription(unsigned int indentation = 0);
 
 private:
   void checkInternals();
@@ -74,6 +76,21 @@ template<class State, class Action>
 void MCTS<State,Action>::restart() {
   valueEstimator->restart();
 }
+
+template<class State, class Action>
+std::string MCTS<State,Action>::generateDescription(unsigned int indentation) {
+  std::stringstream ss;
+  std::string prefix = indent(indentation);
+  ss << prefix << "num playouts: " << numPlayouts << "\n";
+  ss << prefix << "max planning time: " << maxPlanningTime << "\n";
+  ss << prefix << "max depth: " << maxDepth << "\n";
+  ss << prefix << "ValueEstimator:\n";
+  ss << valueEstimator->generateDescription(indentation+1) << "\n";
+  ss << prefix << "Model:\n";
+  ss << model->generateDescription(indentation+1) << "\n";
+  return ss.str();
+}
+
 
 template<class State, class Action>
 void MCTS<State,Action>::checkInternals() {

@@ -17,3 +17,9 @@ void PredatorMCTS::restart() {
 std::string PredatorMCTS::generateDescription() {
   return "PredatorMCTS: a predator using MCTS to select actions";
 }
+
+std::string PredatorMCTS::generateLongDescription(unsigned int indentation) {
+  std::string s = indent(indentation) + generateDescription() + "\n";
+  s += planner->generateDescription(indentation+1);
+  return s;
+}

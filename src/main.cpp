@@ -32,6 +32,8 @@ int main(int argc, const char *argv[])
   float avgSteps = 0;
   Observation obs;
 
+  std::cout << world->generateDescription() << std::endl;
+
   double startTime = getTime();
   for (unsigned int run = 0; run < numRuns; run++) {
     numSteps = 0;

@@ -68,9 +68,12 @@ TEST_SOURCES_PATH = $(addprefix $(SOURCE_DIR)/$(TEST_DIR)/, $(TEST_SOURCES))
 TEST_SOURCES_COMBINED = $(SOURCES) $(TEST_SOURCES_PATH)
 TEST_OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(TEST_SOURCES_COMBINED:.cpp=.o))
 
-.PHONY: all build test default clean fullclean
+.PHONY: all run build test default clean fullclean
 
 default: build
+
+run: $(MAIN_TARGET)
+	$(MAIN_TARGET)
 
 build: $(MAIN_TARGET)
 
@@ -81,7 +84,6 @@ test: $(TEST_TARGET)
 	$(TEST_TARGET)
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(HEADERS)
-	@echo "HERE for " $@
 	@mkdir -p $(dir $@)
 	$(CC) $(FLAGS) -c $< -o $@
 

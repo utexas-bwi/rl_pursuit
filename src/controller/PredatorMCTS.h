@@ -22,6 +22,7 @@ public:
   Action::Type step(const Observation &obs);
   void restart();
   std::string generateDescription();
+  std::string generateLongDescription(unsigned int indentation = 0);
 
 protected:
   boost::shared_ptr<MCTS<State_t,Action::Type> > planner;

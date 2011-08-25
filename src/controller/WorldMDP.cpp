@@ -33,6 +33,10 @@ float WorldMDP::getRewardRangePerStep() {
   return 1.0;
 }
 
+std::string WorldMDP::generateDescription(unsigned int indentation) {
+  return controller->generateDescription(indentation);
+}
+
 State_t::State_t(const Observation &obs) {
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     positions[i] = obs.positions[i];

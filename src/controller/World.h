@@ -31,6 +31,8 @@ public:
   bool addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition=false);
   boost::shared_ptr<const WorldModel> getModel();
 
+  std::string generateDescription(unsigned int indentation = 0);
+
 protected:
   boost::shared_ptr<RNG> rng;
   boost::shared_ptr<WorldModel> world;

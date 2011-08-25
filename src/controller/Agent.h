@@ -14,6 +14,7 @@ Modified: 2011-08-22
 
 #include <common/RNG.h>
 #include <model/Common.h>
+#include <common/Util.h>
 
 class Agent {
 public:
@@ -25,6 +26,7 @@ public:
   virtual Action::Type step(const Observation &obs) = 0;
   virtual void restart() = 0; // between episodes
   virtual std::string generateDescription() = 0;
+  virtual std::string generateLongDescription(unsigned int indentation = 0) {return indent(indentation) + generateDescription();}
 
 protected:
   boost::shared_ptr<RNG> rng;

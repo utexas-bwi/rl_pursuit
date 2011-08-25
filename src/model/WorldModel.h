@@ -29,6 +29,7 @@ public:
   Point2D getAgentPosition(unsigned int ind, Action::Type action = Action::NOOP) const;
   void generateObservation(Observation &obs) const;
   void setPositionsFromObservation(const Observation &obs);
+  std::string generateDescription(unsigned int indentation = 0);
 
 protected:
   const Point2D dims;

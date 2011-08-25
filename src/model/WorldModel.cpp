@@ -1,5 +1,6 @@
 #include "WorldModel.h"
 #include "Common.h"
+#include <common/Util.h>
 
 #include <iostream>
 #include <cassert>
@@ -80,4 +81,10 @@ void WorldModel::generateObservation(Observation &obs) const {
 void WorldModel::setPositionsFromObservation(const Observation &obs) {
   for (unsigned int i = 0; i < agents.size(); i++)
     setAgentPosition(i,obs.positions[i]);
+}
+
+std::string WorldModel::generateDescription(unsigned int indentation) {
+  std::string s;
+  s += indent(indentation) + "WorldModel " + dims.toString();
+  return s;
 }

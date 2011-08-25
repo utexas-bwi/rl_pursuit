@@ -1,4 +1,5 @@
 #include "Point2D.h"
+#include <sstream>
 
 Point2D::Point2D():
   x(0),
@@ -26,6 +27,12 @@ Point2D& Point2D::operator+=(const Point2D &rhs) {
 
 const Point2D Point2D::operator+(const Point2D &rhs) {
   return Point2D(*this) += rhs;
+}
+
+std::string Point2D::toString() const{
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
 }
 
 std::ostream& operator<<(std::ostream &out, const Point2D &pt) {

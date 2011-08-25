@@ -26,3 +26,7 @@ bool readJson(const std::string &filename, Json::Value &value) {
   }
   return true;
 }
+
+std::string indent(unsigned int indentation) {
+  return std::string(indentation * 2,' ');
+}

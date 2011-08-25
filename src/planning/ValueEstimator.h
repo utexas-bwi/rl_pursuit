@@ -9,6 +9,8 @@ Created:  2011-08-23
 Modified: 2011-08-23
 */
 
+#include <string>
+
 template<class State, class Action>
 class ValueEstimator {
 public:
@@ -20,6 +22,7 @@ public:
   virtual void finishRollout(bool terminal) = 0;
   virtual void visit(const Action &action, float reward, const State &state) = 0;
   virtual void restart() = 0;
+  virtual std::string generateDescription(unsigned int indentation = 0) = 0;
 };
 
 #endif /* end of include guard: VALUEESTIMATOR_VKVQ0GPY */

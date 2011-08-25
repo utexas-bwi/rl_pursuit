@@ -24,4 +24,6 @@ inline int sgn(const T &x) {
 
 bool readJson(const std::string &filename, Json::Value &value);
 
+std::string indent(unsigned int indentation);
+
 #endif /* end of include guard: UTIL_T1FR2WSR */

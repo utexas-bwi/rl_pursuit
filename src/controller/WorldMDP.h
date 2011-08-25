@@ -34,6 +34,7 @@ public:
   void setState(const State_t &state);
   void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
   float getRewardRangePerStep();
+  std::string generateDescription(unsigned int indentation = 0);
 
 private:
   boost::shared_ptr<RNG> rng;

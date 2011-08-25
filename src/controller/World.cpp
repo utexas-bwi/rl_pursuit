@@ -70,3 +70,13 @@ bool World::addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agen
 boost::shared_ptr<const WorldModel> World::getModel() {
   return world;
 }
+
+std::string World::generateDescription(unsigned int indentation) {
+  std::string s;
+  s += indent(indentation) + "World:\n";
+  s += world->generateDescription(indentation+1) + "\n";
+  s += indent(indentation+1) + "Agents:\n";
+  for (unsigned int i = 0; i < agents.size(); i++)
+    s += agents[i]->generateLongDescription(indentation+2) + "\n";
+  return s;
+}
