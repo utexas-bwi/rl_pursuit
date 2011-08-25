@@ -26,6 +26,7 @@ int main(int argc, const char *argv[])
   boost::shared_ptr<World> world = createWorldAgents(0,options);
   boost::shared_ptr<const WorldModel> model = world->getModel();
   bool displayObs = options["verbosity"].get("observation",true).asBool();
+  bool stepsPerRun = options["verbosity"].get("stepsPerRun",true).asBool();
   unsigned int numRuns = options.get("runs",1).asUInt();
   unsigned int numSteps;
   float avgSteps = 0;
@@ -44,6 +45,8 @@ int main(int argc, const char *argv[])
         std::cout << obs << std::endl;
       }
     }
+    if (stepsPerRun)
+      std::cout << run << ": " << numSteps << std::endl;
     avgSteps = (avgSteps * run + numSteps) / (run + 1);
   }
   double endTime = getTime();

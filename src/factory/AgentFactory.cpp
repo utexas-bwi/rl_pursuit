@@ -12,6 +12,8 @@
 #include <planning/UCTEstimator.h>
 #include <factory/PlanningFactory.h>
 
+#define NAME_IN_SET(...) nameInSet(name,__VA_ARGS__,NULL)
+
 bool nameInSet(const std::string &name, ...) {
   va_list vl;
   char *s;
@@ -35,13 +37,13 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
   
   boost::to_lower(name);
-  if (nameInSet(name,"prey","preyrandom","random",NULL))
+  if (NAME_IN_SET("prey","preyrandom","random"))
     return ptr(new PreyRandom(rng,dims));
-  else if (nameInSet(name,"greedy","gr",NULL))
+  else if (NAME_IN_SET("greedy","gr"))
     return ptr(new PredatorGreedy(rng,dims));
-  else if (nameInSet(name,"dummy",NULL))
+  else if (NAME_IN_SET("dummy"))
     return ptr(new AgentDummy(rng,dims));
-  else if (nameInSet(name,"mcts","uct",NULL)) {
+  else if (NAME_IN_SET("mcts","uct")) {
     Json::Value plannerOptions = options["planner"];
     if (plannerOptions.isString()) {
       std::string filename = plannerOptions.asString();
@@ -49,7 +51,7 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
     }
     
     boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,plannerOptions);
-    boost::shared_ptr<UCTEstimator<State_t,Action::Type> > uct = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,mdp->getRewardRangePerStep(),plannerOptions);
+    boost::shared_ptr<UCTEstimator<State_t,Action::Type> > uct = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,plannerOptions);
     boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(mdp,uct,plannerOptions);
 
     return ptr(new PredatorMCTS(rng,dims,mcts));

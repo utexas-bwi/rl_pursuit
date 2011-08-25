@@ -27,7 +27,7 @@ class UCTEstimator: public ValueEstimator<State, Action> {
 public:
   typedef std::pair<State,Action> StateAction;
 
-  UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initalStateActionVisits, float unseenValue);
+  UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardBound, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initalStateActionVisits, float unseenValue);
   
   virtual Action selectWorldAction(const State &state);
   virtual Action selectPlanningAction(const State &state);
@@ -65,7 +65,7 @@ protected:
 ////////////////////////////////////////////////////////////////////////////
 
 template<class State, class Action>
-UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initialStateActionVisits, float unseenValue):
+UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float nrewardBound, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initialStateActionVisits, float unseenValue):
   rng(rng),
   numActions(numActions),
   lambda(lambda),
@@ -78,22 +78,36 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   rolloutVisitCounts(0)
 {
   checkInternals();
-  rewardBound = rewardRangePerStep / (1.0 - gamma);
+  if (nrewardBound > 0) {
+    if (rewardRangePerStep > 0) {
+      std::cerr << "UCTEstimator: ERROR, both rewardBound and rewardRangePerStep > 0, which one do you want?" << std::endl;
+      valid = false;
+    }
+    rewardBound = rewardBound;
+  } else {
+    if (rewardRangePerStep <= 0) {
+      std::cerr << "UCTEstimator: ERROR, both rewardBound and rewardRangePerStep <= 0, must specify at least one" << std::endl;
+      valid = false;
+    }
+    rewardBound = rewardRangePerStep / (1.0 - gamma);
+  }
+
+  assert(valid);
 }
   
 
 template<class State, class Action>
 void UCTEstimator<State,Action>::checkInternals() {
   if (numActions < 2) {
-    std::cerr << "Invalid number of actions, must be at least 2" << std::endl;
+    std::cerr << "UCTEstimator: Invalid number of actions, must be at least 2" << std::endl;
     valid = false;
   }
   if ((lambda < 0) || (lambda > 1.0)) {
-    std::cerr << "Invalid lambda: 0 <= lambda <= 1" << std::endl;
+    std::cerr << "UCTEstimator: Invalid lambda: 0 <= lambda <= 1" << std::endl;
     valid = false;
   }
   if ((gamma < 0) || (gamma >= 1.0)) {
-    std::cerr << "Invalid gamma: 0 <= gamma < 1" << std::endl;
+    std::cerr << "UCTEstimator: Invalid gamma: 0 <= gamma < 1" << std::endl;
     valid = false;
   }
 }

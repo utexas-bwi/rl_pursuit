@@ -13,22 +13,25 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
 
 ///////////////////////////////////////////////////////////////
 
-boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(boost::shared_ptr<RNG> rng, Action::Type numActions, float lambda, float gamma, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initialStateActionVisits, float unseenValue) {
-  return boost::shared_ptr<UCTEstimator<State_t,Action::Type> >(new UCTEstimator<State_t,Action::Type>(rng,numActions,lambda,gamma,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue));
+boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(boost::shared_ptr<RNG> rng, Action::Type numActions, float lambda, float gamma, float rewardBound, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initialStateActionVisits, float unseenValue) {
+  return boost::shared_ptr<UCTEstimator<State_t,Action::Type> >(new UCTEstimator<State_t,Action::Type>(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue));
 }
 
-boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(boost::shared_ptr<RNG> rng, Action::Type numActions, float rewardRangePerStep, const Json::Value &options) {
+boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(boost::shared_ptr<RNG> rng, Action::Type numActions, const Json::Value &options) {
   float lambda = options.get("lambda",0.8).asDouble();
   float gamma = options.get("gamma",0.95).asDouble();
   float unseenValue = options.get("unseenValue",9999999).asDouble();
   float initialValue = options.get("initialValue",0).asDouble();
+  float rewardBound = options.get("rewardBound",-1).asDouble();
+  float rewardRangePerStep = options.get("rewardRangePerStep",-1).asDouble();
+
   unsigned int initialStateVisits = options.get("initialStateVisits",0).asUInt();
   unsigned int initialStateActionVisits = options.get("initialStateActionVisits",0).asUInt();
-  return createUCTEstimator(rng,numActions,lambda,gamma,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue);
+  return createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue);
 }
 
-boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(unsigned int randomSeed, Action::Type numActions, float rewardRangePerStep, const Json::Value &options) {
-  return createUCTEstimator(boost::shared_ptr<RNG>(new RNG(randomSeed)),numActions,rewardRangePerStep,options);
+boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(unsigned int randomSeed, Action::Type numActions, const Json::Value &options) {
+  return createUCTEstimator(boost::shared_ptr<RNG>(new RNG(randomSeed)),numActions,options);
 }
 
 ///////////////////////////////////////////////////////////////
