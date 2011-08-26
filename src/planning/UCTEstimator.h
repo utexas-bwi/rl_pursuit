@@ -20,6 +20,7 @@ Modified: 2011-08-23
 #include "ValueEstimator.h"
 #include <common/RNG.h>
 #include <common/DefaultMap.h>
+#include <common/Util.h>
 
 #define BIGNUM 999999
 #define EPS 1e-10
@@ -38,10 +39,11 @@ public:
   virtual void visit(const Action &action, float reward, const State &state);
   virtual void restart();
   virtual std::string generateDescription(unsigned int indentation = 0);
+  float maxValueForState(const State &state);
+  float getStateActionValue(const State &state, const Action &action) { return values.get(StateAction(state,action));}
 
 protected:
   void checkInternals();
-  float maxValueForState(const State &state);
   float updateStateAction(const StateAction &key, float newQ);
 
 protected:
@@ -80,7 +82,6 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   stateActionVisits(initialStateActionVisits),
   rolloutVisitCounts(0)
 {
-  checkInternals();
   if (nrewardBound > 0) {
     if (rewardRangePerStep > 0) {
       std::cerr << "UCTEstimator: ERROR, both rewardBound and rewardRangePerStep > 0, which one do you want?" << std::endl;
@@ -95,6 +96,7 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
     rewardBound = rewardRangePerStep / (1.0 - gamma);
   }
 
+  checkInternals();
   assert(valid);
 }
   
@@ -109,8 +111,8 @@ void UCTEstimator<State,Action>::checkInternals() {
     std::cerr << "UCTEstimator: Invalid lambda: 0 <= lambda <= 1" << std::endl;
     valid = false;
   }
-  if ((gamma < 0) || (gamma >= 1.0)) {
-    std::cerr << "UCTEstimator: Invalid gamma: 0 <= gamma < 1" << std::endl;
+  if ((gamma < 0) || (gamma > 1.0)) {
+    std::cerr << "UCTEstimator: Invalid gamma: 0 <= gamma <= 1" << std::endl;
     valid = false;
   }
 }
@@ -226,11 +228,11 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
 template<class State, class Action>
 float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, float newQ){
   float learnRate = 1.0 / (1.0 + stateActionVisits[key]);
-  //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
+  std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
   stateActionVisits[key]++;
   values[key] += learnRate * (newQ - values[key]);
-  //std::cout << " --> " << values[key] << std::endl;
+  std::cout << " --> " << values[key] << std::endl;
   return lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
 }
 
@@ -247,6 +249,7 @@ void UCTEstimator<State,Action>::finishRollout(bool terminal) {
 
   for (int i = (int)historyStates.size() - 1; i >= 0; i--) {
     //std::cerr << "i = " << i << std::endl;
+    std::cout << "FUTURE VAL: " << futureVal << std::endl;
     StateAction key(historyStates[i],historyActions[i]);
     newQ = historyRewards[i] +  gamma * futureVal;
     if (rolloutVisitCounts[key] == 1)

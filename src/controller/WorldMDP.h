@@ -10,6 +10,7 @@ Modified: 2011-08-23
 */
 
 #include <boost/shared_ptr.hpp>
+#include <ostream>
 
 #include <planning/Model.h>
 #include <common/RNG.h>
@@ -26,6 +27,7 @@ struct State_t {
   Point2D positions[STATE_SIZE];
   bool operator<(const State_t &other) const;
 };
+std::ostream& operator<<(std::ostream &out, const State_t &state);
 
 class WorldMDP: public Model<State_t,Action::Type> {
 public:

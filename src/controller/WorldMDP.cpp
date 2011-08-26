@@ -57,3 +57,11 @@ bool State_t::operator<(const State_t &other) const{
   return false;
 }
 
+std::ostream& operator<<(std::ostream &out, const State_t &state) {
+  out << "<State_t ";
+  for (unsigned int i = 0; i < STATE_SIZE; i++) {
+    out << state.positions[i];
+  }
+  out << ">";
+  return out;
+}
