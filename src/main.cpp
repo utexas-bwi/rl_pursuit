@@ -1,5 +1,5 @@
 /*
-File: jsonTest.cpp
+File: main.cpp
 Author: Samuel Barrett
 Description: tests using json for creating the world
 Created:  2011-08-24
