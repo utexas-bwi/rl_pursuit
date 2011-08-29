@@ -28,6 +28,28 @@ protected:
   virtual void createUCT() {
     uct = boost::shared_ptr<UCTEstimator<int,unsigned int> >(new UCTEstimator<int,unsigned int>(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue));
   }
+
+  virtual void runLambdaGammaTest(float lambda,float gamma,unsigned int numActions, int states[], unsigned int actions[], float rewards[]) {
+    this->lambda = lambda;
+    this->gamma = gamma;
+    createUCT();
+    uct->startRollout(states[0]);
+    for (unsigned int i = 0; i < numActions; i++)
+      uct->visit(actions[i],rewards[i],states[i+1]);
+    uct->finishRollout(true);
+
+    float val = rewards[numActions-1];
+    for (int i = numActions-1; i >= 0; i--) {
+      for (unsigned int a = 0; a < 3; a++) {
+        //std::cerr << i << " " << a << " " << val << " " << uct->getStateActionValue(states[i],a) << std::endl;
+        if (a == actions[i])
+          EXPECT_EQ(val,uct->getStateActionValue(states[i],a));
+        else
+          EXPECT_EQ(0.0,uct->getStateActionValue(states[i],a));
+      }
+      val *= gamma * lambda;
+    }
+  }
   
   unsigned int numActions;
   float lambda;
@@ -127,19 +149,26 @@ TEST_F(TestUCT,SimpleLambda1Gamma1) {
   EXPECT_EQ(0.0,uct->getStateActionValue(1,2));
 }
 
-TEST_F(TestUCT,SimpleLambda075Gamma05) {
-  lambda = 0.75;
-  gamma = 0.5;
-  createUCT();
-  uct->startRollout(0);
-  uct->visit(0,0.0,1);
-  uct->visit(0,1.0,2);
-  uct->finishRollout(true);
+TEST_F(TestUCT,SimpleLambda075Gamma1) {
+  int numActions = 3;
+  int states[4] = {0,1,2,3};
+  unsigned int actions[3] = {0,0,0};
+  float rewards[3] = {0,0,1.0};
+  runLambdaGammaTest(0.75,1.0,numActions,states,actions,rewards);
+}
 
-  EXPECT_EQ(0.5 * 0.75,uct->getStateActionValue(0,0));
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,1));
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,2));
-  EXPECT_EQ(1.0,uct->getStateActionValue(1,0));
-  EXPECT_EQ(0.0,uct->getStateActionValue(1,1));
-  EXPECT_EQ(0.0,uct->getStateActionValue(1,2));
+TEST_F(TestUCT,SimpleLambda1Gamma066) {
+  int numActions = 3;
+  int states[4] = {0,1,2,3};
+  unsigned int actions[3] = {2,0,1};
+  float rewards[3] = {0,0,1.0};
+  runLambdaGammaTest(1.0,0.66,numActions,states,actions,rewards);
+}
+
+TEST_F(TestUCT,SimpleLambda075Gamma066) {
+  int numActions = 3;
+  int states[4] = {0,1,2,3};
+  unsigned int actions[3] = {0,1,2};
+  float rewards[3] = {0,0,1.0};
+  runLambdaGammaTest(0.75,0.66,numActions,states,actions,rewards);
 }

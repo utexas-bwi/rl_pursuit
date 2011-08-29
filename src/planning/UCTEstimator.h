@@ -228,12 +228,13 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
 template<class State, class Action>
 float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, float newQ){
   float learnRate = 1.0 / (1.0 + stateActionVisits[key]);
-  std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
+  //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
   stateActionVisits[key]++;
+  float retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
   values[key] += learnRate * (newQ - values[key]);
-  std::cout << " --> " << values[key] << std::endl;
-  return lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
+  //std::cout << " --> " << values[key] << std::endl;
+  return retVal;
 }
 
 template<class State, class Action>
@@ -249,7 +250,7 @@ void UCTEstimator<State,Action>::finishRollout(bool terminal) {
 
   for (int i = (int)historyStates.size() - 1; i >= 0; i--) {
     //std::cerr << "i = " << i << std::endl;
-    std::cout << "FUTURE VAL: " << futureVal << std::endl;
+    //std::cout << "FUTURE VAL: " << futureVal << std::endl;
     StateAction key(historyStates[i],historyActions[i]);
     newQ = historyRewards[i] +  gamma * futureVal;
     if (rolloutVisitCounts[key] == 1)
