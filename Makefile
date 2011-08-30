@@ -27,13 +27,13 @@ RM = rm -f
 # source files
 MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
 COMMON_SOURCES = Point2D.cpp tinymt32.cpp Util.cpp
-CONTROLLER_SOURCES = PredatorGreedy.cpp PredatorMCTS.cpp World.cpp WorldMDP.cpp
+CONTROLLER_SOURCES = PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp World.cpp WorldMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
 # Headers
 COMMON_HEADERS = DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h
-CONTROLLER_HEADERS = Agent.h AgentDummy.h Prey.h World.h WorldMDP.h
+CONTROLLER_HEADERS = Agent.h AgentDummy.h PredatorGreedy.h PredatorGreedyProbabilistic.h Prey.h World.h WorldMDP.h
 FACTORY_HEADERS = AgentFactory.h PlanningFactory.h WorldFactory.h
 MODEL_HEADERS = AgentModel.h Common.h WorldModel.h
 PLANNING_HEADERS = MCTS.h Model.h UCTEstimator.h ValueEstimator.h

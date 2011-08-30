@@ -19,14 +19,24 @@ bool Point2D::operator!=(const Point2D &other) const {
   return (x != other.x) || (y != other.y);
 }
 
+const Point2D Point2D::operator+(const Point2D &rhs) const {
+  return Point2D(*this) += rhs;
+}
+
 Point2D& Point2D::operator+=(const Point2D &rhs) {
   x += rhs.x;
   y += rhs.y;
   return *this;
 }
 
-const Point2D Point2D::operator+(const Point2D &rhs) {
-  return Point2D(*this) += rhs;
+const Point2D Point2D::operator-(const Point2D &rhs) const{
+  return Point2D(*this) -= rhs;
+}
+
+Point2D& Point2D::operator-=(const Point2D &rhs) {
+  x -= rhs.x;
+  y -= rhs.y;
+  return *this;
 }
 
 std::string Point2D::toString() const{

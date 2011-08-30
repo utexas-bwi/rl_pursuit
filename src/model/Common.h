@@ -30,6 +30,7 @@ namespace Action {
 
 }
 
+Point2D wrapPoint(const Point2D &dims, Point2D pos);
 Point2D movePosition(const Point2D &dims, Point2D pos, Action::Type action);
 Point2D movePosition(const Point2D &dims, Point2D pos, const Point2D &move);
 unsigned int getDistanceToPoint(const Point2D &dims, const Point2D &pos1, const Point2D &pos2);

@@ -24,6 +24,18 @@ inline int sgn(const T &x) {
   return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
 }
 
+template <class T>
+inline T min(const T &x1, const T &x2) {
+  return x1 < x2 ? x1 : x2;
+}
+
+template <class T>
+inline T max(const T &x1, const T &x2) {
+  return x1 > x2 ? x1 : x2;
+}
+
+float softmax(float x1, float x2, float factor); // returns the probability of x1 using a softmax with the given factor
+
 bool readJson(const std::string &filename, Json::Value &value);
 
 std::string indent(unsigned int indentation);

@@ -3,6 +3,19 @@
 #include <cstdlib>
 #include <iostream>
 
+Point2D wrapPoint(const Point2D &dims, Point2D pos) {
+  while (pos.x > dims.x)
+    pos.x -= dims.x;
+  while (pos.x < 0)
+    pos.x += dims.x;
+  
+  while (pos.y > dims.y)
+    pos.y -= dims.y;
+  while (pos.y < 0)
+    pos.y += dims.y;
+  return pos;
+}
+
 Point2D movePosition(const Point2D &dims, Point2D pos, Action::Type action) {
   return movePosition(dims,pos,Action::MOVES[action]);
 }
