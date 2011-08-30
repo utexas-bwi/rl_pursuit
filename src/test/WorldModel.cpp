@@ -84,3 +84,29 @@ TEST_F(WorldModelTest,Collisions) {
   EXPECT_LT(model.getCollision(Point2D(2,2),-1,2),0);
   EXPECT_EQ(2,model.getCollision(Point2D(2,2),-1,3));
 }
+
+TEST_F(WorldModelTest,Capture) {
+  EXPECT_FALSE(model.isPreyCaptured());
+  model.setAgentPosition(0,Point2D(0,0));
+  model.setAgentPosition(1,Point2D(1,0));
+  model.setAgentPosition(2,Point2D(4,0));
+  model.setAgentPosition(3,Point2D(0,1));
+  model.setAgentPosition(4,Point2D(0,3));
+  EXPECT_FALSE(model.isPreyCaptured());
+  model.setAgentPosition(4,Point2D(0,4));
+  EXPECT_TRUE(model.isPreyCaptured());
+  model.setAgentPosition(0,Point2D(4,4));
+  model.setAgentPosition(1,Point2D(2,4));
+  model.setAgentPosition(2,Point2D(0,4));
+  model.setAgentPosition(3,Point2D(4,3));
+  model.setAgentPosition(4,Point2D(4,0));
+  EXPECT_FALSE(model.isPreyCaptured());
+  model.setAgentPosition(1,Point2D(3,4));
+  EXPECT_TRUE(model.isPreyCaptured());
+  model.setAgentPosition(0,Point2D(2,2));
+  model.setAgentPosition(1,Point2D(2,3));
+  model.setAgentPosition(2,Point2D(2,1));
+  model.setAgentPosition(3,Point2D(3,2));
+  model.setAgentPosition(4,Point2D(1,2));
+  EXPECT_TRUE(model.isPreyCaptured());
+}
