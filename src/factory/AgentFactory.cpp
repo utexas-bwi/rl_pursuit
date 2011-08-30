@@ -4,7 +4,7 @@
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 
-#include <controller/Prey.h>
+#include <controller/AgentRandom.h>
 #include <controller/AgentDummy.h>
 #include <controller/PredatorGreedy.h>
 #include <controller/PredatorGreedyProbabilistic.h>
@@ -39,7 +39,7 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
   
   boost::to_lower(name);
   if (NAME_IN_SET("prey","preyrandom","random"))
-    return ptr(new PreyRandom(rng,dims));
+    return ptr(new AgentRandom(rng,dims));
   else if (NAME_IN_SET("greedy","gr"))
     return ptr(new PredatorGreedy(rng,dims));
   else if (NAME_IN_SET("greedyprobabilistic","greedyprob","gp"))

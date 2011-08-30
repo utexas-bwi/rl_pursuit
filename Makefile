@@ -19,7 +19,7 @@ PLANNING_DIR = planning
 TEST_DIR = test
 # specify compile and flags
 CC = g++
-FLAGS = -W -Wall -pedantic-errors -O3 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -fPIC -std=c++0x
+FLAGS = -W -Wall -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -fPIC -std=c++0x
 LINK_FLAGS = -L$(LIBS_DIR) -ljson
 TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
 
@@ -33,7 +33,7 @@ MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
 # Headers
 COMMON_HEADERS = DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h
-CONTROLLER_HEADERS = Agent.h AgentDummy.h PredatorGreedy.h PredatorGreedyProbabilistic.h Prey.h World.h WorldMDP.h
+CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h PredatorGreedy.h PredatorGreedyProbabilistic.h World.h WorldMDP.h
 FACTORY_HEADERS = AgentFactory.h PlanningFactory.h WorldFactory.h
 MODEL_HEADERS = AgentModel.h Common.h WorldModel.h
 PLANNING_HEADERS = MCTS.h Model.h UCTEstimator.h ValueEstimator.h

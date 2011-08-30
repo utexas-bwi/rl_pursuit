@@ -5,9 +5,9 @@ PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boos
   planner(planner)
 {}
 
-Action::Type PredatorMCTS::step(const Observation &obs) {
+ActionProbs PredatorMCTS::step(const Observation &obs) {
   planner->search(obs);
-  return planner->selectWorldAction(obs);
+  return ActionProbs(planner->selectWorldAction(obs));
 }
 
 void PredatorMCTS::restart() {

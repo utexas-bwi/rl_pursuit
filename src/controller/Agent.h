@@ -23,7 +23,7 @@ public:
     dims(dims)
   {}
 
-  virtual Action::Type step(const Observation &obs) = 0;
+  virtual ActionProbs step(const Observation &obs) = 0;
   virtual void restart() = 0; // between episodes
   virtual std::string generateDescription() = 0;
   virtual std::string generateLongDescription(unsigned int indentation = 0) {return indent(indentation) + generateDescription();}

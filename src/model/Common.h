@@ -11,7 +11,9 @@ Modified: 2011-08-22
 
 #include <vector>
 #include <ostream>
+#include <boost/shared_ptr.hpp>
 #include <common/Point2D.h>
+#include <common/RNG.h>
 
 namespace Action {
   enum Type { // order must match moves below
@@ -27,8 +29,18 @@ namespace Action {
   };
 
   static Point2D MOVES[NUM_MOVES] = {Point2D(-1,0),Point2D(1,0),Point2D(0,1),Point2D(0,-1),Point2D(0,0)};
-
 }
+
+class ActionProbs {
+public:
+  ActionProbs();
+  explicit ActionProbs(Action::Type ind);
+  float& operator[](Action::Type ind);
+  Action::Type selectAction(boost::shared_ptr<RNG> rng);
+
+private:
+  float probs[Action::NUM_MOVES];
+};
 
 Point2D wrapPoint(const Point2D &dims, Point2D pos);
 Point2D movePosition(const Point2D &dims, Point2D pos, Action::Type action);

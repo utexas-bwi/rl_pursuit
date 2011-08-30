@@ -8,6 +8,7 @@ World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world):
 }
 
 void World::step() {
+  ActionProbs actionProbs;
   Action::Type action;
   Observation obs;
   std::vector<Point2D> requestedPositions;
@@ -16,7 +17,8 @@ void World::step() {
   //std::cout << "obs: " << obs << std::endl;
   for (unsigned int i = 0; i < agents.size(); i++) {
     obs.myInd = i;
-    action = agents[i]->step(obs);
+    actionProbs = agents[i]->step(obs);
+    action = actionProbs.selectAction(rng);
     //std::cout << world->getAgentPosition(i) << " + " << Action::MOVES[action] << " --> ";
     requestedPositions.push_back(world->getAgentPosition(i,action));
     //std::cout << world->getAgentPosition(i) << std::endl;

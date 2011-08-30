@@ -3,6 +3,38 @@
 #include <cstdlib>
 #include <iostream>
 
+ActionProbs::ActionProbs() {
+  for (int i = 0; i < Action::NUM_MOVES; i++)
+    probs[i] = 0;
+}
+
+ActionProbs::ActionProbs(Action::Type ind){
+  if (ind == Action::RANDOM) {
+    for (int i = 0; i < Action::NUM_MOVES; i++)
+      probs[i] = 1.0 / Action::NUM_MOVES;
+  } else {
+    for (int i = 0; i < Action::NUM_MOVES; i++)
+      probs[i] = 0;
+    probs[ind] = 1.0;
+  }
+}
+
+float& ActionProbs::operator[](Action::Type ind) {
+  return probs[ind];
+}
+
+Action::Type ActionProbs::selectAction(boost::shared_ptr<RNG> rng) {
+  float x = rng->randomFloat();
+  float total = 0;
+  for (unsigned int i = 0; i < Action::NUM_MOVES; i++) {
+    total += probs[i];
+    if (x < total)
+      return (Action::Type)i;
+  }
+  return (Action::Type)(Action::NUM_MOVES-1);
+}
+
+
 Point2D wrapPoint(const Point2D &dims, Point2D pos) {
   while (pos.x > dims.x)
     pos.x -= dims.x;

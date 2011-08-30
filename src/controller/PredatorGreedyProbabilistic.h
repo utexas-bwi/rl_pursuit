@@ -15,7 +15,7 @@ Modified: 2011-08-30
 class PredatorGreedyProbabilistic: public Agent {
 public:
   PredatorGreedyProbabilistic(boost::shared_ptr<RNG> rng, const Point2D &dims);
-  Action::Type step(const Observation &obs);
+  ActionProbs step(const Observation &obs);
 
   void restart();
   std::string generateDescription();

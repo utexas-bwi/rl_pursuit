@@ -21,7 +21,7 @@ public:
     Agent(rng,dims)
   {}
 
-  Action::Type step(const Observation &obs);
+  ActionProbs step(const Observation &obs);
 
   void restart() {};
   std::string generateDescription() { return "PredatorGreedy: a predator that greedily pursues the prey";}

@@ -19,7 +19,7 @@ class PredatorMCTS: public Agent {
 public:
   PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner);
 
-  Action::Type step(const Observation &obs);
+  ActionProbs step(const Observation &obs);
   void restart();
   std::string generateDescription();
   std::string generateLongDescription(unsigned int indentation = 0);

@@ -18,7 +18,7 @@ public:
     action(Action::NOOP)
   {}
 
-  Action::Type step(const Observation &) { return action; }
+  ActionProbs step(const Observation &) { return ActionProbs(action); }
   void restart() {}
   std::string generateDescription() { return "AgentDummy: returns the last action that was set"; }
 
