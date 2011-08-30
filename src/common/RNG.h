@@ -48,7 +48,7 @@ public:
       j = randomInt(i+1);
       temp = inds[i];
       inds[i] = inds[j];
-      inds[i] = temp;
+      inds[j] = temp;
     }
   }
 
