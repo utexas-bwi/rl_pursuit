@@ -1,3 +1,11 @@
+/*
+File: Common.cpp
+Author: Samuel Barrett
+Description: some common info for the pursuit domain
+Created:  2011-08-22
+Modified: 2011-08-30
+*/
+
 #include "Common.h"
 #include <cassert>
 #include <cstdlib>

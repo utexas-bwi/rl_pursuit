@@ -6,7 +6,7 @@ File: AgentRandom.h
 Author: Samuel Barrett
 Description: holds the prey behaviors
 Created:  2011-08-22
-Modified: 2011-08-22
+Modified: 2011-08-30
 */
 
 #include "Agent.h"

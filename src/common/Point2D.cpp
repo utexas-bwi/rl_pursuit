@@ -11,6 +11,12 @@ Point2D::Point2D(int x, int y):
   y(y)
 {}
 
+bool Point2D::operator<(const Point2D &other) const {
+  if (x < other.x)
+    return true;
+  return y < other.y;
+}
+
 bool Point2D::operator==(const Point2D &other) const {
   return (x == other.x) && (y == other.y);
 }

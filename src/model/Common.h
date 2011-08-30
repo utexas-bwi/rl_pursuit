@@ -6,7 +6,7 @@ File: Common.h
 Author: Samuel Barrett
 Description: some common information
 Created:  2011-08-22
-Modified: 2011-08-22
+Modified: 2011-08-30
 */
 
 #include <vector>
