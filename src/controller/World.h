@@ -19,13 +19,15 @@ Modified: 2011-08-22
 #include <model/WorldModel.h>
 #include "Agent.h"
 
+#include <gtest/gtest_prod.h>
+
+
 class World {
 public:
   World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world);
   
   void step();
   void generateObservation(Observation &obs);
-  void handleCollisions(std::vector<Point2D> &requestedPositions);
   void randomizePositions();
   void restartAgents();
   bool addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition=false);
@@ -38,6 +40,11 @@ protected:
   boost::shared_ptr<WorldModel> world;
   const Point2D dims;
   std::vector<boost::shared_ptr<Agent> > agents;
+
+protected:
+  void handleCollisions(const std::vector<Point2D> &requestedPositions);
+
+  FRIEND_TEST(WorldTest,Collisions);
 };
 
 #endif /* end of include guard: WORLD_51O229LP */

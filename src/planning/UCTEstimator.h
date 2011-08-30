@@ -173,13 +173,13 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
 
 template<class State, class Action>
 Action UCTEstimator<State,Action>::selectWorldAction(const State &state) {
-  std::cout << state << ": ";
-  for (int i = 0; i < 5; i++) {
-    std::cout << " " << getStateActionValue(state,(Action)i);
-  }
+  //std::cout << state << ": ";
+  //for (int i = 0; i < 5; i++) {
+    //std::cout << " " << getStateActionValue(state,(Action)i);
+  //}
   Action action = selectAction(state,false);
-  std::cout << " : " << action;
-  std::cout << std::endl;
+  //std::cout << " : " << action;
+  //std::cout << std::endl;
   return action;
 }
 

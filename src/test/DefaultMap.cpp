@@ -1,3 +1,11 @@
+/*
+File: DefaultMap.cpp
+Author: Samuel Barrett
+Description: tests the DefaultMap class
+Created:  2011-08-29
+Modified: 2011-08-29
+*/
+
 #include <gtest/gtest.h>
 #include <common/DefaultMap.h>
 

@@ -1,3 +1,11 @@
+/*
+File: UCTEstimator.cpp
+Author: Samuel Barrett
+Description: Tests the UCT estimator.
+Created:  2011-08-29
+Modified: 2011-08-29
+*/
+
 #include <gtest/gtest.h>
 #include <set>
 #include <common/RNG.h>

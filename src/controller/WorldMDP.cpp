@@ -9,13 +9,18 @@ WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> mod
 }
 
 void WorldMDP::setState(const State_t &state) {
+  //std::cout << "*******************************" << std::endl;
+  //std::cout << "START SET STATE" << std::endl;
+  //std::cout << "In state: " << state << std::endl;
   Observation obs;
-  model->generateObservation(obs);
+  //model->generateObservation(obs);
   //std::cout << "PRE: " << obs << std::endl;
-  for (unsigned int i = 0; i < STATE_SIZE * 0.5; i++)
+  for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,state.positions[i]);
   model->generateObservation(obs);
   //std::cout << "POST: " << obs << std::endl;
+  //std::cout << "DONE SET STATE" << std::endl;
+  //std::cout << "*******************************" << std::endl;
 }
 
 void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {

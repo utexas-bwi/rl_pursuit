@@ -11,6 +11,8 @@ Modified: 2011-08-23
 
 #include <json/json.h>
 #include <string>
+#include <vector>
+#include <ostream>
 
 #ifndef NULL
 #define NULL 0
@@ -25,5 +27,17 @@ inline int sgn(const T &x) {
 bool readJson(const std::string &filename, Json::Value &value);
 
 std::string indent(unsigned int indentation);
+
+template <class T>
+std::ostream &operator<<(std::ostream &out, const std::vector<T> &vect) {
+  out << "[";
+  for (unsigned int i = 0; i < vect.size(); i++) {
+    out << vect[i];
+    if (i != vect.size() - 1)
+      out << ",";
+  }
+  out << "]";
+  return out;
+}
 
 #endif /* end of include guard: UTIL_T1FR2WSR */

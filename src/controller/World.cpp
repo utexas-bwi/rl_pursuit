@@ -13,11 +13,15 @@ void World::step() {
   std::vector<Point2D> requestedPositions;
 
   world->generateObservation(obs);
+  //std::cout << "obs: " << obs << std::endl;
   for (unsigned int i = 0; i < agents.size(); i++) {
     obs.myInd = i;
     action = agents[i]->step(obs);
+    //std::cout << world->getAgentPosition(i) << " + " << Action::MOVES[action] << " --> ";
     requestedPositions.push_back(world->getAgentPosition(i,action));
+    //std::cout << world->getAgentPosition(i) << std::endl;
   }
+  //std::cout << requestedPositions << std::endl;
 
   handleCollisions(requestedPositions);
   //for (unsigned int i = 0; i < agents.size(); i++) {
@@ -25,7 +29,7 @@ void World::step() {
   //}
 }
 
-void World::handleCollisions(std::vector<Point2D> &requestedPositions) {
+void World::handleCollisions(const std::vector<Point2D> &requestedPositions) {
   // ORDERED COLLISION DECISION
   unsigned int ind;
   std::vector<unsigned int> agentOrder(agents.size());
