@@ -44,6 +44,7 @@ public:
 
 protected:
   void checkInternals();
+  virtual Action selectAction(const State &state, bool useBounds);
   float updateStateAction(const StateAction &key, float newQ);
 
 protected:
@@ -138,20 +139,24 @@ void UCTEstimator<State,Action>::visit(const Action &action, float reward, const
 }
 
 template<class State, class Action>
-Action UCTEstimator<State,Action>::selectWorldAction(const State &state) {
+Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBounds) {
   std::vector<Action> maxActions;
   float maxVal = -BIGNUM;
   float val;
   unsigned int na;
+  unsigned int n = stateVisits.get(state);
 
   for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
     StateAction key(state,a);
-    na = stateActionVisits[key];
+    if (useBounds) {
+      na = stateActionVisits.get(key);
 
-    if (na == 0)
-      val = unseenValue;
-    else
-      val = values[key];
+      if (na == 0)
+        val = unseenValue;
+      else
+        val = values.get(key) + rewardBound * sqrt(log(n) / na);
+    } else
+      val = values.get(key);
 
     //std::cerr << val << " " << maxVal << std::endl;
     if (fabs(val - maxVal) < EPS)
@@ -167,41 +172,20 @@ Action UCTEstimator<State,Action>::selectWorldAction(const State &state) {
 }
 
 template<class State, class Action>
-Action UCTEstimator<State,Action>::selectPlanningAction(const State &state) {
-  std::vector<Action> maxActions;
-  float maxVal = -BIGNUM;
-  float val;
-  unsigned int na;
-  unsigned int n = stateVisits[state];
-  //std::cout << "vals: ";
-
-  for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
-    StateAction key(state,a);
-    na = stateActionVisits[key];
-
-    if (na == 0)
-      val = unseenValue;
-    else
-      val = values[key] + rewardBound * sqrt(log(n) / na);
-    //std::cout << val << "(" << values[key] << ") ";
-
-    //std::cerr << val << " " << maxVal << std::endl;
-    if (fabs(val - maxVal) < EPS)
-      maxActions.push_back(a);
-    else if (val > maxVal) {
-      maxVal = val;
-      maxActions.clear();
-      maxActions.push_back(a);
-    }
+Action UCTEstimator<State,Action>::selectWorldAction(const State &state) {
+  std::cout << state << ": ";
+  for (int i = 0; i < 5; i++) {
+    std::cout << " " << getStateActionValue(state,(Action)i);
   }
-  
-  int ind = rng->randomInt(0,maxActions.size());
-  //std::cout << "--> ";
-  //for (int i = 0; i < maxActions.size(); i++)
-    //std::cout << maxActions[i] << " ";
-  //std::cout << " xxxx "<< ind << std::endl;
-  //std::cerr << "ind = " << ind << " " << maxActions.size() << std::endl;
-  return maxActions[ind];
+  Action action = selectAction(state,false);
+  std::cout << " : " << action;
+  std::cout << std::endl;
+  return action;
+}
+
+template<class State, class Action>
+Action UCTEstimator<State,Action>::selectPlanningAction(const State &state) {
+  return selectAction(state,true);
 }
 
 template<class State, class Action>
@@ -218,7 +202,7 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
 
   for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
     StateAction key(state,a);
-    val = values[key];
+    val = values.get(key);
     if (val > maxVal)
       maxVal = val;
   }
@@ -227,7 +211,7 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
 
 template<class State, class Action>
 float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, float newQ){
-  float learnRate = 1.0 / (1.0 + stateActionVisits[key]);
+  float learnRate = 1.0 / (1.0 + stateActionVisits.get(key));
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
   stateActionVisits[key]++;
@@ -253,7 +237,7 @@ void UCTEstimator<State,Action>::finishRollout(bool terminal) {
     //std::cout << "FUTURE VAL: " << futureVal << std::endl;
     StateAction key(historyStates[i],historyActions[i]);
     newQ = historyRewards[i] +  gamma * futureVal;
-    if (rolloutVisitCounts[key] == 1)
+    if (rolloutVisitCounts.get(key) == 1)
       newQ = updateStateAction(key,newQ);
     rolloutVisitCounts[key]--;
     futureVal = newQ;

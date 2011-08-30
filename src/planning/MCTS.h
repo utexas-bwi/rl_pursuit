@@ -106,6 +106,7 @@ void MCTS<State,Action>::checkInternals() {
 
 template<class State, class Action>
 void MCTS<State,Action>::rollout(const State &startState) {
+  std::cout << "--------------------------" << std::endl;
   State state(startState);
   Action action;
   float reward;
@@ -114,6 +115,7 @@ void MCTS<State,Action>::rollout(const State &startState) {
   valueEstimator->startRollout(startState);
 
   for (unsigned int depth = 0; (depth < maxDepth) || (maxDepth == 0); depth++) {
+    std::cout << state << std::endl;
     //std::cout << "DEPTH: " << depth << std::endl;
     if (terminal || ((maxPlanningTime > 0) && (getTime() > endPlanningTime)))
       break;

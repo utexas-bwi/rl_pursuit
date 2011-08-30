@@ -9,8 +9,13 @@ WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> mod
 }
 
 void WorldMDP::setState(const State_t &state) {
+  Observation obs;
+  model->generateObservation(obs);
+  //std::cout << "PRE: " << obs << std::endl;
   for (unsigned int i = 0; i < STATE_SIZE * 0.5; i++)
     model->setAgentPosition(i,state.positions[i]);
+  model->generateObservation(obs);
+  //std::cout << "POST: " << obs << std::endl;
 }
 
 void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {

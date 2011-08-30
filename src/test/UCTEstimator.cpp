@@ -38,8 +38,9 @@ protected:
       uct->visit(actions[i],rewards[i],states[i+1]);
     uct->finishRollout(true);
 
-    float val = rewards[numActions-1];
+    float val = 0;
     for (int i = numActions-1; i >= 0; i--) {
+      val += rewards[i];
       for (unsigned int a = 0; a < 3; a++) {
         //std::cerr << i << " " << a << " " << val << " " << uct->getStateActionValue(states[i],a) << std::endl;
         if (a == actions[i])
@@ -170,5 +171,13 @@ TEST_F(TestUCT,SimpleLambda075Gamma066) {
   int states[4] = {0,1,2,3};
   unsigned int actions[3] = {0,1,2};
   float rewards[3] = {0,0,1.0};
+  runLambdaGammaTest(0.75,0.66,numActions,states,actions,rewards);
+}
+
+TEST_F(TestUCT,MultiRewardLambda075Gamma066) {
+  int numActions = 3;
+  int states[4] = {0,1,2,3};
+  unsigned int actions[3] = {0,1,2};
+  float rewards[3] = {0.5,-0.2,1.0};
   runLambdaGammaTest(0.75,0.66,numActions,states,actions,rewards);
 }

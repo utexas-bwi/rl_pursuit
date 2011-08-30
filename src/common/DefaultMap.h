@@ -32,8 +32,16 @@ public:
     return vals[key];
   }
 
+  void set(const Key &key, const T &val) {
+    vals[key] = val;
+  }
+
   void clear() {
     vals.clear();
+  }
+
+  unsigned int size() {
+    return vals.size();
   }
 
 private:

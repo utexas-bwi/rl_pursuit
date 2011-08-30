@@ -12,6 +12,7 @@ Action::Type PredatorMCTS::step(const Observation &obs) {
 
 void PredatorMCTS::restart() {
   // TODO, only necessary for determining types
+  planner->restart();
 }
 
 std::string PredatorMCTS::generateDescription() {
