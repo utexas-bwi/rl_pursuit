@@ -9,6 +9,8 @@ Modified: 2011-08-30
 #include "PredatorGreedyProbabilistic.h"
 
 const unsigned int PredatorGreedyProbabilistic::blockedPenalty = 3;
+const float dimensionFactor = 2; // +2 -> prefer larger dimension
+const float directionFactor = -2; // -2 -> prefer a shorter direction
 
 PredatorGreedyProbabilistic::PredatorGreedyProbabilistic(boost::shared_ptr<RNG> rng, const Point2D &dims):
   Agent(rng,dims)
@@ -42,12 +44,12 @@ ActionProbs PredatorGreedyProbabilistic::step(const Observation &obs) {
         dists[1].y += blockedPenalty;
     }
   }
-  float probMinX = softmax(minDists.x,minDists.y,2); // +2 -> prefer larger dimension
+  float probMinX = softmax(minDists.x,minDists.y,dimensionFactor);
   ActionProbs probs;
-  float prob = softmax(dists[0].x,dists[1].x,-2); // -2 -> prefer shorter direction
+  float prob = softmax(dists[0].x,dists[1].x,directionFactor);
   probs[Action::RIGHT] = probMinX * prob;
   probs[Action::LEFT] = probMinX * (1.0 - prob);
-  prob = softmax(dists[0].y,dists[1].y,-2); // -2 -> prefer shorter direction
+  prob = softmax(dists[0].y,dists[1].y,directionFactor);
   probs[Action::UP] = (1.0 - probMinX) * prob;
   probs[Action::DOWN] = (1.0 - probMinX) * (1.0 - prob);
   return probs;

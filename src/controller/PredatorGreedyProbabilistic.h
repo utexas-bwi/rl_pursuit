@@ -22,6 +22,8 @@ public:
 
 private:
   static const unsigned int blockedPenalty;
+  static const float dimensionFactor;
+  static const float directionFactor;
 };
 
 #endif /* end of include guard: PREDATORGREEDYPROBABILISTIC_VHXUSHSP */
