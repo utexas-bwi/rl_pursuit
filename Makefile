@@ -27,21 +27,21 @@ RM = rm -f
 # source files
 MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
 COMMON_SOURCES = Point2D.cpp tinymt32.cpp Util.cpp
-CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp World.cpp WorldMDP.cpp
+CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorTeammateAware.cpp World.cpp WorldMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
 # Headers
 COMMON_HEADERS = DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h
-CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h PredatorGreedy.h PredatorGreedyProbabilistic.h World.h WorldMDP.h
+CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h PredatorGreedy.h PredatorGreedyProbabilistic.h PredatorMCTS.h PredatorTeammateAware.h World.h WorldMDP.h
 FACTORY_HEADERS = AgentFactory.h PlanningFactory.h WorldFactory.h
 MODEL_HEADERS = AgentModel.h Common.h WorldModel.h
 PLANNING_HEADERS = MCTS.h Model.h UCTEstimator.h ValueEstimator.h
 #TEST_SOURCES = planningSpeed.cpp
 #TEST_SOURCES = pursuitTest.cpp
 #TEST_SOURCES = jsonTest.cpp
-TEST_SOURCES = AStarTest.cpp
-#TEST_SOURCES = main.cpp DefaultMap.cpp UCTEstimator.cpp World.cpp WorldModel.cpp
+#TEST_SOURCES = AStarTest.cpp
+TEST_SOURCES = main.cpp DefaultMap.cpp UCTEstimator.cpp World.cpp WorldModel.cpp
 
 ##############################################################
 

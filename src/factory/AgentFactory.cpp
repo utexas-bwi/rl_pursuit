@@ -9,6 +9,7 @@
 #include <controller/PredatorGreedy.h>
 #include <controller/PredatorGreedyProbabilistic.h>
 #include <controller/PredatorMCTS.h>
+#include <controller/PredatorTeammateAware.h>
 #include <controller/WorldMDP.h>
 #include <planning/UCTEstimator.h>
 #include <factory/PlanningFactory.h>
@@ -44,6 +45,8 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
     return ptr(new PredatorGreedy(rng,dims));
   else if (NAME_IN_SET("greedyprobabilistic","greedyprob","gp"))
     return ptr(new PredatorGreedyProbabilistic(rng,dims));
+  else if (NAME_IN_SET("teammate-aware","ta"))
+    return ptr(new PredatorTeammateAware(rng,dims));
   else if (NAME_IN_SET("dummy"))
     return ptr(new AgentDummy(rng,dims));
   else if (NAME_IN_SET("mcts","uct")) {

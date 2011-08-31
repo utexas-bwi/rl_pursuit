@@ -56,8 +56,10 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
   openHeap.push_back(node);
   openNodes.insert(node);
   // set obstacles as closed nodes
-  for (unsigned int i = 0; i < obstacles.size(); i++)
-    closedNodes.insert(new Node(0,0,obstacles[i],NULL));
+  for (unsigned int i = 0; i < obstacles.size(); i++) {
+    if (obstacles[i] != goal) // ignore any obstacles at the goal
+      closedNodes.insert(new Node(0,0,obstacles[i],NULL));
+  }
   
   // while there are open nodes
   while (openNodes.size() > 0) {
