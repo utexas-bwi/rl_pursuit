@@ -14,6 +14,8 @@ Point2D::Point2D(int x, int y):
 bool Point2D::operator<(const Point2D &other) const {
   if (x < other.x)
     return true;
+  else if (x > other.x)
+    return false;
   return y < other.y;
 }
 

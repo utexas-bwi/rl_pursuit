@@ -40,7 +40,8 @@ PLANNING_HEADERS = MCTS.h Model.h UCTEstimator.h ValueEstimator.h
 #TEST_SOURCES = planningSpeed.cpp
 #TEST_SOURCES = pursuitTest.cpp
 #TEST_SOURCES = jsonTest.cpp
-TEST_SOURCES = main.cpp DefaultMap.cpp UCTEstimator.cpp World.cpp WorldModel.cpp
+TEST_SOURCES = AStarTest.cpp
+#TEST_SOURCES = main.cpp DefaultMap.cpp UCTEstimator.cpp World.cpp WorldModel.cpp
 
 ##############################################################
 
