@@ -52,7 +52,7 @@ void World::randomizePositions() {
     do {
       pos.x = rng->randomInt(dims.x);
       pos.y = rng->randomInt(dims.y);
-      collision = (world->getCollision(pos,-1,i) > 0);
+      collision = (world->getCollision(pos,-1,i) >= 0);
     } while (collision);
     world->setAgentPosition(i,pos);
   } // for loop
