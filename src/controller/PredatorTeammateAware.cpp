@@ -30,11 +30,7 @@ ActionProbs PredatorTeammateAware::step(const Observation &obs) {
     return ActionProbs(Action::RANDOM);
   }
   Point2D diff = getDifferenceToPoint(dims,obs.myPos(),planner.getFirstStep());
-  for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
-    if (diff == Action::MOVES[i])
-      return ActionProbs((Action::Type)i);
-  std::cout << "Action not found for: " << diff << std::endl;
-  return ActionProbs(Action::RANDOM);
+  return ActionProbs(getAction(diff));
 }
 
 Point2D getTeammateAwareDesiredPosition(const Point2D &dims, const Observation &obs) {
@@ -42,6 +38,7 @@ Point2D getTeammateAwareDesiredPosition(const Point2D &dims, const Observation &
   // FIXME assuming prey is in position 0
   assert(obs.preyInd == 0);
   // FIXME assuming 4 predators
+  assert(obs.positions.size() == 5);
   const unsigned int NUM_PREDATORS = 4;
   int distances[NUM_PREDATORS][Action::NUM_NEIGHBORS];
   Point2D neighbors[Action::NUM_NEIGHBORS];

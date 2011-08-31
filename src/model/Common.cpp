@@ -11,6 +11,14 @@ Modified: 2011-08-30
 #include <cstdlib>
 #include <iostream>
 
+Action::Type getAction(const Point2D &move) {
+  for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
+    if (move == Action::MOVES[i])
+      return (Action::Type)i;
+  std::cout << "Action::getAction: ERROR: Action not found for: " << move << std::endl;
+  return Action::RANDOM;
+}
+
 ActionProbs::ActionProbs() {
   for (int i = 0; i < Action::NUM_MOVES; i++)
     probs[i] = 0;

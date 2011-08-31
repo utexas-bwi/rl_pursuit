@@ -9,8 +9,8 @@ Modified: 2011-08-30
 #include "PredatorGreedyProbabilistic.h"
 
 const unsigned int PredatorGreedyProbabilistic::blockedPenalty = 3;
-const float dimensionFactor = 2; // +2 -> prefer larger dimension
-const float directionFactor = -2; // -2 -> prefer a shorter direction
+const float PredatorGreedyProbabilistic::dimensionFactor = 2; // +2 -> prefer larger dimension
+const float PredatorGreedyProbabilistic::directionFactor = -2; // -2 -> prefer a shorter direction
 
 PredatorGreedyProbabilistic::PredatorGreedyProbabilistic(boost::shared_ptr<RNG> rng, const Point2D &dims):
   Agent(rng,dims)
@@ -59,5 +59,5 @@ void PredatorGreedyProbabilistic::restart() {
 }
 
 std::string PredatorGreedyProbabilistic::generateDescription() {
-  return "PredatorGreeyProbabilistic: a predator that's greedy with some randomness";
+  return "PredatorGreedyProbabilistic: a predator that's greedy with some randomness";
 }
