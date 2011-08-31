@@ -51,12 +51,13 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
   Point2D pos;
   std::set<Node*>::iterator it;
   // start the open nodes
-  node = makeNode(0,start,NULL);
+  node = new Node(0,0,start,NULL);
+  setHeuristic(node);
   openHeap.push_back(node);
   openNodes.insert(node);
   // set obstacles as closed nodes
   for (unsigned int i = 0; i < obstacles.size(); i++)
-    closedNodes.insert(makeNode(0,obstacles[i],NULL));
+    closedNodes.insert(new Node(0,0,obstacles[i],NULL));
   
   // while there are open nodes
   while (openNodes.size() > 0) {
@@ -74,7 +75,7 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
     // search its neighbors
     for (unsigned int i = 0; i < Action::NUM_NEIGHBORS; i++) {
       pos = movePosition(dims,node->pos,(Action::Type)i);
-      newNode = makeNode(node->gcost + 1,pos,node);
+      newNode = new Node(node->gcost + 1,0,pos,node);
       if (closedNodes.count(newNode) > 0) {
         delete newNode;
         continue;
@@ -91,6 +92,7 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
         delete newNode;
       } else {
         // new open node
+        setHeuristic(newNode);
         openNodes.insert(newNode);
         openHeap.push_back(newNode);
         std::push_heap(openHeap.begin(),openHeap.end(),cmp);
@@ -113,9 +115,8 @@ bool AStar::foundPath() {
   return goalNode != NULL;
 }
 
-AStar::Node* AStar::makeNode(unsigned int gcost, const Point2D &pos, Node *parent) {
-  Node *node = new Node(gcost,getDistanceToPoint(dims,pos,goal),pos,parent);
-  return node;
+void AStar::setHeuristic(Node *node) {
+  node->hcost = getDistanceToPoint(dims,node->pos,goal);
 }
 
 void AStar::clear() {

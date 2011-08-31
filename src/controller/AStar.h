@@ -44,7 +44,7 @@ private:
   Node *goalNode;
 
 private:
-  Node* makeNode(unsigned int gcost, const Point2D &pos, Node *parent);
+  void setHeuristic(Node *node);
   void clear();
 };
 
