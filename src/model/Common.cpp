@@ -8,7 +8,7 @@ Modified: 2011-08-30
 
 #include "Common.h"
 #include <cassert>
-#include <cstdlib>
+#include <cmath>
 #include <iostream>
 
 Action::Type getAction(const Point2D &move) {
@@ -58,7 +58,7 @@ bool ActionProbs::checkTotal() {
   float total = 0;
   for (unsigned int i = 0; i < Action::NUM_MOVES; i++)
     total += probs[i];
-  return abs(1.0 - total) < 1e-10;
+  return fabs(1.0 - total) < 1e-5;
 }
 
 
