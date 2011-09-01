@@ -20,10 +20,13 @@ public:
   bool operator==(const Point2D &other) const;
   bool operator!=(const Point2D &other) const;
   Point2D& operator+=(const Point2D &rhs);
-  const Point2D operator+(const Point2D &rhs) const;
+  Point2D operator+(const Point2D &rhs) const;
   Point2D& operator-=(const Point2D &rhs);
-  const Point2D operator-(const Point2D &rhs) const;
+  Point2D operator-(const Point2D &rhs) const;
+  Point2D& operator*=(int factor);
+  Point2D operator*(int factor) const;
   std::string toString() const;
+  unsigned int manhattanDist() const;
 
 public:
   int x;
@@ -31,5 +34,6 @@ public:
 };
 
 std::ostream& operator<<(std::ostream &out, const Point2D &pt);
+Point2D operator*(int factor,const Point2D &lhs);
 
 #endif /* end of include guard: POINT2D_VECJ7WQC */

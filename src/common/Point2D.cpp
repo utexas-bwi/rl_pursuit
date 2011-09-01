@@ -1,5 +1,6 @@
 #include "Point2D.h"
 #include <sstream>
+#include <cstdlib>
 
 Point2D::Point2D():
   x(0),
@@ -27,7 +28,7 @@ bool Point2D::operator!=(const Point2D &other) const {
   return (x != other.x) || (y != other.y);
 }
 
-const Point2D Point2D::operator+(const Point2D &rhs) const {
+Point2D Point2D::operator+(const Point2D &rhs) const {
   return Point2D(*this) += rhs;
 }
 
@@ -37,7 +38,7 @@ Point2D& Point2D::operator+=(const Point2D &rhs) {
   return *this;
 }
 
-const Point2D Point2D::operator-(const Point2D &rhs) const{
+Point2D Point2D::operator-(const Point2D &rhs) const{
   return Point2D(*this) -= rhs;
 }
 
@@ -47,13 +48,31 @@ Point2D& Point2D::operator-=(const Point2D &rhs) {
   return *this;
 }
 
+Point2D Point2D::operator*(int factor) const {
+  return Point2D(*this) *= factor;
+}
+
+Point2D& Point2D::operator*=(int factor) {
+  x *= factor;
+  y *= factor;
+  return *this;
+}
+
 std::string Point2D::toString() const{
   std::stringstream ss;
   ss << *this;
   return ss.str();
 }
 
+unsigned int Point2D::manhattanDist() const {
+  return abs(x) + abs(y);
+}
+
 std::ostream& operator<<(std::ostream &out, const Point2D &pt) {
   out << "(" << pt.x << "," << pt.y << ")";
   return out;
+}
+
+Point2D operator*(int factor,const Point2D &lhs) {
+  return lhs * factor;
 }
