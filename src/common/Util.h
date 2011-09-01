@@ -35,6 +35,7 @@ inline T max(const T &x1, const T &x2) {
 }
 
 float softmax(float x1, float x2, float factor); // returns the probability of x1 using a softmax with the given factor
+void softmax(const std::vector<unsigned int> &vals, float factor, std::vector<float> &probs); // fills out probs with the probabilities of the vals using a softmax with the given factor
 
 bool readJson(const std::string &filename, Json::Value &value);
 
