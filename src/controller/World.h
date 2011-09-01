@@ -32,6 +32,7 @@ public:
   void restartAgents();
   bool addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition=false);
   boost::shared_ptr<const WorldModel> getModel();
+  void setAgentControllers(const std::vector<boost::shared_ptr<Agent> > newAgents);
 
   std::string generateDescription(unsigned int indentation = 0);
 

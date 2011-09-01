@@ -12,12 +12,14 @@ Modified: 2011-08-24
 #include <boost/shared_ptr.hpp>
 #include <common/RNG.h>
 #include <controller/WorldMDP.h>
+#include <controller/WorldMultiModelMDP.h>
 #include <planning/UCTEstimator.h>
 #include <planning/UCTEstimator.h>
 #include <planning/MCTS.h>
 
 // WORLD MDPs
-boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options);
+boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options);
+//boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options);
 
 // UCT ESTIMATORS
 

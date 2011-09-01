@@ -78,6 +78,12 @@ boost::shared_ptr<const WorldModel> World::getModel() {
   return world;
 }
 
+void World::setAgentControllers(const std::vector<boost::shared_ptr<Agent> > newAgents) {
+  assert(newAgents.size() == agents.size());
+  for (unsigned int i = 0; i < newAgents.size(); i++)
+    agents[i] = newAgents[i];
+}
+
 std::string World::generateDescription(unsigned int indentation) {
   std::string s;
   s += indent(indentation) + "World:\n";

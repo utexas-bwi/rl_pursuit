@@ -21,7 +21,6 @@ Modified: 2011-08-23
 const unsigned int STATE_SIZE = 5;
 
 struct State_t {
-
   State_t() {};
   State_t(const Observation &obs);
   Point2D positions[STATE_SIZE];
@@ -38,7 +37,7 @@ public:
   float getRewardRangePerStep();
   std::string generateDescription(unsigned int indentation = 0);
 
-private:
+protected:
   boost::shared_ptr<RNG> rng;
   boost::shared_ptr<WorldModel> model;
   boost::shared_ptr<World> controller;

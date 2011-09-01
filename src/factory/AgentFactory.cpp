@@ -59,7 +59,7 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
       assert(readJson(filename,plannerOptions));
     }
     
-    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,plannerOptions);
+    boost::shared_ptr<WorldMultiModelMDP> mdp = createWorldMultiModelMDP(rng,dims,plannerOptions);
     boost::shared_ptr<UCTEstimator<State_t,Action::Type> > uct = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,plannerOptions);
     boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(mdp,uct,plannerOptions);
 

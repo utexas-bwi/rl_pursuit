@@ -4,13 +4,18 @@ boost::shared_ptr<WorldModel> createWorldModel(const Point2D &dims) {
   return boost::shared_ptr<WorldModel>(new WorldModel(dims));
 }
 
-boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, const Point2D &dims) {
-  boost::shared_ptr<WorldModel> worldModel = createWorldModel(dims);
-  return createWorld(rng,worldModel);
-}
-
 boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model) {
   return boost::shared_ptr<World>(new World(rng,model));
+}
+
+boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, const Point2D &dims) {
+  boost::shared_ptr<WorldModel> model = createWorldModel(dims);
+  return createWorld(rng,model);
+}
+
+boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<WorldModel> model) {
+  boost::shared_ptr<RNG> rng(new RNG(randomSeed));
+  return createWorld(rng,model);
 }
 
 boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<World> world, const Json::Value &options) {

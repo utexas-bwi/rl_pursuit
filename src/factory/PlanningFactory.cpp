@@ -1,14 +1,36 @@
 #include "PlanningFactory.h"
 #include "WorldFactory.h"
 
-boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options) {
+boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options) {
+  // create the world model and controller
   boost::shared_ptr<WorldModel> model = createWorldModel(dims);
-  boost::shared_ptr<World> controller = createWorldAgents(rng->randomUInt(),model,options);
-  std::cerr << model->getNumAgents() << std::endl;
-  assert(model->getNumAgents() == 4); // no ad hoc agent yet
+  boost::shared_ptr<World> controller = createWorld(rng->randomUInt(),model);
+  // create the dummy agent for the ad hoc agent
   boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(boost::shared_ptr<RNG>(new RNG(rng->randomUInt())),dims));
-  controller->addAgent(AgentModel(0,0,ADHOC),adhocAgent,true);
-  return boost::shared_ptr<WorldMDP>(new WorldMDP(rng,model,controller,adhocAgent));
+  
+  // create the agents
+  const Json::Value models = options["models"];
+  std::vector<std::vector<boost::shared_ptr<Agent> > > modelList(models.size());
+  std::vector<float> modelProbs;
+  AgentType agentType = PREY;
+  for (unsigned int i = 0; i < models.size(); i++) {
+    modelProbs.push_back(models[i].get("prob",1.0).asDouble());
+    const Json::Value model = models[i]["model"];
+    for (unsigned int j = 0; j < model.size(); j++) {
+      agentType = getAgentType(model[j].get("type","UNKNOWN").asString());
+      if (agentType == ADHOC) {
+        modelList[i].push_back(adhocAgent);
+      } else {
+        modelList[i].push_back(createAgent(rng->randomUInt(),dims,model[j])); // TODO RNG?
+      }
+      
+      // add the first set of agents to the world
+      if (i == 0)
+        controller->addAgent(AgentModel(0,0,agentType),modelList[i][j],true);
+    }
+  }
+
+  return boost::shared_ptr<WorldMultiModelMDP>(new WorldMultiModelMDP(rng,model,controller,adhocAgent,modelList,modelProbs,BAYESIAN_UPDATES)); // TODO other update types
 }
 
 ///////////////////////////////////////////////////////////////
