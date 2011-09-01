@@ -37,8 +37,10 @@ class ActionProbs {
 public:
   ActionProbs();
   explicit ActionProbs(Action::Type ind);
+  void reset();
   float& operator[](Action::Type ind);
   Action::Type selectAction(boost::shared_ptr<RNG> rng);
+  bool checkTotal();
 
 private:
   float probs[Action::NUM_MOVES];

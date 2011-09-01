@@ -20,8 +20,7 @@ Action::Type getAction(const Point2D &move) {
 }
 
 ActionProbs::ActionProbs() {
-  for (int i = 0; i < Action::NUM_MOVES; i++)
-    probs[i] = 0;
+  reset();
 }
 
 ActionProbs::ActionProbs(Action::Type ind){
@@ -33,6 +32,11 @@ ActionProbs::ActionProbs(Action::Type ind){
       probs[i] = 0;
     probs[ind] = 1.0;
   }
+}
+
+void ActionProbs::reset() {
+  for (int i = 0; i < Action::NUM_MOVES; i++)
+    probs[i] = 0;
 }
 
 float& ActionProbs::operator[](Action::Type ind) {
@@ -48,6 +52,13 @@ Action::Type ActionProbs::selectAction(boost::shared_ptr<RNG> rng) {
       return (Action::Type)i;
   }
   return (Action::Type)(Action::NUM_MOVES-1);
+}
+
+bool ActionProbs::checkTotal() {
+  float total = 0;
+  for (unsigned int i = 0; i < Action::NUM_MOVES; i++)
+    total += probs[i];
+  return abs(1.0 - total) < 1e-10;
 }
 
 
