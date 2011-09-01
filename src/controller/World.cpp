@@ -18,6 +18,7 @@ void World::step() {
   for (unsigned int i = 0; i < agents.size(); i++) {
     obs.myInd = i;
     actionProbs = agents[i]->step(obs);
+    assert(actionProbs.checkTotal());
     action = actionProbs.selectAction(rng);
     //std::cout << world->getAgentPosition(i) << " + " << Action::MOVES[action] << " --> ";
     requestedPositions.push_back(world->getAgentPosition(i,action));
