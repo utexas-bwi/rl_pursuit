@@ -8,7 +8,7 @@ Modified: 2011-08-24
 
 #include <string>
 #include <iostream>
-#include <fstream>
+#include <iomanip>
 #include <json/json.h>
 #include <factory/WorldFactory.h>
 #include <common/Util.h>
@@ -22,37 +22,59 @@ int main(int argc, const char *argv[])
     filename = argv[1];
   if (! readJson(filename,options))
     return -1;
-  
-  boost::shared_ptr<World> world = createWorldAgents(0,options);
-  boost::shared_ptr<const WorldModel> model = world->getModel();
-  bool displayObs = options["verbosity"].get("observation",true).asBool();
-  bool stepsPerRun = options["verbosity"].get("stepsPerRun",true).asBool();
+  unsigned int numTrials = options.get("trials",1).asUInt();
   unsigned int numRuns = options.get("runs",1).asUInt();
-  unsigned int numSteps;
-  float avgSteps = 0;
+  bool displayObs = options["verbosity"].get("observation",true).asBool();
+  bool displayStepsPerRun = options["verbosity"].get("stepsPerRun",true).asBool();
+  bool displayStepsPerTrial = options["verbosity"].get("stepsPerTrial",true).asBool();
+
+  std::vector<std::vector<unsigned int> > numSteps(numTrials,std::vector<unsigned int>(numRuns,0));
   Observation obs;
-
-  std::cout << world->generateDescription() << std::endl;
-
   double startTime = getTime();
-  for (unsigned int run = 0; run < numRuns; run++) {
-    numSteps = 0;
-    world->randomizePositions();
-    world->restartAgents();
-    while (!model->isPreyCaptured()) {
-      numSteps++;
-      world->step();
-      if (displayObs) {
-        model->generateObservation(obs);
-        std::cout << obs << std::endl;
-      }
+
+  for (unsigned int trial = 0; trial < numTrials; trial++) {
+    boost::shared_ptr<World> world = createWorldAgents(trial,options);
+    boost::shared_ptr<const WorldModel> model = world->getModel();
+    if (trial == 0)
+      std::cout << world->generateDescription() << std::endl;
+    
+    if (displayStepsPerTrial)
+      std::cout << "trial " << std::setw(2) << trial << ": " << std::flush;
+    
+    for (unsigned int run = 0; run < numRuns; run++) {
+      world->randomizePositions();
+      world->restartAgents();
+      while (!model->isPreyCaptured()) {
+        numSteps[trial][run]++;
+        world->step();
+        if (displayObs) {
+          model->generateObservation(obs);
+          std::cout << obs << std::endl;
+        }
+      } // while the run lasts
+      if (displayStepsPerRun)
+        std::cout << std::setw(3) << numSteps[trial][run] << " " << std::flush;
     }
-    if (stepsPerRun)
-      std::cout << run << ": " << numSteps << std::endl;
-    avgSteps = (avgSteps * run + numSteps) / (run + 1);
-  }
+    if (displayStepsPerTrial) {
+      unsigned int steps = 0;
+      for (unsigned int run = 0; run < numRuns; run++)
+        steps += numSteps[trial][run];
+      if (displayStepsPerRun)
+        std::cout << " = ";
+      std::cout << std::setprecision(3) << steps / ((float)numRuns) << std::endl;
+    }
+  } // end for trial
   double endTime = getTime();
-  std::cout << "AVG: " << avgSteps << std::endl;
+  std::cout << "Avg Steps Per Run: ";
+  unsigned int numStepsPerRun;
+  for (unsigned int run = 0; run < numRuns; run++) {
+    numStepsPerRun = 0;
+    for (unsigned int trial = 0; trial < numTrials; trial++)
+      numStepsPerRun += numSteps[trial][run];
+    std::cout << numStepsPerRun / ((float)numTrials) << " ";
+  }
+  std::cout << std::endl;
+  //std::cout << "AVG: " << avgSteps << std::endl;
   std::cout << "time: " << endTime - startTime << std::endl;
 
   return 0;

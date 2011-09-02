@@ -27,9 +27,9 @@ void WorldMultiModelMDP::updateModels(const Observation &prevObs, Action::Type l
   // done if we're down to 1 model
   if (agentModelProbs.size() == 1)
     return;
-  std::cout << "Pre: ";
-  printModelProbs(agentModelProbs);
-  std::cout << std::endl;
+  //std::cout << "Pre: ";
+  //printModelProbs(agentModelProbs);
+  //std::cout << std::endl;
 
   std::vector<double> newModelProbs(agentModelProbs);
 
@@ -49,9 +49,9 @@ void WorldMultiModelMDP::updateModels(const Observation &prevObs, Action::Type l
   // if down to one model, set it in the world controller
   if (agentModelProbs.size() == 1)
     controller->setAgentControllers(agentModelList[0]);
-  std::cout << "Post: ";
-  printModelProbs(agentModelProbs);
-  std::cout << std::endl;
+  //std::cout << "Post: ";
+  //printModelProbs(agentModelProbs);
+  //std::cout << std::endl;
 }
 
 
