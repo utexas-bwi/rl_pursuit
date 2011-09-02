@@ -13,11 +13,11 @@ Modified: 2011-08-23
 
 #include "Agent.h"
 #include <planning/MCTS.h>
-#include <controller/WorldMDP.h>
+#include <controller/WorldMultiModelMDP.h>
 
 class PredatorMCTS: public Agent {
 public:
-  PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner);
+  PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<WorldMultiModelMDP> model);
 
   ActionProbs step(const Observation &obs);
   void restart();
@@ -26,6 +26,9 @@ public:
 
 protected:
   boost::shared_ptr<MCTS<State_t,Action::Type> > planner;
+  boost::shared_ptr<WorldMultiModelMDP> model;
+  Observation prevObs;
+  Action::Type prevAction;
 };
 
 #endif /* end of include guard: PREDATORMCTS_ERF6V5UK */

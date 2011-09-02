@@ -11,7 +11,7 @@ boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr
   // create the agents
   const Json::Value models = options["models"];
   std::vector<std::vector<boost::shared_ptr<Agent> > > modelList(models.size());
-  std::vector<float> modelProbs;
+  std::vector<double> modelProbs;
   AgentType agentType = PREY;
   for (unsigned int i = 0; i < models.size(); i++) {
     modelProbs.push_back(models[i].get("prob",1.0).asDouble());

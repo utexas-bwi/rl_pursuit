@@ -63,7 +63,7 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
     boost::shared_ptr<UCTEstimator<State_t,Action::Type> > uct = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,plannerOptions);
     boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(mdp,uct,plannerOptions);
 
-    return ptr(new PredatorMCTS(rng,dims,mcts));
+    return ptr(new PredatorMCTS(rng,dims,mcts,mdp));
   } else {
     std::cerr << "createAgent: unknown agent name: " << name << std::endl;
     assert(false);

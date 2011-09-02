@@ -39,6 +39,7 @@ public:
   explicit ActionProbs(Action::Type ind);
   void reset();
   float& operator[](Action::Type ind);
+  const float& operator[](Action::Type ind) const;
   Action::Type selectAction(boost::shared_ptr<RNG> rng);
   bool checkTotal();
 

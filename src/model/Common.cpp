@@ -43,6 +43,10 @@ float& ActionProbs::operator[](Action::Type ind) {
   return probs[ind];
 }
 
+const float& ActionProbs::operator[](Action::Type ind) const {
+  return probs[ind];
+}
+
 Action::Type ActionProbs::selectAction(boost::shared_ptr<RNG> rng) {
   float x = rng->randomFloat();
   float total = 0;

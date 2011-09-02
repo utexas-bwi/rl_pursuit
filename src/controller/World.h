@@ -13,6 +13,7 @@ Modified: 2011-08-22
 */
 
 #include <boost/shared_ptr.hpp>
+#include <common/DefaultMap.h>
 #include <common/Point2D.h>
 #include <common/RNG.h>
 #include <model/AgentModel.h>
@@ -35,6 +36,7 @@ public:
   void setAgentControllers(const std::vector<boost::shared_ptr<Agent> > newAgents);
 
   std::string generateDescription(unsigned int indentation = 0);
+  double getOutcomeProb(Observation prevObs,const Observation &currentObs);
 
 protected:
   boost::shared_ptr<RNG> rng;
@@ -44,6 +46,10 @@ protected:
 
 protected:
   void handleCollisions(const std::vector<Point2D> &requestedPositions);
+  void handleCollisionsOrdered(const std::vector<Point2D> &requestedPositions, const std::vector<unsigned int> &agentOrder);
+
+  bool incrementActionIndices(std::vector<unsigned int> &actionInds);
+  bool getRequestedPositionsForActionIndices(const std::vector<unsigned int> &actionInds, const std::vector<ActionProbs> &actionProbs, std::vector<Point2D> &requestedPositions);
 
   FRIEND_TEST(WorldTest,Collisions);
 };
