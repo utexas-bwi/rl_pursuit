@@ -21,6 +21,7 @@ void WorldMDP::setState(const State_t &state) {
   //std::cout << "POST: " << obs << std::endl;
   //std::cout << "DONE SET STATE" << std::endl;
   //std::cout << "*******************************" << std::endl;
+  rolloutStartState = state;
 }
 
 void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {

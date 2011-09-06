@@ -11,20 +11,20 @@ enum ModelUpdateType {
 class WorldMultiModelMDP: public WorldMDP {
 public:
   WorldMultiModelMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, ModelUpdateType modelUpdateType);
-  void setState(const State_t &state);
+  virtual void setState(const State_t &state);
 
-  void updateModels(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
+  virtual void updateModels(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
 
-private:
-  void selectModel();
-  void normalizeModelProbs();
+protected:
+  virtual void selectModel();
+  virtual void normalizeModelProbs();
   // model updates
-  void getNewModelProbs(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs, std::vector<double> &newModelProbs);
-  double calculateModelProb(unsigned int modelInd, const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
-  bool allProbsTooLow(const std::vector<double> &newModelProbs);
-  void removeLowProbabilityModels();
+  virtual void getNewModelProbs(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs, std::vector<double> &newModelProbs);
+  virtual double calculateModelProb(unsigned int modelInd, const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
+  virtual bool allProbsTooLow(const std::vector<double> &newModelProbs);
+  virtual void removeLowProbabilityModels();
 
-private:
+protected:
   std::vector<std::vector<boost::shared_ptr<Agent> > > agentModelList;
   std::vector<double> agentModelProbs;
   ModelUpdateType modelUpdateType;

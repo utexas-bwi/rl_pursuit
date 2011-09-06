@@ -32,16 +32,17 @@ class WorldMDP: public Model<State_t,Action::Type> {
 public:
   WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent);
 
-  void setState(const State_t &state);
-  void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
-  float getRewardRangePerStep();
-  std::string generateDescription(unsigned int indentation = 0);
+  virtual void setState(const State_t &state);
+  virtual void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
+  virtual float getRewardRangePerStep();
+  virtual std::string generateDescription(unsigned int indentation = 0);
 
 protected:
   boost::shared_ptr<RNG> rng;
   boost::shared_ptr<WorldModel> model;
   boost::shared_ptr<World> controller;
   boost::shared_ptr<AgentDummy> adhocAgent;
+  State_t rolloutStartState;
 };
 
 #endif /* end of include guard: WORLDMDP_CNHINAVX */
