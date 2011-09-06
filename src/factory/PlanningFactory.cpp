@@ -1,5 +1,7 @@
 #include "PlanningFactory.h"
 #include "WorldFactory.h"
+#include <controller/WorldSilverMDP.h>
+#include <boost/algorithm/string.hpp>
 
 boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options) {
   // create the world model and controller
@@ -30,7 +32,24 @@ boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr
     }
   }
 
-  return boost::shared_ptr<WorldMultiModelMDP>(new WorldMultiModelMDP(rng,model,controller,adhocAgent,modelList,modelProbs,BAYESIAN_UPDATES)); // TODO other update types
+  std::string updateTypeString = options.get("update","bayesian").asString();
+  boost::to_lower(updateTypeString);
+  ModelUpdateType updateType;
+
+  if (updateTypeString == "bayesian")
+    updateType = BAYESIAN_UPDATES;
+  else if (updateTypeString == "polynomial")
+    updateType = POLYNOMIAL_WEIGHTS;
+  else {
+    std::cerr << "createWorldMultiModelMDP: ERROR: unknown updateTypeString: " << updateTypeString;
+    assert(false);
+  }
+
+  if (options.get("silver",false).asBool()) {
+    return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
+  } else {
+    return boost::shared_ptr<WorldMultiModelMDP>(new WorldMultiModelMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
+  }
 }
 
 ///////////////////////////////////////////////////////////////
