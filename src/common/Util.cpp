@@ -42,13 +42,19 @@ bool readJson(const std::string &filename, Json::Value &value) {
     std::cerr << "readJson: ERROR opening file: " << filename << std::endl;
     return false;
   }
-  bool parsingSuccessful = reader.parse(in,value);
+  Json::Value root;
+  bool parsingSuccessful = reader.parse(in,root);
   in.close();
   if (!parsingSuccessful) {
     std::cerr << "readJson: ERROR parsing file: " << filename << std::endl;
     std::cerr << reader.getFormatedErrorMessages();
     return false;
   }
+  Json::Value::Members members = root.getMemberNames();
+  for (unsigned int i = 0; i < members.size(); i++) {
+    value[members[i]] = root[members[i]];
+  }
+
   return true;
 }
 

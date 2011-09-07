@@ -24,7 +24,7 @@ boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr
       if (agentType == ADHOC) {
         modelList[i].push_back(adhocAgent);
       } else {
-        modelList[i].push_back(createAgent(rng->randomUInt(),dims,model[j])); // TODO RNG?
+        modelList[i].push_back(createAgent(rng->randomUInt(),dims,model[j],options)); // TODO RNG?
       }
       
       // add the first set of agents to the world

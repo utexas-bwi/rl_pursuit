@@ -35,9 +35,8 @@ bool nameInSet(const std::string &name, ...) {
   return found;
 }
 
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, const Json::Value &options) {
+boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, const Json::Value &options, const Json::Value &rootOptions) {
   typedef boost::shared_ptr<Agent> ptr;
-  boost::shared_ptr<RNG> rng(new RNG(randomSeed));
   
   boost::to_lower(name);
   if (NAME_IN_SET("prey","preyrandom","random"))
@@ -53,11 +52,7 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
   else if (NAME_IN_SET("dummy"))
     return ptr(new AgentDummy(rng,dims));
   else if (NAME_IN_SET("mcts","uct")) {
-    Json::Value plannerOptions = options["planner"];
-    if (plannerOptions.isString()) {
-      std::string filename = plannerOptions.asString();
-      assert(readJson(filename,plannerOptions));
-    }
+    Json::Value plannerOptions = rootOptions["planner"];
     boost::shared_ptr<WorldMultiModelMDP> mdp = createWorldMultiModelMDP(rng,dims,plannerOptions);
     boost::shared_ptr<UCTEstimator<State_t,Action::Type> > uct = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,plannerOptions);
     boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(mdp,uct,plannerOptions);
@@ -69,12 +64,17 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
   }
 }
 
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, const Json::Value &options) {
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, const Json::Value &options, const Json::Value &rootOptions) {
+  boost::shared_ptr<RNG> rng(new RNG(randomSeed));
+  return createAgent(rng,dims,name,options,rootOptions);
+}
+
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, const Json::Value &options, const Json::Value &rootOptions) {
   std::string name = options.get("behavior","NONE").asString();
   if (name == "NONE") {
     std::cerr << "createAgent: WARNING: no agent type specified, using random" << std::endl;
     name = "random";
   }
 
-  return createAgent(randomSeed,dims,name,options);
+  return createAgent(randomSeed,dims,name,options,rootOptions);
 }

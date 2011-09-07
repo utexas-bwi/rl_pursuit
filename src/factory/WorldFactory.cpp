@@ -24,7 +24,7 @@ boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::sh
   Point2D dims = world->getModel()->getDims();
 
   for (unsigned int i = 0; i < agents.size(); ++i) {
-    agent = createAgent(rng->randomUInt(), dims, agents[i]);
+    agent = createAgent(rng->randomUInt(), dims, agents[i], options);
     world->addAgent(AgentModel(0,0,getAgentType(agents[i].get("type","NONE").asString())),agent,true);
   }
   return world;

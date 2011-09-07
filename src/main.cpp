@@ -16,12 +16,24 @@ Modified: 2011-08-24
 int main(int argc, const char *argv[])
 {
   Json::Value options;
+  char usage[] = "Usage: main config1 [config2 ...]";
+  unsigned int configStart = 1;
   
-  std::string filename = "configs/default.json";
-  if (argc > 1)
-    filename = argv[1];
-  if (! readJson(filename,options))
-    return -1;
+  if (argc <= configStart) {
+    std::cerr << "Too few arguments" << std::endl;
+    std::cerr << usage << std::endl;
+    return 1;
+  } else if ((std::string(argv[1]) == "-h") || (std::string(argv[1]) == "--help")) {
+    std::cout << usage << std::endl;
+    return 0;
+  }
+  for (int i = configStart; i < argc; i++) {
+    if (! readJson(argv[i],options)) {
+      return 1;
+    }
+  }
+  
+
   unsigned int numTrials = options.get("trials",1).asUInt();
   unsigned int numRuns = options.get("runs",1).asUInt();
   bool displayObs = options["verbosity"].get("observation",true).asBool();
