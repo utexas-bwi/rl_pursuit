@@ -1,7 +1,8 @@
 #include "PlanningFactory.h"
-#include "WorldFactory.h"
-#include <controller/WorldSilverMDP.h>
 #include <boost/algorithm/string.hpp>
+#include <controller/WorldSilverMDP.h>
+#include <controller/WorldSilverWeightedMDP.h>
+#include "WorldFactory.h"
 
 boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options) {
   // create the world model and controller
@@ -46,7 +47,11 @@ boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr
   }
 
   if (options.get("silver",false).asBool()) {
-    return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
+    if (options.get("weighted",false).asBool()) {
+      return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverWeightedMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
+    } else {
+      return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
+    }
   } else {
     return boost::shared_ptr<WorldMultiModelMDP>(new WorldMultiModelMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
   }

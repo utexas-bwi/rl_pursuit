@@ -14,6 +14,7 @@ public:
   virtual void setState(const State_t &state);
 
   virtual void updateModels(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
+  virtual std::string generateDescription(unsigned int indentation = 0);
 
 protected:
   virtual void selectModel();
@@ -23,6 +24,7 @@ protected:
   virtual double calculateModelProb(unsigned int modelInd, const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
   virtual bool allProbsTooLow(const std::vector<double> &newModelProbs);
   virtual void removeLowProbabilityModels();
+  
 
 protected:
   std::vector<std::vector<boost::shared_ptr<Agent> > > agentModelList;

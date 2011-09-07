@@ -21,23 +21,27 @@ WorldSilverMDP::WorldSilverMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<Wor
   firstStateSet(false)
 {
 }
+
+std::string WorldSilverMDP::generateDescription(unsigned int indentation) {
+  return indent(indentation) + "Silver\n" + WorldMDP::generateDescription(indentation);
+}
  
 void WorldSilverMDP::selectModel() {
   if (! firstStateSet) {
     firstStateSet = true;
-    StateHelper helper;
+    boost::shared_ptr<StateHelper> helper = createStateHelper();
     for (unsigned int i = 0; i < agentModelProbs.size(); i++) {
-      helper.addControllers(i);
+      helper->addControllers(i);
     }
-    stateHelpers.insert(std::pair<State_t,StateHelper>(rolloutStartState,helper));
+    stateHelpers.insert(std::pair<State_t,boost::shared_ptr<StateHelper> >(rolloutStartState,helper));
   }
   //std::cout << "Choosing model for " << rolloutStartState << " from " << std::flush;
-  std::map<State_t,StateHelper>::iterator it = stateHelpers.find(rolloutStartState);
+  std::map<State_t,boost::shared_ptr<StateHelper> >::iterator it = stateHelpers.find(rolloutStartState);
   if (it == stateHelpers.end()) {
     //std::cerr << "WARNING: unseen state: " << rolloutStartState << ", don't know what controllers could reach it, sampling from the initial set" << std::endl;
     currentControllerInd = rng->randomInt(agentModelProbs.size());
   } else {
-    currentControllerInd = it->second.sampleControllers(rng);
+    currentControllerInd = it->second->sampleControllers(rng);
   }
   controller->setAgentControllers(agentModelList[currentControllerInd]);
   //if (it != stateHelpers.end()) {
@@ -51,16 +55,20 @@ void WorldSilverMDP::selectModel() {
 
 void WorldSilverMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
   WorldMultiModelMDP::takeAction(action,reward,state,terminal);
-  std::map<State_t,StateHelper>::iterator it = stateHelpers.find(state);
+  std::map<State_t,boost::shared_ptr<StateHelper> >::iterator it = stateHelpers.find(state);
   if (it == stateHelpers.end()) {
     // previously unseen state
-    StateHelper helper;
-    helper.addControllers(currentControllerInd);
-    stateHelpers.insert(std::pair<State_t,StateHelper>(state,helper));
+    boost::shared_ptr<StateHelper> helper = createStateHelper();
+    helper->addControllers(currentControllerInd);
+    stateHelpers.insert(std::pair<State_t,boost::shared_ptr<StateHelper> >(state,helper));
 
   } else {
     // seen state, add this controller as having reached it
-    it->second.addControllers(currentControllerInd);
+    it->second->addControllers(currentControllerInd);
   }
   //std::cout << "updated " << state << "  with " << currentControllerInd << std::endl;
+}
+
+boost::shared_ptr<StateHelper> WorldSilverMDP::createStateHelper() {
+  return boost::shared_ptr<StateHelper>(new StateHelper());
 }

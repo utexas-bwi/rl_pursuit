@@ -129,3 +129,16 @@ void WorldMultiModelMDP::removeLowProbabilityModels() {
   if (removedModels)
     normalizeModelProbs();
 }
+
+std::string WorldMultiModelMDP::generateDescription(unsigned int indentation) {
+  std::string updates;
+  switch (modelUpdateType) {
+    case BAYESIAN_UPDATES:
+      updates = "Bayesian";
+      break;
+    case POLYNOMIAL_WEIGHTS:
+      updates = "Polynomial";
+      break;
+  }
+  return indent(indentation) + "MultiModel " + updates + "\n" + WorldMDP::generateDescription(indentation);
+}
