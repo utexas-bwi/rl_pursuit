@@ -19,7 +19,7 @@ MODEL_DIR = model
 PLANNING_DIR = planning
 TEST_DIR = test
 # specify compile and flags
-ifeq ($(shell ./onLabMachine.sh),yes)
+ifeq ($(shell bin/onLabMachine.sh),yes)
 CC = condor_compile g++
 else
 CC = g++
