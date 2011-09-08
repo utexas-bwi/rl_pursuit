@@ -19,7 +19,7 @@ PLANNING_DIR = planning
 TEST_DIR = test
 # specify compile and flags
 CC = g++
-FLAGS = -W -Wall -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -fPIC -std=c++0x
+FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -fPIC -std=c++0x
 LINK_FLAGS = -L$(LIBS_DIR) -ljson
 TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
 
