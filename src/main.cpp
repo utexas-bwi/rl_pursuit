@@ -16,10 +16,9 @@ Modified: 2011-08-24
 int main(int argc, const char *argv[])
 {
   Json::Value options;
-  char usage[] = "Usage: main config1 [config2 ...]";
-  unsigned int configStart = 1;
+  char usage[] = "Usage: main [jobNum] config1 [config2 ...]";
   
-  if (argc <= configStart) {
+  if (argc <= 1) {
     std::cerr << "Too few arguments" << std::endl;
     std::cerr << usage << std::endl;
     return 1;
@@ -27,6 +26,23 @@ int main(int argc, const char *argv[])
     std::cout << usage << std::endl;
     return 0;
   }
+  
+  unsigned int configStart = 1;
+  int jobNum = -1;
+  // try to interpret the first arg as a job number
+  bool isJobNum = true;
+  for (int i = 0; argv[1][i] != '\0'; i++) {
+    if (!isdigit(argv[1][i])) {
+      isJobNum = false;
+      break;
+    }
+  }
+  if (isJobNum) {
+    jobNum = atoi(argv[1]);
+    configStart++;
+  }
+  
+
   for (int i = configStart; i < argc; i++) {
     if (! readJson(argv[i],options)) {
       return 1;
@@ -35,16 +51,23 @@ int main(int argc, const char *argv[])
   
 
   unsigned int numTrials = options.get("trials",1).asUInt();
-  unsigned int numRuns = options.get("runs",1).asUInt();
+  unsigned int numEpisodes = options.get("numEpisodesPerTrial",1).asUInt();
+  unsigned int numTrialsPerJob = options.get("trialsPerJob",1).asUInt();
   bool displayObs = options["verbosity"].get("observation",true).asBool();
-  bool displayStepsPerRun = options["verbosity"].get("stepsPerRun",true).asBool();
+  bool displayStepsPerEpisode = options["verbosity"].get("stepsPerEpisode",true).asBool();
   bool displayStepsPerTrial = options["verbosity"].get("stepsPerTrial",true).asBool();
 
-  std::vector<std::vector<unsigned int> > numSteps(numTrials,std::vector<unsigned int>(numRuns,0));
+  std::vector<std::vector<unsigned int> > numSteps(numTrials,std::vector<unsigned int>(numEpisodes,0));
   Observation obs;
   double startTime = getTime();
 
-  for (unsigned int trial = 0; trial < numTrials; trial++) {
+  if (jobNum < 0) {
+    jobNum = 0;
+  } else {
+    numTrials = jobNum + numTrialsPerJob;
+  }
+
+  for (unsigned int trial = jobNum; trial < numTrials; trial++) {
     boost::shared_ptr<World> world = createWorldAgents(trial,options);
     boost::shared_ptr<const WorldModel> model = world->getModel();
     if (trial == 0)
@@ -53,40 +76,39 @@ int main(int argc, const char *argv[])
     if (displayStepsPerTrial)
       std::cout << "trial " << std::setw(2) << trial << ": " << std::flush;
     
-    for (unsigned int run = 0; run < numRuns; run++) {
+    for (unsigned int episode = 0; episode < numEpisodes; episode++) {
       world->randomizePositions();
       world->restartAgents();
       while (!model->isPreyCaptured()) {
-        numSteps[trial][run]++;
+        numSteps[trial][episode]++;
         world->step();
         if (displayObs) {
           model->generateObservation(obs);
           std::cout << obs << std::endl;
         }
-      } // while the run lasts
-      if (displayStepsPerRun)
-        std::cout << std::setw(3) << numSteps[trial][run] << " " << std::flush;
+      } // while the episode lasts
+      if (displayStepsPerEpisode)
+        std::cout << std::setw(3) << numSteps[trial][episode] << " " << std::flush;
     }
     if (displayStepsPerTrial) {
       unsigned int steps = 0;
-      for (unsigned int run = 0; run < numRuns; run++)
-        steps += numSteps[trial][run];
-      if (displayStepsPerRun)
+      for (unsigned int episode = 0; episode < numEpisodes; episode++)
+        steps += numSteps[trial][episode];
+      if (displayStepsPerEpisode)
         std::cout << " = ";
-      std::cout << std::setprecision(3) << steps / ((float)numRuns) << std::endl;
+      std::cout << std::setprecision(3) << steps / ((float)numEpisodes) << std::endl;
     }
   } // end for trial
   double endTime = getTime();
-  std::cout << "Avg Steps Per Run: ";
-  unsigned int numStepsPerRun;
-  for (unsigned int run = 0; run < numRuns; run++) {
-    numStepsPerRun = 0;
+  std::cout << "Avg Steps Per Episode: ";
+  unsigned int numStepsPerEpisode;
+  for (unsigned int episode = 0; episode < numEpisodes; episode++) {
+    numStepsPerEpisode = 0;
     for (unsigned int trial = 0; trial < numTrials; trial++)
-      numStepsPerRun += numSteps[trial][run];
-    std::cout << numStepsPerRun / ((float)numTrials) << " ";
+      numStepsPerEpisode += numSteps[trial][episode];
+    std::cout << numStepsPerEpisode / ((float)numTrials) << " ";
   }
   std::cout << std::endl;
-  //std::cout << "AVG: " << avgSteps << std::endl;
   std::cout << "time: " << endTime - startTime << std::endl;
 
   return 0;
