@@ -1,4 +1,3 @@
-MAIN_TARGET = bin/main
 TEST_TARGET = bin/test
 # base dirs
 BUILD_DIR = build
@@ -7,8 +6,10 @@ INCLUDE_DIR = include
 KERNEL_TYPE := $(shell uname -m)
 ifeq ($(KERNEL_TYPE),x86_64)
 LIBS_DIR = libs/64
+MAIN_TARGET = bin/main64
 else
 LIBS_DIR = libs/32
+MAIN_TARGET = bin/main32
 endif
 # sub directories for source
 COMMON_DIR = common
