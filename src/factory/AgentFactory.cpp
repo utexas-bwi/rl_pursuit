@@ -35,7 +35,7 @@ bool nameInSet(const std::string &name, ...) {
   return found;
 }
 
-boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, const Json::Value &, const Json::Value &rootOptions) {
   typedef boost::shared_ptr<Agent> ptr;
   
   boost::to_lower(name);
