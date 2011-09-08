@@ -15,6 +15,12 @@ Modified: 2011-08-30
 #include <common/Point2D.h>
 #include <common/RNG.h>
 
+#ifdef __GNUC__
+#define VARIABLE_IS_NOT_USED __attribute__ ((unused))
+#else
+#define VARIABLE_IS_NOT_USED
+#endif
+
 namespace Action {
   enum Type { // order must match moves below
     LEFT,
@@ -28,7 +34,7 @@ namespace Action {
     NUM_ACTIONS = NUM_MOVES
   };
 
-  static Point2D MOVES[NUM_MOVES] = {Point2D(-1,0),Point2D(1,0),Point2D(0,1),Point2D(0,-1),Point2D(0,0)};
+  static Point2D VARIABLE_IS_NOT_USED MOVES[NUM_MOVES] = {Point2D(-1,0),Point2D(1,0),Point2D(0,1),Point2D(0,-1),Point2D(0,0)};
 }
 
 Action::Type getAction(const Point2D &move);
