@@ -79,17 +79,20 @@ run: $(MAIN_TARGET)
 build: $(MAIN_TARGET)
 
 $(MAIN_TARGET): $(MAIN_OBJECTS)
-	$(CC) $(FLAGS) $(MAIN_OBJECTS) $(LINK_FLAGS) -o $@
+	@echo "Linking $@"
+	@$(CC) $(FLAGS) $(MAIN_OBJECTS) $(LINK_FLAGS) -o $@
 
 test: $(TEST_TARGET)
 	$(TEST_TARGET)
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(dir $@)
-	$(CC) $(FLAGS) -c $< -o $@
+	@echo "Compiling $<"
+	@$(CC) $(FLAGS) -c $< -o $@
 
 $(TEST_TARGET): $(TEST_OBJECTS) $(HEADERS)
-	$(CC) $(FLAGS) $(TEST_OBJECTS) $(TEST_LINK_FLAGS) -o $@
+	@echo "Linking $@"
+	@$(CC) $(FLAGS) $(TEST_OBJECTS) $(TEST_LINK_FLAGS) -o $@
 
 clean:
 	$(RM) $(TEST_OBJECTS)

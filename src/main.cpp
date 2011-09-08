@@ -8,10 +8,15 @@ Modified: 2011-08-24
 
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <json/json.h>
 #include <factory/WorldFactory.h>
 #include <common/Util.h>
+
+void displaySummary(double timePassed, const std::vector<std::vector<unsigned int> > &numSteps);
+void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial);
+void saveResults(const std::string &filename, int startTrial, const std::vector<std::vector<unsigned int> > &numSteps);
 
 int main(int argc, const char *argv[])
 {
@@ -29,6 +34,7 @@ int main(int argc, const char *argv[])
   
   unsigned int configStart = 1;
   int jobNum = -1;
+  std::string jobString = "";
   // try to interpret the first arg as a job number
   bool isJobNum = true;
   for (int i = 0; argv[1][i] != '\0'; i++) {
@@ -38,6 +44,7 @@ int main(int argc, const char *argv[])
     }
   }
   if (isJobNum) {
+    jobString = argv[1];
     jobNum = atoi(argv[1]);
     configStart++;
   }
@@ -49,32 +56,53 @@ int main(int argc, const char *argv[])
     }
   }
   
-
-  unsigned int numTrials = options.get("trials",1).asUInt();
+  int numTrials = options.get("trials",1).asUInt();
   unsigned int numEpisodes = options.get("numEpisodesPerTrial",1).asUInt();
   unsigned int numTrialsPerJob = options.get("trialsPerJob",1).asUInt();
-  bool displayObs = options["verbosity"].get("observation",true).asBool();
-  bool displayStepsPerEpisode = options["verbosity"].get("stepsPerEpisode",true).asBool();
-  bool displayStepsPerTrial = options["verbosity"].get("stepsPerTrial",true).asBool();
+  bool displayDescriptionQ = options["verbosity"].get("description",true).asBool();
+  bool displaySummaryQ = options["verbosity"].get("summary",true).asBool();
+  bool displayObsQ = options["verbosity"].get("observation",true).asBool();
+  bool displayStepsPerEpisodeQ = options["verbosity"].get("stepsPerEpisode",true).asBool();
+  bool displayStepsPerTrialQ = options["verbosity"].get("stepsPerTrial",true).asBool();
+  bool saveResultsQ = options["save"].get("save",false).asBool();
+  std::string saveFilename = options["save"].get("file","results/results$(JOBNUM).csv").asString();
+  if (saveResultsQ) {
+    size_t pos = saveFilename.find("$(JOBNUM)");
+    if (pos != std::string::npos) {
+      saveFilename.replace(pos,9,jobString);
+    }
+  }
 
-  std::vector<std::vector<unsigned int> > numSteps(numTrials,std::vector<unsigned int>(numEpisodes,0));
   Observation obs;
   double startTime = getTime();
+  int startTrial = 0;
+  int origNumTrials = numTrials;
 
   if (jobNum < 0) {
     jobNum = 0;
   } else {
-    numTrials = jobNum + numTrialsPerJob;
+    startTrial = jobNum * numTrialsPerJob;
+    numTrials = min((int)numTrialsPerJob,numTrials-startTrial);
+  }
+  if (numTrials <= 0) {
+    std::cerr << "ERROR: insufficient number of trials: " << numTrials << std::endl;
+    std::cerr << "Calculated from: jobNum: " << jobNum << " numTrialsPerJob: " << numTrialsPerJob << " numTrials: " << origNumTrials << std::endl;
+    std::cerr << "Start trial should be: " << startTrial << std::endl;
+    return 1;
   }
 
-  for (unsigned int trial = jobNum; trial < numTrials; trial++) {
-    boost::shared_ptr<World> world = createWorldAgents(trial,options);
+  std::vector<std::vector<unsigned int> > numSteps(numTrials,std::vector<unsigned int>(numEpisodes,0));
+  
+  unsigned int trialNum;
+  for (int trial = 0; trial < numTrials; trial++) {
+    trialNum = trial + startTrial;
+    boost::shared_ptr<World> world = createWorldAgents(trialNum,options);
     boost::shared_ptr<const WorldModel> model = world->getModel();
-    if (trial == 0)
+    if ((trial == 0) && (displayDescriptionQ))
       std::cout << world->generateDescription() << std::endl;
     
-    if (displayStepsPerTrial)
-      std::cout << "trial " << std::setw(2) << trial << ": " << std::flush;
+    if (displayStepsPerTrialQ)
+      std::cout << "trial " << std::setw(2) << trialNum << ": " << std::flush;
     
     for (unsigned int episode = 0; episode < numEpisodes; episode++) {
       world->randomizePositions();
@@ -82,34 +110,64 @@ int main(int argc, const char *argv[])
       while (!model->isPreyCaptured()) {
         numSteps[trial][episode]++;
         world->step();
-        if (displayObs) {
+        if (displayObsQ) {
           model->generateObservation(obs);
           std::cout << obs << std::endl;
         }
       } // while the episode lasts
-      if (displayStepsPerEpisode)
+      if (displayStepsPerEpisodeQ)
         std::cout << std::setw(3) << numSteps[trial][episode] << " " << std::flush;
     }
-    if (displayStepsPerTrial) {
-      unsigned int steps = 0;
-      for (unsigned int episode = 0; episode < numEpisodes; episode++)
-        steps += numSteps[trial][episode];
-      if (displayStepsPerEpisode)
-        std::cout << " = ";
-      std::cout << std::setprecision(3) << steps / ((float)numEpisodes) << std::endl;
-    }
+    if (displayStepsPerTrialQ)
+      displayStepsPerTrial(displayStepsPerEpisodeQ,numSteps[trial]);
   } // end for trial
   double endTime = getTime();
-  std::cout << "Avg Steps Per Episode: ";
-  unsigned int numStepsPerEpisode;
-  for (unsigned int episode = 0; episode < numEpisodes; episode++) {
-    numStepsPerEpisode = 0;
-    for (unsigned int trial = 0; trial < numTrials; trial++)
-      numStepsPerEpisode += numSteps[trial][episode];
-    std::cout << numStepsPerEpisode / ((float)numTrials) << " ";
-  }
-  std::cout << std::endl;
-  std::cout << "time: " << endTime - startTime << std::endl;
+  // optionally display the summary
+  if (displaySummaryQ)
+    displaySummary(endTime-startTime,numSteps);
+  // optionally save the results
+  if (saveResultsQ)
+    saveResults(saveFilename,startTrial,numSteps);
 
   return 0;
+}
+
+
+void displaySummary(double timePassed, const std::vector<std::vector<unsigned int> > &numSteps) {
+  std::cout << "Avg Steps Per Episode: ";
+  unsigned int numStepsPerEpisode;
+  for (unsigned int episode = 0; episode < numSteps[0].size(); episode++) {
+    numStepsPerEpisode = 0;
+    for (unsigned int trial = 0; trial < numSteps.size(); trial++)
+      numStepsPerEpisode += numSteps[trial][episode];
+    std::cout << numStepsPerEpisode / ((float)numSteps.size()) << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "time: " << timePassed << std::endl;
+}
+
+void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial) {
+  unsigned int numEpisodes = numStepsPerTrial.size();
+  unsigned int steps = 0;
+  for (unsigned int episode = 0; episode < numEpisodes; episode++)
+    steps += numStepsPerTrial[episode];
+  if (displayStepsPerEpisodeQ)
+    std::cout << " = ";
+  std::cout << std::setprecision(3) << steps / ((float)numEpisodes) << std::endl;
+}
+
+void saveResults(const std::string &filename, int startTrial, const std::vector<std::vector<unsigned int> > &numSteps) {
+  std::ofstream out(filename.c_str());
+  if (!out.good()) {
+    std::cerr << "ERROR: error saving to " << filename << std::endl;
+    out.close();
+    return;
+  }
+  for (unsigned int trial = 0; trial < numSteps.size(); trial++) {
+    out << trial + startTrial;
+  for (unsigned int episode = 0; episode < numSteps[trial].size(); episode++)
+      out << "," << numSteps[trial][episode];
+    out << std::endl;
+  }
+  out.close();
 }
