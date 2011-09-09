@@ -21,7 +21,7 @@ public:
     numSteps(0)
   {}
 
-  Action::Type step(const Observation &obs) {
+  ActionProbs step(const Observation &obs) {
     numSteps++;
     return AgentDummy::step(obs);
   }
