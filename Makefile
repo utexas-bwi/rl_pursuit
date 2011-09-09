@@ -1,16 +1,16 @@
 TEST_TARGET = bin/test
 # base dirs
-BUILD_DIR = build
 SOURCE_DIR = src
 INCLUDE_DIR = include
 KERNEL_TYPE := $(shell uname -m)
 ifeq ($(KERNEL_TYPE),x86_64)
-LIBS_DIR = libs/64
-MAIN_TARGET = bin/main64
+ARCH=64
 else
-LIBS_DIR = libs/32
-MAIN_TARGET = bin/main32
+ARCH=32
 endif
+LIBS_DIR = libs/$(ARCH)
+MAIN_TARGET = bin/main$(ARCH)
+BUILD_DIR = build/$(ARCH)
 # sub directories for source
 COMMON_DIR = common
 CONTROLLER_DIR = controller
