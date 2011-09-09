@@ -20,7 +20,7 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob):
 {
   "trials": %s,
   "trialsPerJob": %s,
-  "save": {"results":%s, "config":%s}
+  "save": {"results":"%s", "config":"%s"}
 }
 '''
   results = os.path.join('condor','results',name,'$(JOBNUM).csv')
