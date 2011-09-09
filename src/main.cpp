@@ -17,6 +17,7 @@ Modified: 2011-08-24
 void displaySummary(double timePassed, const std::vector<std::vector<unsigned int> > &numSteps);
 void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial);
 void saveResults(const std::string &filename, int startTrial, const std::vector<std::vector<unsigned int> > &numSteps);
+void saveConfig(const Json::Value &options);
 
 int main(int argc, const char *argv[])
 {
@@ -64,8 +65,8 @@ int main(int argc, const char *argv[])
   bool displayObsQ = options["verbosity"].get("observation",true).asBool();
   bool displayStepsPerEpisodeQ = options["verbosity"].get("stepsPerEpisode",true).asBool();
   bool displayStepsPerTrialQ = options["verbosity"].get("stepsPerTrial",true).asBool();
-  bool saveResultsQ = options["save"].get("save",false).asBool();
-  std::string saveFilename = options["save"].get("file","results/results$(JOBNUM).csv").asString();
+  std::string saveFilename = options["save"].get("results","").asString();
+  bool saveResultsQ = (saveFilename != "");
   if (saveResultsQ) {
     size_t pos = saveFilename.find("$(JOBNUM)");
     if (pos != std::string::npos) {
@@ -90,8 +91,11 @@ int main(int argc, const char *argv[])
     std::cerr << "Start trial should be: " << startTrial << std::endl;
     return 1;
   }
+  if (jobNum == 0)
+    saveConfig(options);
 
   std::vector<std::vector<unsigned int> > numSteps(numTrials,std::vector<unsigned int>(numEpisodes,0));
+  std::cout << "Running for " << numTrials << " trials" << std::endl;
   
   unsigned int trialNum;
   for (int trial = 0; trial < numTrials; trial++) {
@@ -170,4 +174,20 @@ void saveResults(const std::string &filename, int startTrial, const std::vector<
     out << std::endl;
   }
   out.close();
+}
+
+void saveConfig(const Json::Value &options) {
+  std::string saveConfigFilename = options["save"].get("config","").asString();
+  if (saveConfigFilename == "")
+    return;
+  
+  std::ofstream destFile(saveConfigFilename.c_str());
+  if (! destFile.good()) {
+    std::cerr << "WARNING: not saving config file due to problem opening destination file: " << saveConfigFilename << std::endl;
+    return;
+  }
+
+  Json::StyledStreamWriter writer("  ");
+  writer.write(destFile,options);
+  destFile.close();
 }

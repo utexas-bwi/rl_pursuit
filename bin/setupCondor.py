@@ -20,10 +20,12 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob):
 {
   "trials": %s,
   "trialsPerJob": %s,
-  "save": {"save":true, "file":%s}
+  "save": {"results":%s, "config":%s}
 }
 '''
-  contents = contents % (numTrials,numTrialsPerJob,os.path.join('condor','results','%s$(JOBNUM).csv' % name))
+  results = os.path.join('condor','results','%s$(JOBNUM).csv' % name)
+  config = os.path.join('results','%s.json' % name)
+  contents = contents % (numTrials,numTrialsPerJob,results,config)
   with open(outFilename,'w') as f:
     f.write(contents)
 
