@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rm -r condor/output/* condor/results/*
+rm -r condor/output/* condor/results/* condor/configs/*

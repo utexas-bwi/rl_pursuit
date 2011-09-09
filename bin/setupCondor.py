@@ -1,10 +1,10 @@
 #!/usr/bin/env python
   
-import os
+import os, shutil
 
 def createCondorConfig(name,numJobs,arguments):
   inFilename = 'condor/base.condor'
-  outFilename = 'condor/%s.condor' % name
+  outFilename = 'condor/configs/%s.condor' % name
 
   with open(inFilename,'r') as f:
     contents = f.read()
@@ -15,7 +15,7 @@ def createCondorConfig(name,numJobs,arguments):
     f.write(contents)
 
 def createPursuitConfig(name,numTrials,numTrialsPerJob):
-  outFilename = 'configs/%s.json' % name
+  outFilename = 'condor/configs/%s.json' % name
   contents = '''
 {
   "trials": %s,
@@ -23,20 +23,25 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob):
   "save": {"results":%s, "config":%s}
 }
 '''
-  results = os.path.join('condor','results','%s$(JOBNUM).csv' % name)
-  config = os.path.join('results','%s.json' % name)
-  contents = contents % (numTrials,numTrialsPerJob,results,config)
+  results = os.path.join('condor','results',name,'$(JOBNUM).csv')
+  configSave = os.path.join('condor','results',name,'config.json')
+  contents = contents % (numTrials,numTrialsPerJob,results,configSave)
   with open(outFilename,'w') as f:
     f.write(contents)
 
+def makeDir(name):
+  shutil.rmtree(name)
+  os.mkdir(name)
+
 def makeCondorDirs(name):
-  os.mkdir(os.path.join('condor','output',name))
-  os.mkdir(os.path.join('condor','results',name))
+  makeDir(os.path.join('condor','output',name))
+  makeDir(os.path.join('condor','results',name))
 
 def run(name,numTrials,numTrialsPerJob,configs):
   numJobs = numTrials / numTrialsPerJob
-  createCondorConfig(name,numJobs,'$(Process) %s configs/%s.json' % (' '.join(configs),name))
+  createCondorConfig(name,numJobs,'$(Process) %s condor/configs/%s.json' % (' '.join(configs),name))
   createPursuitConfig(name,numTrials,numTrialsPerJob)
+  makeCondorDirs(name)
 
 def main(args):
   if len(args) < 4:
