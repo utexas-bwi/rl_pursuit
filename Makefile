@@ -20,7 +20,8 @@ PLANNING_DIR = planning
 TEST_DIR = test
 # specify compile and flags
 ifeq ($(shell bin/onLabMachine.sh),yes)
-CC = condor_compile g++
+#CC = condor_compile g++
+CC = g++
 else
 CC = g++
 endif

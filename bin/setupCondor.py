@@ -30,7 +30,10 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob):
     f.write(contents)
 
 def makeDir(name):
-  shutil.rmtree(name)
+  try:
+    shutil.rmtree(name)
+  except:
+    pass
   os.mkdir(name)
 
 def makeCondorDirs(name):
@@ -53,6 +56,7 @@ def main(args):
   numTrialsPerJob = int(args[2])
   configs = args[3:]
   run(name,numTrials,numTrialsPerJob,configs)
+  return 0
 
 if __name__ == '__main__':
   import sys
