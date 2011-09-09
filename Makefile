@@ -107,3 +107,5 @@ fullclean: clean
 
 fclean: fullclean
 
+bin/combineConfigs: src/combineConfigs.cpp src/common/Util.cpp
+	$(CC) $(FLAGS) $^ $(LINK_FLAGS) -o $@

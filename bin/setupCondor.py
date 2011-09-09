@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+  
+import os
 
 def createCondorConfig(name,numJobs,arguments):
   inFilename = 'condor/base.condor'
@@ -17,12 +19,17 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob):
   contents = '''
 {
   "trials": %s,
-  "trialsPerJob": %s
+  "trialsPerJob": %s,
+  "save": {"save":true, "file":%s}
 }
 '''
-  contents = contents % (numTrials,numTrialsPerJob)
+  contents = contents % (numTrials,numTrialsPerJob,os.path.join('condor','results','%s$(JOBNUM).csv' % name))
   with open(outFilename,'w') as f:
     f.write(contents)
+
+def makeCondorDirs(name):
+  os.mkdir(os.path.join('condor','output',name))
+  os.mkdir(os.path.join('condor','results',name))
 
 def run(name,numTrials,numTrialsPerJob,configs):
   numJobs = numTrials / numTrialsPerJob
