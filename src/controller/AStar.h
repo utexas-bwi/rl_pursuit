@@ -6,26 +6,27 @@ File: AStar.h
 Author: Samuel Barrett
 Description: an implementation of the A* path planning algorithm for use on a toroidal grid world with obstacles
 Created:  2011-08-30
-Modified: 2011-08-31
+Modified: 2011-09-09
 */
 
 #include <vector>
 #include <set>
+#include <boost/shared_ptr.hpp>
 #include <common/Point2D.h>
 
 class AStar {
 public:
   struct Node {
-    Node(unsigned int gcost, unsigned int hcost, const Point2D &pos, Node *parent);
+    Node(unsigned int gcost, unsigned int hcost, const Point2D &pos, boost::shared_ptr<Node> parent);
     bool operator<(const Node &other);
     unsigned int gcost;
     unsigned int hcost;
     Point2D pos;
-    Node *parent;
+    boost::shared_ptr<Node> parent;
   };
 
   struct Nodecmp {
-    bool operator() (const Node *node1, const Node *node2) const;
+    bool operator() (const boost::shared_ptr<Node> node1, const boost::shared_ptr<Node> node2) const;
   };
 
 public:
@@ -37,14 +38,14 @@ public:
 
 private:
   const Point2D dims;
-  std::vector<Node*> openHeap;
-  std::set<Node*,Nodecmp> openNodes;
-  std::set<Node*,Nodecmp> closedNodes;
+  std::vector<boost::shared_ptr<Node> > openHeap;
+  std::set<boost::shared_ptr<Node>,Nodecmp> openNodes;
+  std::set<boost::shared_ptr<Node>,Nodecmp> closedNodes;
   Point2D goal;
-  Node *goalNode;
+  boost::shared_ptr<Node> goalNode;
 
 private:
-  void setHeuristic(Node *node);
+  void setHeuristic(boost::shared_ptr<Node> node);
   void clear();
 };
 

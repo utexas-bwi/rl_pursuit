@@ -3,14 +3,14 @@ File: AStar.cpp
 Author: Samuel Barrett
 Description: an implementation of the A* path planning algorithm for use on a toroidal grid world with obstacles
 Created:  2011-08-30
-Modified: 2011-08-31
+Modified: 2011-09-09
 */
 
 #include "AStar.h"
 #include <algorithm>
 #include <model/Common.h>
     
-AStar::Node::Node(unsigned int gcost, unsigned int hcost, const Point2D &pos, Node *parent):
+AStar::Node::Node(unsigned int gcost, unsigned int hcost, const Point2D &pos, boost::shared_ptr<Node>parent):
   gcost(gcost),
   hcost(hcost),
   pos(pos),
@@ -23,11 +23,11 @@ bool AStar::Node::operator<(const Node &other) {
 }
 
 // NOTE: for the heap to work correctly, we must specify how to compare Node*'s
-bool cmp(const AStar::Node *node1, const AStar::Node *node2) {
+bool cmp(const boost::shared_ptr<AStar::Node> node1, const boost::shared_ptr<AStar::Node> node2) {
   return node1->gcost + node1->hcost > node2->gcost + node2->hcost; // reversed to put the lowest cost node first
 }
 
-bool AStar::Nodecmp::operator() (const Node *node1, const Node *node2) const {
+bool AStar::Nodecmp::operator() (const boost::shared_ptr<Node>node1, const boost::shared_ptr<Node>node2) const {
   return node1->pos < node2->pos;
 }
 
@@ -44,21 +44,20 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
   // set the goal, and clear the previous plan
   this->goal = goal;
   clear();
-  goalNode = NULL;
+  goalNode.reset();
 
-  Node *node;
-  Node *newNode;
+  boost::shared_ptr<Node> newNode;
   Point2D pos;
-  std::set<Node*>::iterator it;
+  std::set<boost::shared_ptr<Node> >::iterator it;
   // start the open nodes
-  node = new Node(0,0,start,NULL);
+  boost::shared_ptr<Node> node(new Node(0,0,start,boost::shared_ptr<Node>()));
   setHeuristic(node);
   openHeap.push_back(node);
   openNodes.insert(node);
   // set obstacles as closed nodes
   for (unsigned int i = 0; i < obstacles.size(); i++) {
     if (obstacles[i] != goal) // ignore any obstacles at the goal
-      closedNodes.insert(new Node(0,0,obstacles[i],NULL));
+      closedNodes.insert(boost::shared_ptr<Node>(new Node(0,0,obstacles[i],boost::shared_ptr<Node>())));
   }
   
   // while there are open nodes
@@ -77,9 +76,8 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
     // search its neighbors
     for (unsigned int i = 0; i < Action::NUM_NEIGHBORS; i++) {
       pos = movePosition(dims,node->pos,(Action::Type)i);
-      newNode = new Node(node->gcost + 1,0,pos,node);
+      newNode = boost::shared_ptr<Node>(new Node(node->gcost + 1,0,pos,node));
       if (closedNodes.count(newNode) > 0) {
-        delete newNode;
         continue;
       }
       it = openNodes.find(newNode);
@@ -91,7 +89,6 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
           // have to resort because this item might be out of place now
           std::make_heap(openHeap.begin(),openHeap.end(),cmp);
         }
-        delete newNode;
       } else {
         // new open node
         setHeuristic(newNode);
@@ -104,8 +101,8 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
 }
 
 Point2D AStar::getFirstStep() {
-  Node *node = goalNode->parent;
-  Node *prev = goalNode;
+  boost::shared_ptr<Node>node = goalNode->parent;
+  boost::shared_ptr<Node>prev = goalNode;
   while (node->parent != NULL) {
     prev = node;
     node = node->parent;
@@ -117,16 +114,11 @@ bool AStar::foundPath() {
   return goalNode != NULL;
 }
 
-void AStar::setHeuristic(Node *node) {
+void AStar::setHeuristic(boost::shared_ptr<Node>node) {
   node->hcost = getDistanceToPoint(dims,node->pos,goal);
 }
 
 void AStar::clear() {
-  // openNodes and openHeap have overlap
-  for (unsigned int i = 0; i < openHeap.size(); i++)
-    delete openHeap[i];
-  for (std::set<Node*>::iterator it = closedNodes.begin(); it != closedNodes.end(); it++)
-    delete (*it);
   openNodes.clear();
   openHeap.clear();
   closedNodes.clear();
