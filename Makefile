@@ -92,7 +92,7 @@ test: $(TEST_TARGET)
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(dir $@)
-	@echo "Compiling $<"
+	@echo "Compiling $< for $(ARCH)"
 	@$(CC) $(FLAGS) -c $< -o $@
 
 $(TEST_TARGET): $(TEST_OBJECTS) $(HEADERS)
