@@ -67,6 +67,11 @@ protected:
   std::vector<float> historyRewards;
 };
 
+template<class State, class Action>
+std::ostream& operator<<(std::ostream &out, const std::pair<State,Action> &sa) {
+  out << "<SA " << sa.first << " " << sa.second << ">";
+  return out;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -120,6 +125,11 @@ void UCTEstimator<State,Action>::checkInternals() {
 
 template<class State, class Action>
 void UCTEstimator<State,Action>::startRollout(const State &state) {
+  static int i = 0;
+  i++;
+  i %= 1000;
+  if (i == 0)
+    std::cout << stateVisits.size() << " " << stateActionVisits.size() << " " << values.size() << std::endl;
   historyStates.clear();
   historyActions.clear();
   historyRewards.clear();
