@@ -36,7 +36,8 @@ void WorldSilverMDP::selectModel() {
     stateHelpers.insert(std::pair<State_t,boost::shared_ptr<StateHelper> >(rolloutStartState,helper));
   }
   //std::cout << "Choosing model for " << rolloutStartState << " from " << std::flush;
-  std::map<State_t,boost::shared_ptr<StateHelper> >::iterator it = stateHelpers.find(rolloutStartState);
+  //std::map<State_t,boost::shared_ptr<StateHelper> >::iterator it = stateHelpers.find(rolloutStartState);
+  boost::unordered_map<State_t,boost::shared_ptr<StateHelper> >::iterator it = stateHelpers.find(rolloutStartState);
   if (it == stateHelpers.end()) {
     //std::cerr << "WARNING: unseen state: " << rolloutStartState << ", don't know what controllers could reach it, sampling from the initial set" << std::endl;
     currentControllerInd = rng->randomInt(agentModelProbs.size());
@@ -55,7 +56,8 @@ void WorldSilverMDP::selectModel() {
 
 void WorldSilverMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
   WorldMultiModelMDP::takeAction(action,reward,state,terminal);
-  std::map<State_t,boost::shared_ptr<StateHelper> >::iterator it = stateHelpers.find(state);
+  //std::map<State_t,boost::shared_ptr<StateHelper> >::iterator it = stateHelpers.find(state);
+  boost::unordered_map<State_t,boost::shared_ptr<StateHelper> >::iterator it = stateHelpers.find(state);
   if (it == stateHelpers.end()) {
     // previously unseen state
     boost::shared_ptr<StateHelper> helper = createStateHelper();

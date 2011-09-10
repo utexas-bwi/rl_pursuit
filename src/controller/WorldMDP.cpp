@@ -68,6 +68,17 @@ bool State_t::operator<(const State_t &other) const{
   return false;
 }
 
+bool State_t::operator==(const State_t &other) const{
+  for (unsigned int i = 0; i < STATE_SIZE; i++) {
+    if (positions[i].x != other.positions[i].x)
+      return false;
+    else if (positions[i].y != other.positions[i].y)
+      return false;
+  }
+  // equal
+  return true;
+}
+
 std::ostream& operator<<(std::ostream &out, const State_t &state) {
   out << "<State_t ";
   for (unsigned int i = 0; i < STATE_SIZE; i++) {
@@ -75,4 +86,13 @@ std::ostream& operator<<(std::ostream &out, const State_t &state) {
   }
   out << ">";
   return out;
+}
+
+std::size_t hash_value(const State_t &s) {
+  std::size_t seed = 0;
+  for (unsigned int i = 0; i < STATE_SIZE; i++) {
+    boost::hash_combine(seed,s.positions[i].x);
+    boost::hash_combine(seed,s.positions[i].y);
+  }
+  return seed;
 }

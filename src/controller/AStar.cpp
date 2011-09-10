@@ -48,7 +48,8 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
 
   boost::shared_ptr<Node> newNode;
   Point2D pos;
-  std::set<boost::shared_ptr<Node> >::iterator it;
+  //std::set<boost::shared_ptr<Node> >::iterator it;
+  boost::unordered_set<boost::shared_ptr<Node> >::iterator it;
   // start the open nodes
   boost::shared_ptr<Node> node(new Node(0,0,start,boost::shared_ptr<Node>()));
   setHeuristic(node);

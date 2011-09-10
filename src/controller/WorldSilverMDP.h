@@ -10,7 +10,7 @@ Modified: 2011-09-07
 */
 
 #include <vector>
-#include <map>
+#include <boost/unordered_map.hpp>
 #include "WorldMultiModelMDP.h"
 
 struct StateHelper {
@@ -30,7 +30,8 @@ protected:
   virtual void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
 
 protected:
-  std::map<State_t,boost::shared_ptr<StateHelper> > stateHelpers;
+  //std::map<State_t,boost::shared_ptr<StateHelper> > stateHelpers;
+  boost::unordered_map<State_t,boost::shared_ptr<StateHelper> > stateHelpers;
   bool firstStateSet;
   unsigned int currentControllerInd;
   virtual boost::shared_ptr<StateHelper> createStateHelper();

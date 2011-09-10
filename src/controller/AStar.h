@@ -10,7 +10,7 @@ Modified: 2011-09-09
 */
 
 #include <vector>
-#include <set>
+#include <boost/unordered_set.hpp>
 #include <boost/shared_ptr.hpp>
 #include <common/Point2D.h>
 
@@ -39,8 +39,10 @@ public:
 private:
   const Point2D dims;
   std::vector<boost::shared_ptr<Node> > openHeap;
-  std::set<boost::shared_ptr<Node>,Nodecmp> openNodes;
-  std::set<boost::shared_ptr<Node>,Nodecmp> closedNodes;
+  boost::unordered_set<boost::shared_ptr<Node> > openNodes;
+  boost::unordered_set<boost::shared_ptr<Node> > closedNodes;
+  //std::set<boost::shared_ptr<Node>,Nodecmp> openNodes;
+  //std::set<boost::shared_ptr<Node>,Nodecmp> closedNodes;
   Point2D goal;
   boost::shared_ptr<Node> goalNode;
 
