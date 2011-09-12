@@ -19,27 +19,24 @@ MODEL_DIR = model
 PLANNING_DIR = planning
 TEST_DIR = test
 # specify compile and flags
-ifeq ($(shell bin/onLabMachine.sh),yes)
+#ifeq ($(shell bin/onLabMachine.sh),yes)
 #CC = condor_compile g++
 CC = g++
-else
-CC = g++
-endif
-FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -fPIC -std=c++0x
-LINK_FLAGS = -L$(LIBS_DIR) -ljson
+FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python2.7 -fPIC -std=c++0x
+LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython2.7 -lboost_python
 TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
 
 RM = rm -f
 # source files
 MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
 COMMON_SOURCES = Point2D.cpp tinymt32.cpp Util.cpp
-CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorTeammateAware.cpp World.cpp WorldMDP.cpp WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
+CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentPython.cpp PredatorTeammateAware.cpp World.cpp WorldMDP.cpp WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
 # Headers
 COMMON_HEADERS = DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h
-CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h PredatorGreedy.h PredatorGreedyProbabilistic.h PredatorMCTS.h PredatorProbabilisticDestinations.h PredatorTeammateAware.h World.h WorldMDP.h WorldMultiModelMDP.h WorldSilverMDP.h WorldSilverWeightedMDP.h
+CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h PredatorGreedy.h PredatorGreedyProbabilistic.h PredatorMCTS.h PredatorProbabilisticDestinations.h PredatorStudentPython.h PredatorTeammateAware.h World.h WorldMDP.h WorldMultiModelMDP.h WorldSilverMDP.h WorldSilverWeightedMDP.h
 FACTORY_HEADERS = AgentFactory.h PlanningFactory.h WorldFactory.h
 MODEL_HEADERS = AgentModel.h Common.h WorldModel.h
 PLANNING_HEADERS = MCTS.h Model.h UCTEstimator.h ValueEstimator.h

@@ -10,6 +10,7 @@
 #include <controller/PredatorGreedyProbabilistic.h>
 #include <controller/PredatorMCTS.h>
 #include <controller/PredatorProbabilisticDestinations.h>
+#include <controller/PredatorStudentPython.h>
 #include <controller/PredatorTeammateAware.h>
 #include <controller/WorldMDP.h>
 #include <planning/UCTEstimator.h>
@@ -35,7 +36,7 @@ bool nameInSet(const std::string &name, ...) {
   return found;
 }
 
-boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, const Json::Value &, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, const Json::Value &options, const Json::Value &rootOptions) {
   typedef boost::shared_ptr<Agent> ptr;
   
   boost::to_lower(name);
@@ -51,7 +52,19 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new PredatorTeammateAware(rng,dims));
   else if (NAME_IN_SET("dummy"))
     return ptr(new AgentDummy(rng,dims));
-  else if (NAME_IN_SET("mcts","uct")) {
+  else if (NAME_IN_SET("student")) {
+    std::string student = options.get("student","").asString();
+    if (student == "") {
+      std::cerr << "createAgent: ERROR: no student type specified" << std::endl;
+      exit(3);
+    }
+    int predatorInd = options.get("predatorInd",-1).asInt();
+    if ((predatorInd < 0) || (predatorInd >= 4)) {
+      std::cerr << "createAgent: ERROR: bad predator ind specified for student: " << student << std::endl;
+      exit(3);
+    }
+    return ptr(new PredatorStudentPython(rng,dims,student,predatorInd));
+  } else if (NAME_IN_SET("mcts","uct")) {
     Json::Value plannerOptions = rootOptions["planner"];
     // process the depth if necessary
     unsigned int depth = plannerOptions.get("depth",0).asUInt();
