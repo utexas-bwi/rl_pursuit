@@ -1,16 +1,17 @@
 #include "WekaParser.h"
 #include <iostream>
 #include <cassert>
+#include <model/Common.h>
 
 WekaParser::WekaParser(const std::string &filename):
   in(filename.c_str())
 {
   assert(in.good());
-  valueMap["U"] = 0.0;
-  valueMap["D"] = 1.0;
-  valueMap["L"] = 2.0;
-  valueMap["R"] = 3.0;
-  valueMap["S"] = 4.0;
+  valueMap["U"] = Action::UP;
+  valueMap["D"] = Action::DOWN;
+  valueMap["L"] = Action::LEFT;
+  valueMap["R"] = Action::RIGHT;
+  valueMap["S"] = Action::NOOP;
 
   tokenizeFile();
 }

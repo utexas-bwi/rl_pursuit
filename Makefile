@@ -32,8 +32,7 @@ TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
 
 RM = rm -f
 # source files
-#MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
-MAIN_SOURCES = $(SOURCE_DIR)/weka.cpp
+MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
 COMMON_SOURCES = DecisionTree.cpp Point2D.cpp tinymt32.cpp Util.cpp WekaParser.cpp
 CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentPython.cpp PredatorTeammateAware.cpp World.cpp WorldMDP.cpp WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
