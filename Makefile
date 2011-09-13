@@ -32,14 +32,15 @@ TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
 
 RM = rm -f
 # source files
-MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
-COMMON_SOURCES = Point2D.cpp tinymt32.cpp Util.cpp
+#MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
+MAIN_SOURCES = $(SOURCE_DIR)/weka.cpp
+COMMON_SOURCES = DecisionTree.cpp Point2D.cpp tinymt32.cpp Util.cpp WekaParser.cpp
 CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentPython.cpp PredatorTeammateAware.cpp World.cpp WorldMDP.cpp WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
 # Headers
-COMMON_HEADERS = DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h
+COMMON_HEADERS = DecisionTree.h DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h WekaParser.h
 CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h PredatorGreedy.h PredatorGreedyProbabilistic.h PredatorMCTS.h PredatorProbabilisticDestinations.h PredatorStudentPython.h PredatorTeammateAware.h World.h WorldMDP.h WorldMultiModelMDP.h WorldSilverMDP.h WorldSilverWeightedMDP.h
 FACTORY_HEADERS = AgentFactory.h PlanningFactory.h WorldFactory.h
 MODEL_HEADERS = AgentModel.h Common.h WorldModel.h
