@@ -40,7 +40,7 @@ public:
   virtual void restart();
   virtual std::string generateDescription(unsigned int indentation = 0);
   float maxValueForState(const State &state);
-  float getStateActionValue(const State &state, const Action &action) { return values.get(StateAction(state,action));}
+  float getStateActionValue(const State &state, const Action &action) { return stateActions.get(StateAction(state,action)).second;}
 
 protected:
   void checkInternals();
@@ -57,9 +57,10 @@ protected:
 
   bool valid;
 
-  DefaultMap<StateAction,float> values;
+  //DefaultMap<StateAction,float> values;
   DefaultMap<State,unsigned int> stateVisits;
-  DefaultMap<StateAction,unsigned int> stateActionVisits;
+  //DefaultMap<StateAction,unsigned int> stateActionVisits;
+  DefaultMap<StateAction,std::pair<float,unsigned int> > stateActions;
   
   DefaultMap<StateAction,unsigned int> rolloutVisitCounts;
   std::vector<State> historyStates;
@@ -83,9 +84,10 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   gamma(gamma),
   unseenValue(unseenValue),
   valid(true),
-  values(initialValue),
+  //values(initialValue),
   stateVisits(initialStateVisits),
-  stateActionVisits(initialStateActionVisits),
+  //stateActionVisits(initialStateActionVisits),
+  stateActions(std::make_pair(initialValue,initialStateActionVisits)),
   rolloutVisitCounts(0)
 {
   if (nrewardBound > 0) {
@@ -125,11 +127,11 @@ void UCTEstimator<State,Action>::checkInternals() {
 
 template<class State, class Action>
 void UCTEstimator<State,Action>::startRollout(const State &state) {
-  static int i = 0;
-  i++;
-  i %= 1000;
+  //static int i = 0;
+  //i++;
+  //i %= 1000;
   //if (i == 0)
-    //std::cout << stateVisits.size() << " " << stateActionVisits.size() << " " << values.size() << std::endl;
+    //std::cout << stateVisits.size() << " " << stateActions.size() [><< " " << values.size()<] << std::endl;
   historyStates.clear();
   historyActions.clear();
   historyRewards.clear();
@@ -159,14 +161,14 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
   for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
     StateAction key(state,a);
     if (useBounds) {
-      na = stateActionVisits.get(key);
+      na = stateActions.get(key).second;
 
       if (na == 0)
         val = unseenValue;
       else
-        val = values.get(key) + rewardBound * sqrt(log(n) / na);
+        val = stateActions.get(key).first + rewardBound * sqrt(log(n) / na);
     } else
-      val = values.get(key);
+      val = stateActions.get(key).first;
 
     //std::cerr << val << " " << maxVal << std::endl;
     if (fabs(val - maxVal) < EPS)
@@ -200,9 +202,9 @@ Action UCTEstimator<State,Action>::selectPlanningAction(const State &state) {
 
 template<class State, class Action>
 void UCTEstimator<State,Action>::restart() {
-  values.clear();
+  stateActions.clear();
   stateVisits.clear();
-  stateActionVisits.clear();
+  //stateActionVisits.clear();
 }
 
 template<class State, class Action>
@@ -212,7 +214,7 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
 
   for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
     StateAction key(state,a);
-    val = values.get(key);
+    val = stateActions.get(key).first;
     if (val > maxVal)
       maxVal = val;
   }
@@ -221,12 +223,12 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
 
 template<class State, class Action>
 float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, float newQ){
-  float learnRate = 1.0 / (1.0 + stateActionVisits.get(key));
+  float learnRate = 1.0 / (1.0 + stateActions.get(key).second);
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
-  stateActionVisits[key]++;
+  stateActions[key].second++;
   float retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
-  values[key] += learnRate * (newQ - values[key]);
+  stateActions[key].first += learnRate * (newQ - stateActions[key].first);
   //std::cout << " --> " << values[key] << std::endl;
   return retVal;
 }
