@@ -20,15 +20,19 @@ Modified: 2011-08-23
   
 const unsigned int STATE_SIZE = 5;
 
-struct State_t {
-  State_t() {};
-  State_t(const Observation &obs);
-  Point2D positions[STATE_SIZE];
-  bool operator<(const State_t &other) const;
-  bool operator==(const State_t &other) const;
-};
-std::ostream& operator<<(std::ostream &out, const State_t &state);
-std::size_t hash_value(const State_t &s);
+typedef uint64_t State_t;
+State_t getStateFromObs(const Point2D &dims, const Observation &obs);
+void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions);
+
+//struct State {
+  //State() {};
+  //State(const Observation &obs);
+  //Point2D positions[STATE_SIZE];
+  //bool operator<(const State &other) const;
+  //bool operator==(const State &other) const;
+//};
+//std::ostream& operator<<(std::ostream &out, const State &state);
+//std::size_t hash_value(const State &s);
 
 class WorldMDP: public Model<State_t,Action::Type> {
 public:

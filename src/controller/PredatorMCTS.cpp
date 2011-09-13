@@ -10,8 +10,10 @@ PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boos
 ActionProbs PredatorMCTS::step(const Observation &obs) {
   if (prevAction < Action::NUM_MOVES)
     model->updateModels(prevObs,prevAction,obs);
-  planner->search(obs);
-  prevAction = planner->selectWorldAction(obs);
+
+  State_t state = getStateFromObs(dims,obs);
+  planner->search(state);
+  prevAction = planner->selectWorldAction(state);
   prevObs = obs;
   return ActionProbs(prevAction);
 }

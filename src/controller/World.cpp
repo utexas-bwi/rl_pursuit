@@ -12,7 +12,7 @@ void World::step() {
   Action::Type action;
   Observation obs;
   std::vector<Point2D> requestedPositions(agents.size());
-
+  
   world->generateObservation(obs);
   for (unsigned int i = 0; i < agents.size(); i++) {
     obs.myInd = i;

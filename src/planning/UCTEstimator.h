@@ -128,8 +128,8 @@ void UCTEstimator<State,Action>::startRollout(const State &state) {
   static int i = 0;
   i++;
   i %= 1000;
-  if (i == 0)
-    std::cout << stateVisits.size() << " " << stateActionVisits.size() << " " << values.size() << std::endl;
+  //if (i == 0)
+    //std::cout << stateVisits.size() << " " << stateActionVisits.size() << " " << values.size() << std::endl;
   historyStates.clear();
   historyActions.clear();
   historyRewards.clear();
