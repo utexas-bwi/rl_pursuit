@@ -19,11 +19,15 @@ MODEL_DIR = model
 PLANNING_DIR = planning
 TEST_DIR = test
 # specify compile and flags
-#ifeq ($(shell bin/onLabMachine.sh),yes)
+ifeq ($(shell bin/onLabMachine.sh),yes)
+PYTHON_VERSION=2.6
+else
+PYTHON_VERSION=2.7
+endif
 #CC = condor_compile g++
 CC = g++
-FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python2.7 -fPIC -std=c++0x
-LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython2.7 -lboost_python
+FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -fPIC -std=c++0x
+LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython$(PYTHON_VERSION) -lboost_python
 TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
 
 RM = rm -f
