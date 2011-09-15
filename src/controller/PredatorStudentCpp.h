@@ -23,8 +23,14 @@ public:
   ActionProbs step(const Observation &obs);
   void restart();
   std::string generateDescription();
+  
+  static bool handlesStudent(const std::string &name);
 
 private:
+  boost::shared_ptr<AbstractCppPredator> createPredator(const std::string &name, unsigned int predatorInd);
+
+private:
+  static const Point2D moves[5];
   boost::shared_ptr<AbstractCppPredator> predator;
   const std::string name;
 };

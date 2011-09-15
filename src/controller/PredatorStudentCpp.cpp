@@ -8,10 +8,13 @@ Modified: 2011-09-14
 
 #include "PredatorStudentCpp.h"
 
-PredatorStudentCpp::PredatorStudentCpp(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &name, unsigned int):
+const Point2D PredatorStudentCpp::moves[5] = {Point2D(0,0),Point2D(1,0),Point2D(-1,0),Point2D(0,1),Point2D(0,-1)};
+
+PredatorStudentCpp::PredatorStudentCpp(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &name, unsigned int predatorInd):
   Agent(rng,dims),
   name(name)
 {
+  predator = createPredator(name,predatorInd);
 }
 
 PredatorStudentCpp::~PredatorStudentCpp() {
@@ -34,9 +37,10 @@ ActionProbs PredatorStudentCpp::step(const Observation &obs) {
     predatorPositions[i][1] = obs.positions[ind].y;
     ind++;
   }
-
+  // set the random seed for the agents
+  srand(rng->randomUInt());
   int action = predator->step(pos,preyPositions,predatorPositions);
-  return ActionProbs((Action::Type)action);
+  return ActionProbs(getAction(moves[action]));
 }
 
 void PredatorStudentCpp::restart() {

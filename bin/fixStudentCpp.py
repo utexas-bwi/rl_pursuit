@@ -17,19 +17,34 @@ def main():
     with open('src/studentAgents/origAgents/%s/Predator.h' % student,'r') as f:
       contents = f.read()
     contents = re.sub(pattern,replacement,contents)
-
+    namespaceStr = '\nnamespace STUDENT_PREDATOR_%s {\n' % student
+    ind = contents.rfind('#include')
+    while contents[ind] != '\n':
+      ind += 1
+    ind += 1
+    contents = contents[:ind] + namespaceStr + contents[ind:]
+    #contents = contents.replace('class','nampespace STUDENT_PREDATOR_%s
     newContents = '''
 #ifndef _STUDENT_PREDATOR_%s_
 #define _STUDENT_PREDATOR_%s_
 
 #include <controller/PredatorStudentCpp.h>
 
-namespace STUDENT_PREDATOR_%s {
 %s
 }
 #endif
-''' % (student,student,student,contents)
+''' % (student,student,contents)
     with open('src/studentAgents/agents/%s/Predator.h' % student,'w') as f:
+      f.write(newContents)
+
+    with open('src/studentAgents/origAgents/%s/Predator.cxx' % student,'r') as f:
+      contents = f.read()
+    ind = contents.rfind('#include')
+    while contents[ind] != '\n':
+      ind += 1
+    ind += 1
+    newContents = contents[:ind] + namespaceStr + contents[ind:] + '\n}\n'
+    with open('src/studentAgents/agents/%s/Predator.cxx' % student,'w') as f:
       f.write(newContents)
     
 

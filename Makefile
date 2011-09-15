@@ -29,6 +29,7 @@ CC = g++
 FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -fPIC -std=c++0x
 LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython$(PYTHON_VERSION) -lboost_python
 TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
+STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
 
 RM = rm -f
 # source files
@@ -38,6 +39,7 @@ CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
+STUDENT_SOURCES = $(wildcard $(SOURCE_DIR)/studentAgents/agents/*/Predator.cxx)
 # Headers
 COMMON_HEADERS = DecisionTree.h DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h WekaParser.h
 CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h PredatorGreedy.h PredatorGreedyProbabilistic.h PredatorMCTS.h PredatorProbabilisticDestinations.h PredatorStudentCpp.h PredatorStudentPython.h PredatorTeammateAware.h World.h WorldMDP.h WorldMultiModelMDP.h WorldSilverMDP.h WorldSilverWeightedMDP.h
@@ -66,7 +68,7 @@ MODEL_HEADERS_PATH = $(addprefix $(SOURCE_DIR)/$(MODEL_DIR)/, $(MODEL_HEADERS))
 PLANNING_HEADERS_PATH = $(addprefix $(SOURCE_DIR)/$(PLANNING_DIR)/, $(PLANNING_HEADERS))
 # the sources - tests
 SOURCES = $(COMMON_SOURCES_PATH) $(CONTROLLER_SOURCES_PATH) $(FACTORY_SOURCES_PATH) $(MODEL_SOURCES_PATH) $(PLANNING_SOURCES_PATH)
-OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(SOURCES:.cpp=.o))
+OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(SOURCES:.cpp=.o) $(STUDENT_SOURCES:.cxx=.o)) # also add on the student objects
 MAIN_OBJECTS = $(OBJECTS) $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(MAIN_SOURCES:.cpp=.o))
 # headers
 HEADERS = $(COMMON_HEADERS_PATH) $(CONTROLLER_HEADERS_PATH) $(FACTORY_HEADERS_PATH) $(MODEL_HEADERS_PATH) $(PLANNING_HEADERS_PATH)
@@ -91,6 +93,11 @@ $(MAIN_TARGET): $(MAIN_OBJECTS)
 
 test: $(TEST_TARGET)
 	$(TEST_TARGET)
+
+$(BUILD_DIR)/studentAgents/agents/%.o: $(SOURCE_DIR)/studentAgents/agents/%.cxx
+	@mkdir -p $(dir $@)
+	@echo "Compiling $< for $(ARCH)"
+	@$(CC) $(STUDENT_FLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(dir $@)

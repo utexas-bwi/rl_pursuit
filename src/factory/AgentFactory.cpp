@@ -10,6 +10,7 @@
 #include <controller/PredatorGreedyProbabilistic.h>
 #include <controller/PredatorMCTS.h>
 #include <controller/PredatorProbabilisticDestinations.h>
+#include <controller/PredatorStudentCpp.h>
 #include <controller/PredatorStudentPython.h>
 #include <controller/PredatorTeammateAware.h>
 #include <controller/WorldMDP.h>
@@ -63,7 +64,10 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       std::cerr << "createAgent: ERROR: bad predator ind specified for student: " << student << std::endl;
       exit(3);
     }
-    return ptr(new PredatorStudentPython(rng,dims,student,predatorInd));
+    if (PredatorStudentCpp::handlesStudent(student))
+      return ptr(new PredatorStudentCpp(rng,dims,student,predatorInd));
+    else
+      return ptr(new PredatorStudentPython(rng,dims,student,predatorInd));
   } else if (NAME_IN_SET("mcts","uct")) {
     Json::Value plannerOptions = rootOptions["planner"];
     // process the depth if necessary
