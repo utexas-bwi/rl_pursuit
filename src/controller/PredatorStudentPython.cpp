@@ -24,8 +24,8 @@ PredatorStudentPython::PredatorStudentPython(boost::shared_ptr<RNG> rng, const P
   // load the students predators
   std::ostringstream cmd;
   try {
-    cmd << "student = __import__('studentAgents.agents." << name << "')" << std::endl; // import the right file
-    cmd << "predators = student.agents." << name << ".getPredators()" << std::endl; // get the set of predators
+    cmd << "student = __import__('agents." << name << "')" << std::endl; // import the right file
+    cmd << "predators = student." << name << ".getPredators()" << std::endl; // get the set of predators
     cmd << "predator = predators[" << predatorInd << "]("; // start the constructor for the correct predator
     cmd << dims << ","; // dims
     cmd << "True,"; // toroidalWorld
@@ -92,8 +92,8 @@ std::string PredatorStudentPython::generateDescription() {
 void PredatorStudentPython::initClass() {
   Py_Initialize();
   try {
-    PyRun_SimpleString("import sys\nsys.stdout = open('/dev/null','w')\n"); // disable any output
-    PyRun_SimpleString("sys.path.append('./studentAgents')\n"); // add the studentAgents dir to the path
+    PyRun_SimpleString("import sys\n");//sys.stdout = open('/dev/null','w')\n"); // disable any output
+    PyRun_SimpleString("sys.path.append('src/studentAgents')\n"); // add the studentAgents dir to the path
     PyRun_SimpleString("import random\n"); // import random so we can control the seed
     boost::python::object module(boost::python::handle<>(boost::python::borrowed(PyImport_AddModule("__main__"))));
     dictionary = module.attr("__dict__");
