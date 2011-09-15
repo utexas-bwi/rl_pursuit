@@ -16,11 +16,11 @@ WekaParser::WekaParser(const std::string &filename):
   tokenizeFile();
 }
 
-DecisionTree WekaParser::makeDecisionTree() {
+boost::shared_ptr<DecisionTree> WekaParser::makeDecisionTree() {
   for(unsigned int i = 0; i < lines.size(); i++)
     lines[i].used = false;
   boost::shared_ptr<DecisionTree::Node> root = readDecisionTreeNode(0,0);
-  return DecisionTree(root);
+  return boost::shared_ptr<DecisionTree>(new DecisionTree(root));
 }
 
 boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned int lineInd, unsigned int currentDepth) {
@@ -129,7 +129,7 @@ std::string WekaParser::readWekaToken(bool acceptNewline) {
   while (true) {
     if (in.eof())
       return token;
-    in.get(ch);
+    ch = in.get();
     if (ch == ' ') {
       spaces += ch;
       continue;

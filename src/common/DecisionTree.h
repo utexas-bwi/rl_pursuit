@@ -23,18 +23,19 @@ enum ComparisonOperator{
 
 //typedef std::vector<float> Classification;
 typedef unsigned int Classification;
+typedef boost::unordered_map<std::string,float> Features;
 
 class DecisionTree {
 public:
   struct Node {
-    virtual void classify(const boost::unordered_map<std::string,float> &features, Classification &classification) = 0;
+    virtual void classify(const Features &features, Classification &classification) = 0;
     virtual std::ostream& genDescription(std::ostream &out) = 0;
   };
   struct InteriorNode: public Node {
     InteriorNode(ComparisonOperator cmp, const std::string &splitKey);
     void addChild(boost::shared_ptr<Node> child, float splitValue);
-    void classify(const boost::unordered_map<std::string,float> &features, Classification &classification);
-    unsigned int getInd(const boost::unordered_map<std::string,float> &features);
+    void classify(const Features &features, Classification &classification);
+    unsigned int getInd(const Features &features);
     std::ostream& genDescription(std::ostream &out);
 
     ComparisonOperator cmp;
@@ -46,14 +47,14 @@ public:
 
   struct LeafNode: public Node {
     LeafNode(const Classification &classification);
-    void classify(const boost::unordered_map<std::string,float> &features, Classification &classification);
+    void classify(const Features &features, Classification &classification);
     std::ostream& genDescription(std::ostream &out);
 
     Classification classification;
   };
 
   DecisionTree(boost::shared_ptr<Node> root);
-  void classify(const boost::unordered_map<std::string,float> &features, Classification &classification);
+  void classify(const Features &features, Classification &classification);
 
 private:
   boost::shared_ptr<Node> root;

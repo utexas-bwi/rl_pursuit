@@ -16,6 +16,7 @@ Modified: 2011-09-13
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
 #include "DecisionTree.h"
+#include <model/Common.h>
 
 class WekaParser {
 public:
@@ -30,8 +31,8 @@ public:
   };
 
   WekaParser(const std::string &filename);
-  DecisionTree makeDecisionTree();
-
+  boost::shared_ptr<DecisionTree> makeDecisionTree();
+  
 private:
   boost::shared_ptr<DecisionTree::Node> readDecisionTreeNode(unsigned int lineInd, unsigned int currentDepth);
 
@@ -45,8 +46,8 @@ private:
 private:
   std::vector<Line> lines;
   std::ifstream in;
-  //boost::unordered_map<std::string,boost::unordered_map<std::string,float> > valueMap;
-  boost::unordered_map<std::string,float> valueMap;
+  //boost::unordered_map<std::string,Features > valueMap;
+  Features valueMap;
 };
 
 #endif /* end of include guard: WEKAPARSER_U3AZA2Y8 */

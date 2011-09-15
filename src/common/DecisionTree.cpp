@@ -29,7 +29,7 @@ void DecisionTree::InteriorNode::addChild(boost::shared_ptr<Node> child, float s
   splitValues.push_back(splitValue);
 }
 
-void DecisionTree::InteriorNode::classify(const boost::unordered_map<std::string,float> &features, Classification &classification) {
+void DecisionTree::InteriorNode::classify(const Features &features, Classification &classification) {
   try {
     //std::cout << "SPLIT on " << splitKey << std::endl;
     unsigned int ind = getInd(features);
@@ -39,7 +39,7 @@ void DecisionTree::InteriorNode::classify(const boost::unordered_map<std::string
     exit(5);
   }
 }
-unsigned int DecisionTree::InteriorNode::getInd(const boost::unordered_map<std::string,float> &features) {
+unsigned int DecisionTree::InteriorNode::getInd(const Features &features) {
   float val = features.at(splitKey);
   for (unsigned int i = 0; i < splitValues.size(); i++) {
     switch(cmp) {
@@ -81,7 +81,7 @@ DecisionTree::LeafNode::LeafNode(const Classification &classification):
 {
 }
 
-void DecisionTree::LeafNode::classify(const boost::unordered_map<std::string,float> &, Classification &classification) {
+void DecisionTree::LeafNode::classify(const Features &, Classification &classification) {
   classification = this->classification;
 }
 
@@ -101,7 +101,7 @@ DecisionTree::DecisionTree(boost::shared_ptr<Node> root):
 {
 }
 
-void DecisionTree::classify(const boost::unordered_map<std::string,float> &features, Classification &classification) {
+void DecisionTree::classify(const Features &features, Classification &classification) {
   root->classify(features,classification);
 }
 
