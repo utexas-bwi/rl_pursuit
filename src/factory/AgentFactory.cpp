@@ -6,6 +6,7 @@
 
 #include <controller/AgentRandom.h>
 #include <controller/AgentDummy.h>
+#include <controller/PredatorDecisionTree.h>
 #include <controller/PredatorGreedy.h>
 #include <controller/PredatorGreedyProbabilistic.h>
 #include <controller/PredatorMCTS.h>
@@ -53,7 +54,10 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new PredatorTeammateAware(rng,dims));
   else if (NAME_IN_SET("dummy"))
     return ptr(new AgentDummy(rng,dims));
-  else if (NAME_IN_SET("student")) {
+  else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {
+    std::string filename = options.get("filename","").asString();
+    return ptr(new PredatorDecisionTree(rng,dims,filename));
+  } else if (NAME_IN_SET("student")) {
     std::string student = options.get("student","").asString();
     if (student == "") {
       std::cerr << "createAgent: ERROR: no student type specified" << std::endl;
