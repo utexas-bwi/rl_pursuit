@@ -34,13 +34,13 @@ RM = rm -f
 # source files
 MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
 COMMON_SOURCES = DecisionTree.cpp Point2D.cpp tinymt32.cpp Util.cpp WekaParser.cpp
-CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentPython.cpp PredatorTeammateAware.cpp World.cpp WorldMDP.cpp WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
+CONTROLLER_SOURCES = AStar.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentCpp.cpp PredatorStudentCpp_gen.cpp PredatorStudentPython.cpp PredatorTeammateAware.cpp World.cpp WorldMDP.cpp WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
 # Headers
 COMMON_HEADERS = DecisionTree.h DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h WekaParser.h
-CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h PredatorGreedy.h PredatorGreedyProbabilistic.h PredatorMCTS.h PredatorProbabilisticDestinations.h PredatorStudentPython.h PredatorTeammateAware.h World.h WorldMDP.h WorldMultiModelMDP.h WorldSilverMDP.h WorldSilverWeightedMDP.h
+CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h PredatorGreedy.h PredatorGreedyProbabilistic.h PredatorMCTS.h PredatorProbabilisticDestinations.h PredatorStudentCpp.h PredatorStudentPython.h PredatorTeammateAware.h World.h WorldMDP.h WorldMultiModelMDP.h WorldSilverMDP.h WorldSilverWeightedMDP.h
 FACTORY_HEADERS = AgentFactory.h PlanningFactory.h WorldFactory.h
 MODEL_HEADERS = AgentModel.h Common.h WorldModel.h
 PLANNING_HEADERS = MCTS.h Model.h UCTEstimator.h ValueEstimator.h
