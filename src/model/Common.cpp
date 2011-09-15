@@ -65,6 +65,17 @@ bool ActionProbs::checkTotal() {
   return fabs(1.0 - total) < 1e-5;
 }
 
+Action::Type ActionProbs::maxAction() {
+  int maxAction = 0;
+  float maxVal = -1;
+  for (int i = 0; i < Action::NUM_MOVES; i++) {
+    if (probs[i] > maxVal) {
+      maxAction = i;
+      maxVal = probs[i];
+    }
+  }
+  return (Action::Type)maxAction;
+}
 
 Point2D wrapPoint(const Point2D &dims, Point2D pos) {
   while (pos.x > dims.x)

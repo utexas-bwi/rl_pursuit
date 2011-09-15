@@ -34,7 +34,7 @@ namespace Action {
     NUM_ACTIONS = NUM_MOVES
   };
 
-  static Point2D VARIABLE_IS_NOT_USED MOVES[NUM_MOVES] = {Point2D(-1,0),Point2D(1,0),Point2D(0,1),Point2D(0,-1),Point2D(0,0)};
+  static const Point2D VARIABLE_IS_NOT_USED MOVES[NUM_MOVES] = {Point2D(-1,0),Point2D(1,0),Point2D(0,1),Point2D(0,-1),Point2D(0,0)};
 }
 
 Action::Type getAction(const Point2D &move);
@@ -48,6 +48,7 @@ public:
   const float& operator[](Action::Type ind) const;
   Action::Type selectAction(boost::shared_ptr<RNG> rng);
   bool checkTotal();
+  Action::Type maxAction();
 
 private:
   float probs[Action::NUM_MOVES];
