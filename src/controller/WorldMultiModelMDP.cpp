@@ -2,10 +2,11 @@
   
 const double WorldMultiModelMDP::MIN_MODEL_PROB = 0.001;
 
-WorldMultiModelMDP::WorldMultiModelMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, ModelUpdateType modelUpdateType):
+WorldMultiModelMDP::WorldMultiModelMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, const std::vector<std::string> &modelDescriptions, ModelUpdateType modelUpdateType):
   WorldMDP(rng,model,controller,adhocAgent),
   agentModelList(agentModelList),
   agentModelProbs(agentModelProbs),
+  modelDescriptions(modelDescriptions),
   modelUpdateType(modelUpdateType)
 {
   assert(agentModelList.size() == agentModelProbs.size());
@@ -37,7 +38,7 @@ void WorldMultiModelMDP::updateModels(const Observation &prevObs, Action::Type l
   getNewModelProbs(prevObs,lastAction,currentObs,newModelProbs);
   // check if all zero probs
   if (allProbsTooLow(newModelProbs)) {
-    std::cout << "All model probs too low" << std::endl;
+    //std::cout << "All model probs too low" << std::endl;
     return;
   }
   // set our models
@@ -72,8 +73,13 @@ void WorldMultiModelMDP::selectModel() {
 
 void WorldMultiModelMDP::normalizeModelProbs() {
   double total = 0; 
-  for (unsigned int i = 0; i < agentModelProbs.size(); i++)
+  for (unsigned int i = 0; i < agentModelProbs.size(); i++) {
+    //if (modelDescriptions[i] == "DT") { // TODO remove this
+      //if (agentModelProbs[i] < 0.2)
+        //agentModelProbs[i] = 0.2;
+    //}
     total += agentModelProbs[i];
+  }
   for (unsigned int i = 0; i < agentModelProbs.size(); i++)
     agentModelProbs[i] /= total;
 }
@@ -117,9 +123,11 @@ void WorldMultiModelMDP::removeLowProbabilityModels() {
   bool removedModels = false;
   while (i < agentModelProbs.size()) {
     if (agentModelProbs[i] < MIN_MODEL_PROB) {
+      //std::cerr << "REMOVING MODEL: " << modelDescriptions[i] << std::endl;
       // remove it from the probs and models
       agentModelProbs.erase(agentModelProbs.begin()+i,agentModelProbs.begin()+i+1);
       agentModelList.erase(agentModelList.begin()+i,agentModelList.begin()+i+1);
+      modelDescriptions.erase(modelDescriptions.begin()+i,modelDescriptions.begin()+i+1);
       removedModels = true;
     } else {
       ++i;
@@ -140,5 +148,12 @@ std::string WorldMultiModelMDP::generateDescription(unsigned int indentation) {
       updates = "Polynomial";
       break;
   }
-  return indent(indentation) + "MultiModel " + updates + "\n" + WorldMDP::generateDescription(indentation);
+  return indent(indentation) + "MultiModel " + updates + "\n" + generateModelDescriptions(indentation+1);// + WorldMDP::generateDescription(indentation);
+}
+
+std::string WorldMultiModelMDP::generateModelDescriptions(unsigned int indentation) {
+  std::string desc;
+  for (unsigned int i = 0; i < modelDescriptions.size(); i++)
+    desc += indent(indentation) + modelDescriptions[i] + "\n";
+  return desc;
 }

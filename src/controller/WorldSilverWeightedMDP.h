@@ -21,7 +21,7 @@ struct StateHelperWeighted: public StateHelper {
 
 class WorldSilverWeightedMDP: public WorldSilverMDP {
 public:
-  WorldSilverWeightedMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, ModelUpdateType modelUpdateType);
+  WorldSilverWeightedMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, const std::vector<std::string> &modelDescriptions, ModelUpdateType modelUpdateType);
   virtual std::string generateDescription(unsigned int indentation = 0);
 protected:
   virtual boost::shared_ptr<StateHelper> createStateHelper();

@@ -15,9 +15,11 @@ boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr
   const Json::Value models = options["models"];
   std::vector<std::vector<boost::shared_ptr<Agent> > > modelList(models.size());
   std::vector<double> modelProbs;
+  std::vector<std::string> modelDescriptions;
   AgentType agentType = PREY;
   for (unsigned int i = 0; i < models.size(); i++) {
     modelProbs.push_back(models[i].get("prob",1.0).asDouble());
+    modelDescriptions.push_back(models[i].get("desc","NO DESCRIPTION").asString());
     const Json::Value model = models[i]["model"];
     for (unsigned int j = 0; j < model.size(); j++) {
       agentType = getAgentType(model[j].get("type","UNKNOWN").asString());
@@ -48,12 +50,12 @@ boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr
 
   if (options.get("silver",false).asBool()) {
     if (options.get("weighted",false).asBool()) {
-      return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverWeightedMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
+      return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverWeightedMDP(rng,model,controller,adhocAgent,modelList,modelProbs,modelDescriptions,updateType));
     } else {
-      return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
+      return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverMDP(rng,model,controller,adhocAgent,modelList,modelProbs,modelDescriptions,updateType));
     }
   } else {
-    return boost::shared_ptr<WorldMultiModelMDP>(new WorldMultiModelMDP(rng,model,controller,adhocAgent,modelList,modelProbs,updateType));
+    return boost::shared_ptr<WorldMultiModelMDP>(new WorldMultiModelMDP(rng,model,controller,adhocAgent,modelList,modelProbs,modelDescriptions,updateType));
   }
 }
 

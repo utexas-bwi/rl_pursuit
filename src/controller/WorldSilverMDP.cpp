@@ -16,14 +16,14 @@ void StateHelper::addControllers(unsigned int ind) {
   possibleControllers.push_back(ind);
 }
 
-WorldSilverMDP::WorldSilverMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, ModelUpdateType modelUpdateType):
-  WorldMultiModelMDP(rng,model,controller,adhocAgent,agentModelList,agentModelProbs,modelUpdateType),
+WorldSilverMDP::WorldSilverMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, const std::vector<std::string> &modelDescriptions, ModelUpdateType modelUpdateType):
+  WorldMultiModelMDP(rng,model,controller,adhocAgent,agentModelList,agentModelProbs,modelDescriptions,modelUpdateType),
   firstStateSet(false)
 {
 }
 
 std::string WorldSilverMDP::generateDescription(unsigned int indentation) {
-  return indent(indentation) + "Silver\n" + WorldMDP::generateDescription(indentation);
+  return indent(indentation) + "Silver\n" + generateModelDescriptions(indentation+1);// + WorldMDP::generateDescription(indentation);
 }
  
 void WorldSilverMDP::selectModel() {

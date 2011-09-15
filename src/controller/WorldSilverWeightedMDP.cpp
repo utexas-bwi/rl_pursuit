@@ -32,13 +32,13 @@ void StateHelperWeighted::addControllers(unsigned int ind) {
   totalCounts++;
 }
 
-WorldSilverWeightedMDP::WorldSilverWeightedMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, ModelUpdateType modelUpdateType):
-  WorldSilverMDP(rng,model,controller,adhocAgent,agentModelList,agentModelProbs,modelUpdateType)
+WorldSilverWeightedMDP::WorldSilverWeightedMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent,const std::vector<std::vector<boost::shared_ptr<Agent> > > &agentModelList, const std::vector<double> &agentModelProbs, const std::vector<std::string> &modelDescriptions, ModelUpdateType modelUpdateType):
+  WorldSilverMDP(rng,model,controller,adhocAgent,agentModelList,agentModelProbs,modelDescriptions,modelUpdateType)
 {
 }
   
 std::string WorldSilverWeightedMDP::generateDescription(unsigned int indentation) {
-  return indent(indentation) + "Silver - WEIGHTED\n" + WorldMDP::generateDescription(indentation);
+  return indent(indentation) + "Silver - WEIGHTED\n" + generateModelDescriptions(indentation+1);// + WorldMDP::generateDescription(indentation);
 }
   
 boost::shared_ptr<StateHelper> WorldSilverWeightedMDP::createStateHelper() {
