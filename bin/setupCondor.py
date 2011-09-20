@@ -2,9 +2,8 @@
   
 import os, shutil, re
 
-def createCondorConfig(name,numJobs,arguments):
+def createCondorConfig(name,numJobs,arguments,outFilename):
   inFilename = 'condor/base.condor'
-  outFilename = 'condor/configs/%s.condor' % name
 
   with open(inFilename,'r') as f:
     contents = f.read()
@@ -14,8 +13,7 @@ def createCondorConfig(name,numJobs,arguments):
   with open(outFilename,'w') as f:
     f.write(contents)
 
-def createPursuitConfig(name,numTrials,numTrialsPerJob,configs):
-  outFilename = 'condor/configs/%s.json' % name
+def createPursuitConfig(name,numTrials,numTrialsPerJob,configs,outFilename):
   contents = '''
 {
   "trials": %s,
@@ -48,9 +46,19 @@ def makeCondorDirs(name):
 
 def run(name,numTrials,numTrialsPerJob,configs):
   numJobs = numTrials / numTrialsPerJob
-  createPursuitConfig(name,numTrials,numTrialsPerJob,configs)
-  createCondorConfig(name,numJobs,'$(Process) condor/configs/%s.json' % name)
+  jsonFilename = os.path.join('condor','configs','%s.json'%name)
+  condorFilename = os.path.join('condor','configs','%s.condor' % name)
+  if os.path.exists(jsonFilename):
+    print 'ERROR: %s already exists, exiting' % jsonFilename
+    return 2
+  if os.path.exists(condorFilename):
+    print 'ERROR: %s already exists, exiting' % condorFilename
+    return 2
+  
+  createPursuitConfig(name,numTrials,numTrialsPerJob,configs,jsonFilename)
+  createCondorConfig(name,numJobs,'$(Process) %s' % jsonFilename,condorFilename)
   makeCondorDirs(name)
+  return 0
 
 def main(args):
   if len(args) < 4:
@@ -61,8 +69,7 @@ def main(args):
   numTrials = int(args[1])
   numTrialsPerJob = int(args[2])
   configs = args[3:]
-  run(name,numTrials,numTrialsPerJob,configs)
-  return 0
+  return run(name,numTrials,numTrialsPerJob,configs)
 
 if __name__ == '__main__':
   import sys
