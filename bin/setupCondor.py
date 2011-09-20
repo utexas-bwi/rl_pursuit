@@ -31,7 +31,7 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob,configs):
     with open(config,'r') as f:
       oldContents += f.read()
   contents = oldContents + contents
-  contents = re.sub('}\s*{','',contents,re.MULTILINE)
+  contents = re.sub('}\s*{',',',contents,re.MULTILINE)
   with open(outFilename,'w') as f:
     f.write(contents)
 
