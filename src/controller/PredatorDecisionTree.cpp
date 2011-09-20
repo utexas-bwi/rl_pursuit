@@ -49,5 +49,5 @@ void PredatorDecisionTree::extractFeatures(const Observation &obs, Features &fea
 }
 
 void PredatorDecisionTree::addFeatureAgent(const std::string &key, const std::string &name) {
-  featureAgents[key] = createAgent(rng,dims,name,Json::Value(),Json::Value());
+  featureAgents[key] = createAgent(rng,dims,name,0,Json::Value(),Json::Value()); // the randomNum doesn't matter here
 }

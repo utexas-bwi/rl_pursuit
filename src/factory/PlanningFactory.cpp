@@ -20,13 +20,14 @@ boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr
   for (unsigned int i = 0; i < models.size(); i++) {
     modelProbs.push_back(models[i].get("prob",1.0).asDouble());
     modelDescriptions.push_back(models[i].get("desc","NO DESCRIPTION").asString());
+    unsigned int randomNum = rng->randomUInt(); // used for things like choosing which student team to use
     const Json::Value model = models[i]["model"];
     for (unsigned int j = 0; j < model.size(); j++) {
       agentType = getAgentType(model[j].get("type","UNKNOWN").asString());
       if (agentType == ADHOC) {
         modelList[i].push_back(adhocAgent);
       } else {
-        modelList[i].push_back(createAgent(rng->randomUInt(),dims,model[j],options)); // TODO RNG?
+        modelList[i].push_back(createAgent(rng->randomUInt(),dims,randomNum,model[j],options)); // TODO RNG?
       }
       
       // add the first set of agents to the world

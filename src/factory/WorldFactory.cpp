@@ -23,8 +23,9 @@ boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::sh
   boost::shared_ptr<Agent> agent;
   Point2D dims = world->getModel()->getDims();
 
+  unsigned int randomNum = rng->randomUInt(); // used for things like choosing which student team to use
   for (unsigned int i = 0; i < agents.size(); ++i) {
-    agent = createAgent(rng->randomUInt(), dims, agents[i], options);
+    agent = createAgent(rng->randomUInt(), dims, randomNum, agents[i], options);
     world->addAgent(AgentModel(0,0,getAgentType(agents[i].get("type","NONE").asString())),agent,true);
   }
   return world;

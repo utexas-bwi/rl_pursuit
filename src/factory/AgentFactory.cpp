@@ -2,6 +2,7 @@
 
 #include <cstdarg>
 #include <iostream>
+#include <fstream>
 #include <boost/algorithm/string.hpp>
 
 #include <controller/AgentRandom.h>
@@ -38,7 +39,28 @@ bool nameInSet(const std::string &name, ...) {
   return found;
 }
 
-boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, const Json::Value &options, const Json::Value &rootOptions) {
+bool pickStudentFromFile(const std::string &filename, std::string &student, unsigned int randomNum) {
+  std::ifstream in(filename.c_str());
+  if (!in.good())
+    return false;
+  std::vector<std::string> students;
+  std::string name;
+  in >> name;
+  while (in.good()) {
+    //std::cout << "adding: " << name << std::endl;
+    students.push_back(name);
+    in >> name;
+  }
+  in.close();
+  //std::cout << "NUM STUDENTS: " << students.size() << std::endl;
+  if (students.size() == 0)
+    return false;
+  student = students[randomNum % students.size()];
+  //std::cout << student << std::endl;
+  return true;
+}
+
+boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int randomNum, const Json::Value &options, const Json::Value &rootOptions) {
   typedef boost::shared_ptr<Agent> ptr;
   
   boost::to_lower(name);
@@ -63,6 +85,9 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       std::cerr << "createAgent: ERROR: no student type specified" << std::endl;
       exit(3);
     }
+
+    pickStudentFromFile(student,student,randomNum);
+
     int predatorInd = options.get("predatorInd",-1).asInt();
     if ((predatorInd < 0) || (predatorInd >= 4)) {
       std::cerr << "createAgent: ERROR: bad predator ind specified for student: " << student << std::endl;
@@ -95,17 +120,17 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
   }
 }
 
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, unsigned int randomNum, const Json::Value &options, const Json::Value &rootOptions) {
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
-  return createAgent(rng,dims,name,options,rootOptions);
+  return createAgent(rng,dims,name,randomNum,options,rootOptions);
 }
 
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, unsigned int randomNum, const Json::Value &options, const Json::Value &rootOptions) {
   std::string name = options.get("behavior","NONE").asString();
   if (name == "NONE") {
     std::cerr << "createAgent: WARNING: no agent type specified, using random" << std::endl;
     name = "random";
   }
 
-  return createAgent(randomSeed,dims,name,options,rootOptions);
+  return createAgent(randomSeed,dims,name,randomNum,options,rootOptions);
 }
