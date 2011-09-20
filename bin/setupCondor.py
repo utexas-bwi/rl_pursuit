@@ -1,6 +1,6 @@
 #!/usr/bin/env python
   
-import os, shutil
+import os, shutil, re
 
 def createCondorConfig(name,numJobs,arguments):
   inFilename = 'condor/base.condor'
@@ -14,7 +14,7 @@ def createCondorConfig(name,numJobs,arguments):
   with open(outFilename,'w') as f:
     f.write(contents)
 
-def createPursuitConfig(name,numTrials,numTrialsPerJob):
+def createPursuitConfig(name,numTrials,numTrialsPerJob,configs):
   outFilename = 'condor/configs/%s.json' % name
   contents = '''
 {
@@ -26,6 +26,12 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob):
   results = os.path.join('condor','results',name,'$(JOBNUM).csv')
   configSave = os.path.join('condor','results',name,'config.json')
   contents = contents % (numTrials,numTrialsPerJob,results,configSave)
+  oldContents = ''
+  for config in configs:
+    with open(config,'r') as f:
+      oldContents += f.read()
+  contents = oldContents + contents
+  contents = re.sub('}\s*{','',contents,re.MULTILINE)
   with open(outFilename,'w') as f:
     f.write(contents)
 
@@ -42,8 +48,8 @@ def makeCondorDirs(name):
 
 def run(name,numTrials,numTrialsPerJob,configs):
   numJobs = numTrials / numTrialsPerJob
-  createCondorConfig(name,numJobs,'$(Process) %s condor/configs/%s.json' % (' '.join(configs),name))
-  createPursuitConfig(name,numTrials,numTrialsPerJob)
+  createPursuitConfig(name,numTrials,numTrialsPerJob,configs)
+  createCondorConfig(name,numJobs,'$(Process) condor/configs/%s.json' % name)
   makeCondorDirs(name)
 
 def main(args):
