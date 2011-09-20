@@ -40,7 +40,7 @@ public:
   virtual void restart();
   virtual std::string generateDescription(unsigned int indentation = 0);
   float maxValueForState(const State &state);
-  float getStateActionValue(const State &state, const Action &action) { return stateActions.get(StateAction(state,action)).second;}
+  float getStateActionValue(const State &state, const Action &action) { return stateActions.get(StateAction(state,action)).first;}
 
 protected:
   void checkInternals();
