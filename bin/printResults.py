@@ -21,12 +21,13 @@ def main(filenames,sameResult):
       if numSteps is None:
         numSteps = res
       else:
-        numSteps = numpy.hstack(numSteps,res)
+        numSteps = numpy.hstack((numSteps,res))
+    print numSteps.size,numSteps.mean()
   else:
     for filename in filenames:
       print filename
       numSteps = loadResults(filename)
-      print numSteps.mean()
+      print numSteps.size,numSteps.mean()
 
 if __name__ == '__main__':
   import sys
