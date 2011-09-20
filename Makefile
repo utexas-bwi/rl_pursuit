@@ -76,7 +76,7 @@ HEADERS = $(COMMON_HEADERS_PATH) $(CONTROLLER_HEADERS_PATH) $(FACTORY_HEADERS_PA
 # tests
 TEST_SOURCES_PATH = $(addprefix $(SOURCE_DIR)/$(TEST_DIR)/, $(TEST_SOURCES))
 TEST_SOURCES_COMBINED = $(SOURCES) $(TEST_SOURCES_PATH)
-TEST_OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(TEST_SOURCES_COMBINED:.cpp=.o))
+TEST_OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(TEST_SOURCES_COMBINED:.cpp=.o) $(STUDENT_SOURCES:.cxx=.o)) # also add on the student objects
 
 .PHONY: all run build test default clean fullclean
 

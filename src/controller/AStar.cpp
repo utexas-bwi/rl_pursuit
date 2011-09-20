@@ -9,6 +9,7 @@ Modified: 2011-09-09
 #include "AStar.h"
 #include <algorithm>
 #include <model/Common.h>
+#include <iostream>
     
 AStar::Node::Node(unsigned int gcost, unsigned int hcost, const Point2D &pos, boost::shared_ptr<Node>parent):
   gcost(gcost),
@@ -22,15 +23,22 @@ bool AStar::Node::operator<(const Node &other) {
   return gcost + hcost > other.gcost + other.hcost; // reversed to put the lowest cost node first
 }
 
+std::size_t AStar::Nodehash::operator()(const boost::shared_ptr<Node> &node) const {
+  std::size_t seed = 0;
+  boost::hash_combine(seed,node->pos.x);
+  boost::hash_combine(seed,node->pos.y);
+  return seed;
+}
+
 // NOTE: for the heap to work correctly, we must specify how to compare Node*'s
-bool cmp(const boost::shared_ptr<AStar::Node> node1, const boost::shared_ptr<AStar::Node> node2) {
+bool cmp(const boost::shared_ptr<AStar::Node> &node1, const boost::shared_ptr<AStar::Node> &node2) {
   return node1->gcost + node1->hcost > node2->gcost + node2->hcost; // reversed to put the lowest cost node first
 }
 
-bool AStar::Nodecmp::operator() (const boost::shared_ptr<Node>node1, const boost::shared_ptr<Node>node2) const {
-  return node1->pos < node2->pos;
+bool AStar::Nodeequal::operator() (const boost::shared_ptr<Node> &node1, const boost::shared_ptr<Node> &node2) const {
+  return node1->pos == node2->pos;
 }
-
+  
 AStar::AStar(const Point2D &dims):
   dims(dims)
 {
@@ -60,7 +68,7 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
     if (obstacles[i] != goal) // ignore any obstacles at the goal
       closedNodes.insert(boost::shared_ptr<Node>(new Node(0,0,obstacles[i],boost::shared_ptr<Node>())));
   }
-  
+
   // while there are open nodes
   while (openNodes.size() > 0) {
     node = openHeap.front(); // get the lowest cost node
