@@ -25,9 +25,14 @@ public:
     boost::shared_ptr<Node> parent;
   };
 
-  struct Nodecmp {
-    bool operator() (const boost::shared_ptr<Node> node1, const boost::shared_ptr<Node> node2) const;
+  struct Nodeequal {
+    bool operator() (const boost::shared_ptr<Node> &node1, const boost::shared_ptr<Node> &node2) const;
   };
+  
+  struct Nodehash{
+    std::size_t operator()(const boost::shared_ptr<Node> &node) const;
+  };
+
 
 public:
   AStar(const Point2D &dims);
@@ -39,8 +44,8 @@ public:
 private:
   const Point2D dims;
   std::vector<boost::shared_ptr<Node> > openHeap;
-  boost::unordered_set<boost::shared_ptr<Node> > openNodes;
-  boost::unordered_set<boost::shared_ptr<Node> > closedNodes;
+  boost::unordered_set<boost::shared_ptr<Node>, Nodehash, Nodeequal> openNodes;
+  boost::unordered_set<boost::shared_ptr<Node>, Nodehash, Nodeequal> closedNodes;
   //std::set<boost::shared_ptr<Node>,Nodecmp> openNodes;
   //std::set<boost::shared_ptr<Node>,Nodecmp> closedNodes;
   Point2D goal;
