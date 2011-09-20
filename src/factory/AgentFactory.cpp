@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <controller/AgentRandom.h>
 #include <controller/AgentDummy.h>
@@ -78,6 +79,12 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new AgentDummy(rng,dims));
   else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {
     std::string filename = options.get("filename","").asString();
+    std::string sizeId = "$(SIZE)";
+    size_t ind = filename.find(sizeId);
+    if (ind != std::string::npos) {
+      std::string size = boost::lexical_cast<std::string>(dims.x) + "x" + boost::lexical_cast<std::string>(dims.y);
+      filename.replace(ind,sizeId.size(),size);
+    }
     return ptr(new PredatorDecisionTree(rng,dims,filename));
   } else if (NAME_IN_SET("student")) {
     std::string student = options.get("student","").asString();
