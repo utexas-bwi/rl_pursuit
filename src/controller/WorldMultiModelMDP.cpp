@@ -148,7 +148,7 @@ std::string WorldMultiModelMDP::generateDescription(unsigned int indentation) {
       updates = "Polynomial";
       break;
   }
-  return indent(indentation) + "MultiModel " + updates + "\n" + generateModelDescriptions(indentation+1);// + WorldMDP::generateDescription(indentation);
+  return indent(indentation) + "MultiModel " + updates + ":\n" + indent(indentation+1) + "Models:\n" + generateModelDescriptions(indentation+2) + WorldMDP::generateDescription(indentation+1);
 }
 
 std::string WorldMultiModelMDP::generateModelDescriptions(unsigned int indentation) {
