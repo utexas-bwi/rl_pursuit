@@ -12,13 +12,16 @@ Modified: 2011-08-24
 #include <boost/shared_ptr.hpp>
 #include <common/RNG.h>
 #include <controller/WorldMDP.h>
-#include <controller/WorldMultiModelMDP.h>
+#include <controller/ModelUpdater.h>
 #include <planning/UCTEstimator.h>
 #include <planning/UCTEstimator.h>
 #include <planning/MCTS.h>
 
+// model updater
+boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, const Json::Value &options);
+
 // WORLD MDPs
-boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options);
+boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims);
 //boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options);
 
 // UCT ESTIMATORS
@@ -30,8 +33,8 @@ boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(boost:
 boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(unsigned int randomSeed, Action::Type numActions, const Json::Value &options);
 
 // MCTS
-boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth);
+boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth);
 
-boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,const Json::Value &options);
+boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,const Json::Value &options);
 
 #endif /* end of include guard: PLANNINGFACTORY_4TYHDV2K */

@@ -114,13 +114,15 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     }
     
     // create the mdp
-    boost::shared_ptr<WorldMultiModelMDP> mdp = createWorldMultiModelMDP(rng,dims,plannerOptions);
+    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims);
+    // create the model updater
+    boost::shared_ptr<ModelUpdater> modelUpdater = createModelUpdater(rng,mdp,mdp->getAdhocAgent(),dims,plannerOptions);
     // create the value estimator
     boost::shared_ptr<UCTEstimator<State_t,Action::Type> > uct = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,plannerOptions);
     // create the planner
-    boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(mdp,uct,plannerOptions);
+    boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(mdp,uct,modelUpdater,plannerOptions);
 
-    return ptr(new PredatorMCTS(rng,dims,mcts,mdp));
+    return ptr(new PredatorMCTS(rng,dims,mcts,mdp,modelUpdater));
   } else {
     std::cerr << "createAgent: unknown agent name: " << name << std::endl;
     assert(false);

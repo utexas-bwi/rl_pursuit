@@ -1,16 +1,12 @@
 #include "PlanningFactory.h"
 #include <boost/algorithm/string.hpp>
-#include <controller/WorldSilverMDP.h>
-#include <controller/WorldSilverWeightedMDP.h>
+//#include <controller/WorldSilverMDP.h>
+//#include <controller/WorldSilverWeightedMDP.h>
+#include <controller/ModelUpdaterBayes.h>
+#include <controller/ModelUpdaterSilver.h>
 #include "WorldFactory.h"
 
-boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options) {
-  // create the world model and controller
-  boost::shared_ptr<WorldModel> model = createWorldModel(dims);
-  boost::shared_ptr<World> controller = createWorld(rng->randomUInt(),model);
-  // create the dummy agent for the ad hoc agent
-  boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(boost::shared_ptr<RNG>(new RNG(rng->randomUInt())),dims));
-  
+boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, const Json::Value &options) {
   // create the agents
   const Json::Value models = options["models"];
   std::vector<std::vector<boost::shared_ptr<Agent> > > modelList(models.size());
@@ -32,32 +28,40 @@ boost::shared_ptr<WorldMultiModelMDP> createWorldMultiModelMDP(boost::shared_ptr
       
       // add the first set of agents to the world
       if (i == 0)
-        controller->addAgent(AgentModel(0,0,agentType),modelList[i][j],true);
+        mdp->addAgent(agentType,modelList[i][j]);
+        //controller->addAgent(AgentModel(0,0,agentType),modelList[i][j],true);
     }
-  }
-
-  std::string updateTypeString = options.get("update","bayesian").asString();
-  boost::to_lower(updateTypeString);
-  ModelUpdateType updateType;
-
-  if (updateTypeString == "bayesian")
-    updateType = BAYESIAN_UPDATES;
-  else if (updateTypeString == "polynomial")
-    updateType = POLYNOMIAL_WEIGHTS;
-  else {
-    std::cerr << "createWorldMultiModelMDP: ERROR: unknown updateTypeString: " << updateTypeString;
-    assert(false);
   }
 
   if (options.get("silver",false).asBool()) {
-    if (options.get("weighted",false).asBool()) {
-      return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverWeightedMDP(rng,model,controller,adhocAgent,modelList,modelProbs,modelDescriptions,updateType));
-    } else {
-      return boost::shared_ptr<WorldMultiModelMDP>(new WorldSilverMDP(rng,model,controller,adhocAgent,modelList,modelProbs,modelDescriptions,updateType));
-    }
+    // make a silver updater
+    bool weighted = options.get("weighted",false).asBool();
+    return boost::shared_ptr<ModelUpdaterSilver>(new ModelUpdaterSilver(rng,mdp,modelList,modelProbs,modelDescriptions,weighted));
   } else {
-    return boost::shared_ptr<WorldMultiModelMDP>(new WorldMultiModelMDP(rng,model,controller,adhocAgent,modelList,modelProbs,modelDescriptions,updateType));
+    // make a bayes updater
+    std::string updateTypeString = options.get("update","bayesian").asString();
+    boost::to_lower(updateTypeString);
+    ModelUpdateType updateType;
+
+    if (updateTypeString == "bayesian")
+      updateType = BAYESIAN_UPDATES;
+    else if (updateTypeString == "polynomial")
+      updateType = POLYNOMIAL_WEIGHTS;
+    else {
+      std::cerr << "createModelUpdater: ERROR: unknown updateTypeString: " << updateTypeString;
+      assert(false);
+    }
+    return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType));
   }
+}
+
+boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims) {
+  // create the world model and controller
+  boost::shared_ptr<WorldModel> model = createWorldModel(dims);
+  boost::shared_ptr<World> controller = createWorld(rng->randomUInt(),model);
+  // create the dummy agent for the ad hoc agent
+  boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(boost::shared_ptr<RNG>(new RNG(rng->randomUInt())),dims));
+  return boost::shared_ptr<WorldMDP>(new WorldMDP(rng,model,controller,adhocAgent));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -85,14 +89,14 @@ boost::shared_ptr<UCTEstimator<State_t,Action::Type> > createUCTEstimator(unsign
 
 ///////////////////////////////////////////////////////////////
 
-boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth) {
-  return boost::shared_ptr<MCTS<State_t,Action::Type> >(new MCTS<State_t,Action::Type>(model,valueEstimator,numPlayouts,maxPlanningTime,maxDepth));
+boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth) {
+  return boost::shared_ptr<MCTS<State_t,Action::Type> >(new MCTS<State_t,Action::Type>(model,valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth));
 }
 
-boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,const Json::Value &options) {
+boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,const Json::Value &options) {
   unsigned int numPlayouts = options.get("playouts",0).asUInt();
   double maxPlanningTime = options.get("time",0.0).asDouble();
   unsigned int maxDepth = options.get("depth",0).asUInt();
 
-  return createMCTS(model,valueEstimator,numPlayouts,maxPlanningTime,maxDepth);
+  return createMCTS(model,valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth);
 }

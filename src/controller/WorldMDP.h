@@ -17,22 +17,7 @@ Modified: 2011-08-23
 #include <model/WorldModel.h>
 #include <controller/World.h>
 #include <controller/AgentDummy.h>
-  
-const unsigned int STATE_SIZE = 5;
-
-typedef uint64_t State_t;
-State_t getStateFromObs(const Point2D &dims, const Observation &obs);
-void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions);
-
-//struct State {
-  //State() {};
-  //State(const Observation &obs);
-  //Point2D positions[STATE_SIZE];
-  //bool operator<(const State &other) const;
-  //bool operator==(const State &other) const;
-//};
-//std::ostream& operator<<(std::ostream &out, const State &state);
-//std::size_t hash_value(const State &s);
+#include <controller/State.h>
 
 class WorldMDP: public Model<State_t,Action::Type> {
 public:
@@ -42,13 +27,16 @@ public:
   virtual void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
   virtual float getRewardRangePerStep();
   virtual std::string generateDescription(unsigned int indentation = 0);
+  void setAgents(const std::vector<boost::shared_ptr<Agent> > &agents);
+  double getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs);
+  boost::shared_ptr<AgentDummy> getAdhocAgent();
+  void addAgent(AgentType agentType, boost::shared_ptr<Agent> agent);
 
 protected:
   boost::shared_ptr<RNG> rng;
   boost::shared_ptr<WorldModel> model;
   boost::shared_ptr<World> controller;
   boost::shared_ptr<AgentDummy> adhocAgent;
-  State_t rolloutStartState;
 };
 
 #endif /* end of include guard: WORLDMDP_CNHINAVX */

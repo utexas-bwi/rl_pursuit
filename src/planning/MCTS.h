@@ -15,11 +15,12 @@ Modified: 2011-08-23
 #include "Model.h"
 #include "ValueEstimator.h"
 #include <common/Util.h>
+#include <controller/ModelUpdater.h>
 
 template<class State, class Action>
 class MCTS {
 public:
-  MCTS (boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth);
+  MCTS (boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth);
   virtual ~MCTS () {}
 
   void search(const State &startState);
@@ -34,6 +35,7 @@ private:
 private:
   boost::shared_ptr<Model<State,Action> > model;
   boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator;
+  boost::shared_ptr<ModelUpdater> modelUpdater;
   unsigned int numPlayouts;
   double maxPlanningTime;
   unsigned int maxDepth;
@@ -44,9 +46,10 @@ private:
 ////////////////////////////////////////////////////////////////////////////
 
 template<class State, class Action>
-MCTS<State,Action>::MCTS(boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth):
+MCTS<State,Action>::MCTS(boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth):
   model(model),
   valueEstimator(valueEstimator),
+  modelUpdater(modelUpdater),
   numPlayouts(numPlayouts),
   maxPlanningTime(maxPlanningTime),
   maxDepth(maxDepth)
@@ -122,6 +125,7 @@ void MCTS<State,Action>::rollout(const State &startState) {
     action = valueEstimator->selectPlanningAction(state);
     //std::cout << action << std::endl;
     model->takeAction(action,reward,state,terminal);
+    modelUpdater->updateSimulationAction(action,state);
     valueEstimator->visit(action,reward,state);
   }
 
