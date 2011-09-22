@@ -111,10 +111,10 @@ TEST_F(TestUCT,SimpleLambda0Gamma0) {
   lambda = 0;
   gamma = 0;
   createUCT();
-  uct->startRollout(0);
-  uct->visit(0,0.0,1);
-  uct->visit(0,1.0,2);
-  uct->finishRollout(true);
+  uct->startRollout();
+  uct->visit(0,0,0.0);
+  uct->visit(1,0,1.0);
+  uct->finishRollout(2,true);
 
   EXPECT_EQ(0.0,uct->calcActionValue(0,0,false));
   EXPECT_EQ(0.0,uct->calcActionValue(0,1,false));
@@ -128,10 +128,10 @@ TEST_F(TestUCT,SimpleLambda1Gamma0) {
   lambda = 1;
   gamma = 0;
   createUCT();
-  uct->startRollout(0);
-  uct->visit(0,0.0,1);
-  uct->visit(0,1.0,2);
-  uct->finishRollout(true);
+  uct->startRollout();
+  uct->visit(0,0,0.0);
+  uct->visit(1,0,1.0);
+  uct->finishRollout(2,true);
 
   EXPECT_EQ(0.0,uct->calcActionValue(0,0,false));
   EXPECT_EQ(0.0,uct->calcActionValue(0,1,false));
@@ -145,10 +145,10 @@ TEST_F(TestUCT,SimpleLambda1Gamma1) {
   lambda = 1;
   gamma = 1;
   createUCT();
-  uct->startRollout(0);
-  uct->visit(0,0.0,1);
-  uct->visit(0,1.0,2);
-  uct->finishRollout(true);
+  uct->startRollout();
+  uct->visit(0,0,0.0);
+  uct->visit(1,0,1.0);
+  uct->finishRollout(2,true);
 
   EXPECT_EQ(1.0,uct->calcActionValue(0,0,false));
   EXPECT_EQ(0.0,uct->calcActionValue(0,1,false));

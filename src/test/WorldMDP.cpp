@@ -13,7 +13,7 @@ Modified: 2011-09-09
 TEST(WorldMDP,GetSetPositions) {
   Observation obs;
   std::vector<Point2D> positions(5);
-  Point2D dims(5,5);
+  Point2D dims(50,50);
   RNG rng(0);
   unsigned int numTests = 50;
   State_t state;
