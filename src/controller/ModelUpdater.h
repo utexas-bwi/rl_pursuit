@@ -26,11 +26,13 @@ public:
   virtual void updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) = 0;
   virtual void updateSimulationAction(const Action::Type &action, const State_t &state) = 0;
   void selectModel(const State_t &state);
+  std::string generateDescription(unsigned int indentation = 0);
 
 protected:
   virtual unsigned int selectModelInd(const State_t &state) = 0;
   void normalizeModelProbs(std::vector<double> &modelProbs);
   void removeModel(unsigned int ind);
+  virtual std::string generateSpecificDescription() = 0;
 
 protected:
   boost::shared_ptr<RNG> rng;

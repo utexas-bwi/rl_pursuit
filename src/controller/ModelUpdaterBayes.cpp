@@ -6,6 +6,8 @@ Created:  2011-09-21
 Modified: 2011-09-21
 */
 
+#define DEBUG_MODELS
+
 #include "ModelUpdaterBayes.h"
 
 const float ModelUpdaterBayes::MIN_MODEL_PROB = 0.001;
@@ -14,6 +16,7 @@ ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, boost::shared_p
   ModelUpdater(rng,mdp,models,modelPrior,modelDescriptions),
   modelUpdateType(modelUpdateType)
 {
+  normalizeModelProbs(modelProbs);
 }
 
 void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
@@ -22,11 +25,19 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
     return;
   std::vector<double> newModelProbs(modelProbs);
 
+#ifdef DEBUG_MODELS
+  std::cout << "ORIG PROBS: " << std::endl;
+  for (unsigned int i = 0; i < modelDescriptions.size(); i++)
+    std::cout << "  " << modelDescriptions[i] << ": " << modelProbs[i] << std::endl;
+#endif
+
   // calculate the new model probabilities
   getNewModelProbs(prevObs,lastAction,currentObs,newModelProbs);
   // check if all zero probs
   if (allProbsTooLow(newModelProbs)) {
-    //std::cout << "All model probs too low" << std::endl;
+#ifdef DEBUG_MODELS
+    std::cout << "All model probs too low" << std::endl;
+#endif
     return;
   }
   // set our models
@@ -35,6 +46,11 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
   normalizeModelProbs(modelProbs);
   // delete models with very low probabilities
   removeLowProbabilityModels();
+#ifdef DEBUG_MODELS
+  std::cout << "NEW PROBS: " << std::endl;
+  for (unsigned int i = 0; i < modelDescriptions.size(); i++)
+    std::cout << "  " << modelDescriptions[i] << ": " << modelProbs[i] << std::endl;
+#endif
 }
 
 void ModelUpdaterBayes::updateSimulationAction(const Action::Type &, const State_t &) {
@@ -102,4 +118,15 @@ void ModelUpdaterBayes::removeLowProbabilityModels() {
   // renormalize if we removed models
   if (removedModels)
     normalizeModelProbs(modelProbs);
+}
+
+std::string ModelUpdaterBayes::generateSpecificDescription() {
+  switch (modelUpdateType) {
+    case BAYESIAN_UPDATES:
+      return "Bayesian";
+      break;
+    case POLYNOMIAL_WEIGHTS:
+      return "Polynomial";
+      break;
+  }
 }

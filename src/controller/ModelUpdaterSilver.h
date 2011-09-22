@@ -33,6 +33,7 @@ public:
 
 protected:
   unsigned int selectModelInd(const State_t &state);
+  std::string generateSpecificDescription();
 
 protected:
   bool useFrequencyCounts;

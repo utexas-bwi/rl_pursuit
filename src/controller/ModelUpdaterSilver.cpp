@@ -82,3 +82,10 @@ unsigned int ModelUpdaterSilver::selectModelInd(const State_t &state) {
   }
   return currentBeliefInd;
 }
+
+std::string ModelUpdaterSilver::generateSpecificDescription() {
+  std::string msg = "Silver";
+  if (useFrequencyCounts)
+    msg += " Weighted";
+  return msg;
+}

@@ -11,7 +11,6 @@ PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boos
 ActionProbs PredatorMCTS::step(const Observation &obs) {
   if (prevAction < Action::NUM_MOVES)
     modelUpdater->updateRealWorldAction(prevObs,prevAction,obs);
-
   State_t state = getStateFromObs(dims,obs);
   planner->search(state);
   prevAction = planner->selectWorldAction(state);
@@ -31,6 +30,7 @@ std::string PredatorMCTS::generateDescription() {
 
 std::string PredatorMCTS::generateLongDescription(unsigned int indentation) {
   std::string s = indent(indentation) + generateDescription() + "\n";
+  s += modelUpdater->generateDescription(indentation+1);
   s += planner->generateDescription(indentation+1);
   return s;
 }

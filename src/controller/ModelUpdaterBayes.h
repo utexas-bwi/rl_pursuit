@@ -28,6 +28,7 @@ protected:
   double calculateModelProb(unsigned int modelInd, const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
   bool allProbsTooLow(const std::vector<double> &newModelProbs);
   void removeLowProbabilityModels();
+  std::string generateSpecificDescription();
 
 protected:
   ModelUpdateType modelUpdateType;
