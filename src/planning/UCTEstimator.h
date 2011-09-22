@@ -40,7 +40,7 @@ public:
   virtual void restart();
   virtual std::string generateDescription(unsigned int indentation = 0);
   float maxValueForState(const State &state);
-  float getStateActionValue(const State &state, const Action &action) { return stateActions.get(StateAction(state,action)).first;}
+  float getStateActionValue(const State &state, const Action &action);
 
 protected:
   void checkInternals();
@@ -57,10 +57,10 @@ protected:
 
   bool valid;
 
-  //DefaultMap<StateAction,float> values;
+  DefaultMap<StateAction,float> values;
   DefaultMap<State,unsigned int> stateVisits;
-  //DefaultMap<StateAction,unsigned int> stateActionVisits;
-  DefaultMap<StateAction,std::pair<float,unsigned int> > stateActions;
+  DefaultMap<StateAction,unsigned int> stateActionVisits;
+  //DefaultMap<StateAction,std::pair<float,unsigned int> > stateActions;
   
   DefaultMap<StateAction,unsigned int> rolloutVisitCounts;
   std::vector<State> historyStates;
@@ -84,10 +84,10 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   gamma(gamma),
   unseenValue(unseenValue),
   valid(true),
-  //values(initialValue),
+  values(initialValue),
   stateVisits(initialStateVisits),
-  //stateActionVisits(initialStateActionVisits),
-  stateActions(std::make_pair(initialValue,initialStateActionVisits)),
+  stateActionVisits(initialStateActionVisits),
+  //stateActions(std::make_pair(initialValue,initialStateActionVisits)),
   rolloutVisitCounts(0)
 {
   if (nrewardBound > 0) {
@@ -161,14 +161,14 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
   for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
     StateAction key(state,a);
     if (useBounds) {
-      na = stateActions.get(key).second;
+      na = stateActionVisits.get(key);
 
       if (na == 0)
         val = unseenValue;
       else
-        val = stateActions.get(key).first + rewardBound * sqrt(log(n) / na);
+        val = values.get(key) + rewardBound * sqrt(log(n) / na);
     } else
-      val = stateActions.get(key).first;
+      val = values.get(key);
 
     //std::cerr << val << " " << maxVal << std::endl;
     if (fabs(val - maxVal) < EPS)
@@ -202,9 +202,9 @@ Action UCTEstimator<State,Action>::selectPlanningAction(const State &state) {
 
 template<class State, class Action>
 void UCTEstimator<State,Action>::restart() {
-  stateActions.clear();
+  values.clear();
   stateVisits.clear();
-  //stateActionVisits.clear();
+  stateActionVisits.clear();
 }
 
 template<class State, class Action>
@@ -214,7 +214,7 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
 
   for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
     StateAction key(state,a);
-    val = stateActions.get(key).first;
+    val = values.get(key);
     if (val > maxVal)
       maxVal = val;
   }
@@ -223,12 +223,12 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state) {
 
 template<class State, class Action>
 float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, float newQ){
-  float learnRate = 1.0 / (1.0 + stateActions.get(key).second);
+  float learnRate = 1.0 / (1.0 + stateActionVisits.get(key));
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
-  stateActions[key].second++;
+  stateActionVisits[key]++;
   float retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
-  stateActions[key].first += learnRate * (newQ - stateActions[key].first);
+  values[key] += learnRate * (newQ - values[key]);
   //std::cout << " --> " << values[key] << std::endl;
   return retVal;
 }
@@ -268,5 +268,10 @@ std::string UCTEstimator<State,Action>::generateDescription(unsigned int indenta
   ss << prefix << "rewardBound: " << rewardBound << "\n";
   ss << prefix << "unseenValue: " << unseenValue;// << "\n";
   return ss.str();
+}
+  
+template<class State, class Action>
+float UCTEstimator<State,Action>::getStateActionValue(const State &state, const Action &action) {
+  return values.get(StateAction(state,action));
 }
 #endif /* end of include guard: UCTESTIMATOR_8N1RY426 */
