@@ -13,8 +13,8 @@ void WorldMDP::setState(const State_t &state) {
   //std::cout << "START SET STATE" << std::endl;
   //std::cout << model.get() << " " << model->getDims() << std::endl;
   //std::cout << "In state: " << state << std::endl;
-  Observation obs;
-  model->generateObservation(obs);
+  //Observation obs;
+  //model->generateObservation(obs);
   //std::cout << "PRE: " << obs << std::endl;
   
   std::vector<Point2D> positions(STATE_SIZE);
@@ -23,7 +23,7 @@ void WorldMDP::setState(const State_t &state) {
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,positions[i]);
     //model->setAgentPosition(i,state.positions[i]);
-  model->generateObservation(obs);
+  //model->generateObservation(obs);
   //std::cout << "POST: " << obs << std::endl;
   //std::cout << "DONE SET STATE" << std::endl;
   //std::cout << "*******************************" << std::endl;
