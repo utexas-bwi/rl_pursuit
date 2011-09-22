@@ -41,20 +41,20 @@ protected:
     this->lambda = lambda;
     this->gamma = gamma;
     createUCT();
-    uct->startRollout(states[0]);
+    uct->startRollout();
     for (unsigned int i = 0; i < numActions; i++)
-      uct->visit(actions[i],rewards[i],states[i+1]);
-    uct->finishRollout(true);
+      uct->visit(states[i],actions[i],rewards[i]);
+    uct->finishRollout(states[numActions+1],true);
 
     float val = 0;
     for (int i = numActions-1; i >= 0; i--) {
       val += rewards[i];
       for (unsigned int a = 0; a < 3; a++) {
-        //std::cerr << i << " " << a << " " << val << " " << uct->getStateActionValue(states[i],a) << std::endl;
+        //std::cerr << i << " " << a << " " << val << " " << uct->calcActionValue(states[i],a) << std::endl;
         if (a == actions[i])
-          EXPECT_EQ(val,uct->getStateActionValue(states[i],a));
+          EXPECT_EQ(val,uct->calcActionValue(states[i],a,false));
         else
-          EXPECT_EQ(0.0,uct->getStateActionValue(states[i],a));
+          EXPECT_EQ(0.0,uct->calcActionValue(states[i],a,false));
       }
       val *= gamma * lambda;
     }
@@ -91,19 +91,19 @@ TEST_F(TestUCT,UnseenWorldState) {
 
   EXPECT_EQ(numActions,actions.size());
   for (unsigned int action = 0; action < numActions; action++)
-    EXPECT_EQ(initialValue,uct->getStateActionValue(state,action));
+    EXPECT_EQ(initialValue,uct->calcActionValue(state,action,false));
   EXPECT_EQ(initialValue,uct->maxValueForState(state));
   
   initialValue = 10;
   createUCT();
   for (unsigned int action = 0; action < numActions; action++)
-    EXPECT_EQ(initialValue,uct->getStateActionValue(state,action));
+    EXPECT_EQ(initialValue,uct->calcActionValue(state,action,false));
   EXPECT_EQ(initialValue,uct->maxValueForState(state));
   
   initialValue = -10;
   createUCT();
   for (unsigned int action = 0; action < numActions; action++)
-    EXPECT_EQ(initialValue,uct->getStateActionValue(state,action));
+    EXPECT_EQ(initialValue,uct->calcActionValue(state,action,false));
   EXPECT_EQ(initialValue,uct->maxValueForState(state));
 }
 
@@ -116,12 +116,12 @@ TEST_F(TestUCT,SimpleLambda0Gamma0) {
   uct->visit(0,1.0,2);
   uct->finishRollout(true);
 
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,0));
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,1));
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,2));
-  EXPECT_EQ(1.0,uct->getStateActionValue(1,0));
-  EXPECT_EQ(0.0,uct->getStateActionValue(1,1));
-  EXPECT_EQ(0.0,uct->getStateActionValue(1,2));
+  EXPECT_EQ(0.0,uct->calcActionValue(0,0,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(0,1,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(0,2,false));
+  EXPECT_EQ(1.0,uct->calcActionValue(1,0,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(1,1,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(1,2,false));
 }
 
 TEST_F(TestUCT,SimpleLambda1Gamma0) {
@@ -133,12 +133,12 @@ TEST_F(TestUCT,SimpleLambda1Gamma0) {
   uct->visit(0,1.0,2);
   uct->finishRollout(true);
 
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,0));
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,1));
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,2));
-  EXPECT_EQ(1.0,uct->getStateActionValue(1,0));
-  EXPECT_EQ(0.0,uct->getStateActionValue(1,1));
-  EXPECT_EQ(0.0,uct->getStateActionValue(1,2));
+  EXPECT_EQ(0.0,uct->calcActionValue(0,0,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(0,1,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(0,2,false));
+  EXPECT_EQ(1.0,uct->calcActionValue(1,0,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(1,1,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(1,2,false));
 }
 
 TEST_F(TestUCT,SimpleLambda1Gamma1) {
@@ -150,12 +150,12 @@ TEST_F(TestUCT,SimpleLambda1Gamma1) {
   uct->visit(0,1.0,2);
   uct->finishRollout(true);
 
-  EXPECT_EQ(1.0,uct->getStateActionValue(0,0));
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,1));
-  EXPECT_EQ(0.0,uct->getStateActionValue(0,2));
-  EXPECT_EQ(1.0,uct->getStateActionValue(1,0));
-  EXPECT_EQ(0.0,uct->getStateActionValue(1,1));
-  EXPECT_EQ(0.0,uct->getStateActionValue(1,2));
+  EXPECT_EQ(1.0,uct->calcActionValue(0,0,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(0,1,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(0,2,false));
+  EXPECT_EQ(1.0,uct->calcActionValue(1,0,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(1,1,false));
+  EXPECT_EQ(0.0,uct->calcActionValue(1,2,false));
 }
 
 TEST_F(TestUCT,SimpleLambda075Gamma1) {

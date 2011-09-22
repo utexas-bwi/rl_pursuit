@@ -111,11 +111,12 @@ template<class State, class Action>
 void MCTS<State,Action>::rollout(const State &startState) {
   //std::cout << "--------------------------" << std::endl;
   State state(startState);
+  State newState;
   Action action;
   float reward;
   bool terminal = false;
   model->setState(startState);
-  valueEstimator->startRollout(startState);
+  valueEstimator->startRollout();
 
   for (unsigned int depth = 0; (depth < maxDepth) || (maxDepth == 0); depth++) {
     //std::cout << "MCTS State: " << state << " ";// << std::endl;
@@ -124,12 +125,13 @@ void MCTS<State,Action>::rollout(const State &startState) {
       break;
     action = valueEstimator->selectPlanningAction(state);
     //std::cout << action << std::endl;
-    model->takeAction(action,reward,state,terminal);
-    modelUpdater->updateSimulationAction(action,state);
-    valueEstimator->visit(action,reward,state);
+    model->takeAction(action,reward,newState,terminal);
+    modelUpdater->updateSimulationAction(action,newState);
+    valueEstimator->visit(state,action,reward);
+    state = newState;
   }
 
-  valueEstimator->finishRollout(terminal);
+  valueEstimator->finishRollout(state,terminal);
 }
 
 #endif /* end of include guard: MCTS_MJ647W13 */

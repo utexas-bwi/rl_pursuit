@@ -18,9 +18,9 @@ public:
 
   virtual Action selectWorldAction(const State &state) = 0;
   virtual Action selectPlanningAction(const State &state) = 0;
-  virtual void startRollout(const State &state) = 0;
-  virtual void finishRollout(bool terminal) = 0;
-  virtual void visit(const Action &action, float reward, const State &state) = 0;
+  virtual void startRollout() = 0;
+  virtual void finishRollout(const State &state, bool terminal) = 0;
+  virtual void visit(const State &state, const Action &action, float reward) = 0;
   virtual void restart() = 0;
   virtual std::string generateDescription(unsigned int indentation = 0) = 0;
 };

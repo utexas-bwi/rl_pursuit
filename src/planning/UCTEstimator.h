@@ -29,18 +29,29 @@ template<class State, class Action>
 class UCTEstimator: public ValueEstimator<State, Action> {
 public:
   typedef std::pair<State,Action> StateAction;
+  struct HistoryStep {
+    HistoryStep(const State &state, const Action &action, float reward):
+      state(state),
+      action(action),
+      reward(reward)
+    {}
+
+    State state;
+    Action action;
+    float reward;
+  };
 
   UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardBound, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initalStateActionVisits, float unseenValue);
   
   virtual Action selectWorldAction(const State &state);
   virtual Action selectPlanningAction(const State &state);
-  virtual void startRollout(const State &state);
-  virtual void finishRollout(bool terminal);
-  virtual void visit(const Action &action, float reward, const State &state);
+  virtual void startRollout();
+  virtual void finishRollout(const State &state,bool terminal);
+  virtual void visit(const State &state, const Action &action, float reward);
   virtual void restart();
   virtual std::string generateDescription(unsigned int indentation = 0);
   float maxValueForState(const State &state);
-  float getStateActionValue(const State &state, const Action &action);
+  float calcActionValue(const State &state, const Action &action, bool useBounds);
 
 protected:
   void checkInternals();
@@ -63,9 +74,7 @@ protected:
   //DefaultMap<StateAction,std::pair<float,unsigned int> > stateActions;
   
   DefaultMap<StateAction,unsigned int> rolloutVisitCounts;
-  std::vector<State> historyStates;
-  std::vector<Action> historyActions;
-  std::vector<float> historyRewards;
+  std::vector<HistoryStep> history;
 };
 
 template<class State, class Action>
@@ -105,7 +114,6 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   }
 
   checkInternals();
-  assert(valid);
 }
   
 
@@ -123,31 +131,26 @@ void UCTEstimator<State,Action>::checkInternals() {
     std::cerr << "UCTEstimator: Invalid gamma: 0 <= gamma <= 1" << std::endl;
     valid = false;
   }
+  assert(valid);
 }
 
 template<class State, class Action>
-void UCTEstimator<State,Action>::startRollout(const State &state) {
+void UCTEstimator<State,Action>::startRollout() {
   //static int i = 0;
   //i++;
   //i %= 1000;
   //if (i == 0)
     //std::cout << stateVisits.size() << " " << stateActions.size() [><< " " << values.size()<] << std::endl;
-  historyStates.clear();
-  historyActions.clear();
-  historyRewards.clear();
+  history.clear();
   rolloutVisitCounts.clear();
 
-  historyStates.push_back(state);
+  //historyStates.push_back(state);
 }
 
 template<class State, class Action>
-void UCTEstimator<State,Action>::visit(const Action &action, float reward, const State &state) {
-  StateAction key(historyStates.back(),action);
-
-  rolloutVisitCounts[key]++;
-  historyActions.push_back(action);
-  historyRewards.push_back(reward);
-  historyStates.push_back(state);
+void UCTEstimator<State,Action>::visit(const State &state, const Action &action, float reward) {
+  rolloutVisitCounts[StateAction(state,action)]++;
+  history.push_back(HistoryStep(state,action,reward));
 }
 
 template<class State, class Action>
@@ -155,20 +158,10 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
   std::vector<Action> maxActions;
   float maxVal = -BIGNUM;
   float val;
-  unsigned int na;
-  unsigned int n = stateVisits.get(state);
 
   for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
     StateAction key(state,a);
-    if (useBounds) {
-      na = stateActionVisits.get(key);
-
-      if (na == 0)
-        val = unseenValue;
-      else
-        val = values.get(key) + rewardBound * sqrt(log(n) / na);
-    } else
-      val = values.get(key);
+    val = calcActionValue(state,a,useBounds);
 
     //std::cerr << val << " " << maxVal << std::endl;
     if (fabs(val - maxVal) < EPS)
@@ -227,28 +220,29 @@ float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, floa
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
   stateActionVisits[key]++;
+  values[key] += learnRate * (newQ - values[key]); // TODO previous version had these 2 lines swapped, which I think is correct
   float retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
-  values[key] += learnRate * (newQ - values[key]);
   //std::cout << " --> " << values[key] << std::endl;
   return retVal;
 }
 
 template<class State, class Action>
-void UCTEstimator<State,Action>::finishRollout(bool terminal) {
+void UCTEstimator<State,Action>::finishRollout(const State &state, bool terminal) {
   //std::cerr << "top finishRollout" << std::endl;
-  float futureVal = 0;
+  float futureVal;
   float newQ;
 
   //std::cerr << "original size: " << historyStates.size() << std::endl;
-  if (!terminal)
-    futureVal = maxValueForState(historyStates.back());
-  historyStates.pop_back();
+  if (terminal)
+    futureVal = 0;
+  else
+    futureVal = maxValueForState(state);
 
-  for (int i = (int)historyStates.size() - 1; i >= 0; i--) {
+  for (int i = (int)history.size() - 1; i >= 0; i--) {
     //std::cerr << "i = " << i << std::endl;
     //std::cout << "FUTURE VAL: " << futureVal << std::endl;
-    StateAction key(historyStates[i],historyActions[i]);
-    newQ = historyRewards[i] +  gamma * futureVal;
+    StateAction key(history[i].state,history[i].action);
+    newQ = history[i].reward +  gamma * futureVal;
     if (rolloutVisitCounts.get(key) == 1)
       newQ = updateStateAction(key,newQ);
     rolloutVisitCounts[key]--;
@@ -271,7 +265,20 @@ std::string UCTEstimator<State,Action>::generateDescription(unsigned int indenta
 }
   
 template<class State, class Action>
-float UCTEstimator<State,Action>::getStateActionValue(const State &state, const Action &action) {
-  return values.get(StateAction(state,action));
+float UCTEstimator<State,Action>::calcActionValue(const State &state, const Action &action, bool useBounds) {
+  unsigned int na;
+  StateAction key = StateAction(state,action);
+  if (useBounds) {
+    na = stateActionVisits.get(key);
+
+    if (na == 0)
+      return unseenValue;
+    else {
+      unsigned int n = stateVisits.get(state);
+      return values.get(key) + rewardBound * sqrt(log(n) / na);
+    }
+  } else
+    return values.get(key);
 }
+
 #endif /* end of include guard: UCTESTIMATOR_8N1RY426 */
