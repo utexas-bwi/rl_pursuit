@@ -220,8 +220,8 @@ float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, floa
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
   stateActionVisits[key]++;
-  values[key] += learnRate * (newQ - values[key]); // TODO previous version had these 2 lines swapped, which I think is correct
   float retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
+  values[key] += learnRate * (newQ - values[key]); // TODO previous version had these 2 lines swapped, but I think this is correct
   //std::cout << " --> " << values[key] << std::endl;
   return retVal;
 }

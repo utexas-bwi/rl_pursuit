@@ -110,6 +110,7 @@ void MCTS<State,Action>::checkInternals() {
 template<class State, class Action>
 void MCTS<State,Action>::rollout(const State &startState) {
   //std::cout << "--------------------------" << std::endl;
+  modelUpdater->selectModel(startState);
   State state(startState);
   State newState;
   Action action;
