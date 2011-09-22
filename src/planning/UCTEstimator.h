@@ -41,7 +41,7 @@ public:
     float reward;
   };
 
-  UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardBound, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initalStateActionVisits, float unseenValue);
+  UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float rewardBound, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initalStateActionVisits, float unseenValue, bool theoreticallyCorrectLambda);
   
   virtual Action selectWorldAction(const State &state);
   virtual Action selectPlanningAction(const State &state);
@@ -65,7 +65,7 @@ protected:
   float gamma;
   float rewardBound;
   float unseenValue;
-
+  bool theoreticallyCorrectLambda;
   bool valid;
 
   DefaultMap<StateAction,float> values;
@@ -86,12 +86,13 @@ std::ostream& operator<<(std::ostream &out, const std::pair<State,Action> &sa) {
 ////////////////////////////////////////////////////////////////////////////
 
 template<class State, class Action>
-UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float nrewardBound, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initialStateActionVisits, float unseenValue):
+UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numActions, float lambda, float gamma, float nrewardBound, float rewardRangePerStep, float initialValue, unsigned int initialStateVisits, unsigned int initialStateActionVisits, float unseenValue, bool theoreticallyCorrectLambda):
   rng(rng),
   numActions(numActions),
   lambda(lambda),
   gamma(gamma),
   unseenValue(unseenValue),
+  theoreticallyCorrectLambda(theoreticallyCorrectLambda),
   valid(true),
   values(initialValue),
   stateVisits(initialStateVisits),
@@ -220,8 +221,14 @@ float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, floa
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
   stateActionVisits[key]++;
-  float retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
-  values[key] += learnRate * (newQ - values[key]); // TODO previous version had these 2 lines swapped, but I think this is correct
+  float retVal = 0;
+  if (theoreticallyCorrectLambda)
+    retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
+
+  values[key] += learnRate * (newQ - values[key]);
+  
+  if (!theoreticallyCorrectLambda)
+    retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
   //std::cout << " --> " << values[key] << std::endl;
   return retVal;
 }
@@ -260,6 +267,10 @@ std::string UCTEstimator<State,Action>::generateDescription(unsigned int indenta
   ss << prefix << "lambda: " << lambda << "\n";
   ss << prefix << "gamma: " << gamma << "\n";
   ss << prefix << "rewardBound: " << rewardBound << "\n";
+  if (theoreticallyCorrectLambda)
+    ss << prefix << "theoreticallyCorrectLambda" << "\n";
+  else
+    ss << prefix << "empiricalLambda" << "\n";
   ss << prefix << "unseenValue: " << unseenValue;// << "\n";
   return ss.str();
 }
