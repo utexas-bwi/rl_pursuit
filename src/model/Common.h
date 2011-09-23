@@ -39,6 +39,7 @@ namespace Action {
 
 Action::Type getAction(const Point2D &move);
 
+
 class ActionProbs {
 public:
   ActionProbs();
