@@ -69,7 +69,7 @@ unsigned int Point2D::manhattanDist() const {
 }
 
 std::ostream& operator<<(std::ostream &out, const Point2D &pt) {
-  out << "[" << pt.x << "," << pt.y << "]";
+  out << "[" << pt.x << ", " << pt.y << "]";
   return out;
 }
 

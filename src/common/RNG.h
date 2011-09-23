@@ -59,11 +59,11 @@ public:
       inds[i] = inds[j];
       inds[j] = temp;
     }
-    std::cout << "RANDOM ORDERING: ";
-    //<< std::endl;
-    for (unsigned int i = 0; i < inds.size(); i++)
-      std::cout << inds[i] << " ";
-    std::cout << std::endl;
+    //std::cout << "RANDOM ORDERING: ";
+    ////<< std::endl;
+    //for (unsigned int i = 0; i < inds.size(); i++)
+      //std::cout << inds[i] << " ";
+    //std::cout << std::endl;
   }
 
 private:
