@@ -25,6 +25,8 @@ public:
   Point2D operator-(const Point2D &rhs) const;
   Point2D& operator*=(int factor);
   Point2D operator*(int factor) const;
+  Point2D& operator*=(float factor);
+  Point2D operator*(float factor) const;
   std::string toString() const;
   unsigned int manhattanDist() const;
 
@@ -34,6 +36,8 @@ public:
 };
 
 std::ostream& operator<<(std::ostream &out, const Point2D &pt);
+
 Point2D operator*(int factor,const Point2D &lhs);
+Point2D operator*(float factor,const Point2D &lhs);
 
 #endif /* end of include guard: POINT2D_VECJ7WQC */

@@ -58,6 +58,16 @@ Point2D& Point2D::operator*=(int factor) {
   return *this;
 }
 
+Point2D Point2D::operator*(float factor) const {
+  return Point2D(*this) *= factor;
+}
+
+Point2D& Point2D::operator*=(float factor) {
+  x *= factor;
+  y *= factor;
+  return *this;
+}
+
 std::string Point2D::toString() const{
   std::stringstream ss;
   ss << *this;
@@ -69,10 +79,14 @@ unsigned int Point2D::manhattanDist() const {
 }
 
 std::ostream& operator<<(std::ostream &out, const Point2D &pt) {
-  out << "[" << pt.x << "," << pt.y << "]";
+  out << "[" << pt.x << ", " << pt.y << "]";
   return out;
 }
 
 Point2D operator*(int factor,const Point2D &lhs) {
+  return lhs * factor;
+}
+
+Point2D operator*(float factor,const Point2D &lhs) {
   return lhs * factor;
 }

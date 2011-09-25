@@ -7,6 +7,7 @@ Modified: 2011-09-21
 */
 
 #include "State.h"
+#include <iostream>
 
 /*
 State::State(const Observation &obs) {
@@ -61,21 +62,34 @@ std::size_t hash_value(const State &s) {
 
 State_t getStateFromObs(const Point2D &dims, const Observation &obs) {
   State_t state = 0;
-  for (int i = ((int)obs.positions.size())-1; i >= 0; i--) {
+  // move the first agent to the center
+  Point2D offset((0.5f * dims) - obs.positions[0]);
+  Point2D pos;
+
+  for (int i = ((int)obs.positions.size())-1; i >= 1; i--) {
+    pos = obs.positions[i];
+    pos = movePosition(dims,pos,offset);
     state *= dims.y;
-    state += obs.positions[i].x;
+    state += pos.y;
     state *= dims.x;
-    state += obs.positions[i].y;
+    state += pos.x;
   }
   return state;
 }
 
 void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions) {
-  for (unsigned int i = 0; i < positions.size(); i++) {
-    positions[i].y = state % dims.y;
-    state /= dims.y;
+  State_t origState(state);
+  // first agent is in center
+  positions[0] = 0.5f * dims;
+  for (unsigned int i = 1; i < positions.size(); i++) {
     positions[i].x = state % dims.x;
     state /= dims.x;
+    positions[i].y = state % dims.y;
+    state /= dims.y;
+  }
+  if (state != 0) {
+    std::cerr << "NOT ZERO: " << state << std::endl;
+    std::cerr << "original state: " << origState << std::endl;
   }
   assert(state == 0);
 }

@@ -95,14 +95,18 @@ Point2D movePosition(const Point2D &dims, Point2D pos, Action::Type action) {
 }
 
 Point2D movePosition(const Point2D &dims, Point2D pos, const Point2D &move) {
-  if ((pos.x == 0) && (move.x < 0))
-    pos.x += dims.x;
-  if ((pos.y == 0) && (move.y < 0))
-    pos.y += dims.y;
+  //if ((pos.x == 0) && (move.x < 0))
+    //pos.x += dims.x;
+  //if ((pos.y == 0) && (move.y < 0))
+    //pos.y += dims.y;
   pos += move;
 
   pos.x %= dims.x;
   pos.y %= dims.y;
+  if (pos.x < 0)
+    pos.x += dims.x;
+  if (pos.y < 0)
+    pos.y += dims.y;
   return pos;
 }
 

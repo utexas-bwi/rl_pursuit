@@ -34,7 +34,7 @@ protected:
   }
 
   virtual void createUCT() {
-    uct = boost::shared_ptr<UCTEstimator<int,unsigned int> >(new UCTEstimator<int,unsigned int>(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue));
+    uct = boost::shared_ptr<UCTEstimator<int,unsigned int> >(new UCTEstimator<int,unsigned int>(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,true));
   }
 
   virtual void runLambdaGammaTest(float lambda,float gamma,unsigned int numActions, int states[], unsigned int actions[], float rewards[]) {
