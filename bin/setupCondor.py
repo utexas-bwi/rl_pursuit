@@ -21,8 +21,8 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob,configs,outFilename):
   "save": {"results":"%s", "config":"%s"}
 }
 '''
-  results = os.path.join('condor','results',name,'$(JOBNUM).csv')
-  configSave = os.path.join('condor','results',name,'config.json')
+  results = os.path.join('condor',name,'results','$(JOBNUM).csv')
+  configSave = os.path.join('condor',name,'results','config.json')
   contents = contents % (numTrials,numTrialsPerJob,results,configSave)
   oldContents = ''
   for config in configs:
@@ -34,20 +34,26 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob,configs,outFilename):
     f.write(contents)
 
 def makeDir(name):
-  try:
-    shutil.rmtree(name)
-  except:
-    pass
+  #try:
+    #shutil.rmtree(name)
+  #except:
+    #pass
   os.mkdir(name)
 
-def makeCondorDirs(name):
-  makeDir(os.path.join('condor','output',name))
-  makeDir(os.path.join('condor','results',name))
+def makeCondorDirs(baseDir):
+  makeDir(os.path.join(baseDir))
+  makeDir(os.path.join(baseDir,'output'))
+  makeDir(os.path.join(baseDir,'results'))
 
 def run(name,numTrials,numTrialsPerJob,configs):
+  baseDir = os.path.join('condor',name)
+  if os.path.exists(baseDir):
+    print 'ERROR: %s already exists, exiting' % baseDir
+    return 2
+  makeCondorDirs(baseDir)
   numJobs = numTrials / numTrialsPerJob
-  jsonFilename = os.path.join('condor','configs','%s.json'%name)
-  condorFilename = os.path.join('condor','configs','%s.condor' % name)
+  jsonFilename = os.path.join(baseDir,'config.json')
+  condorFilename = os.path.join(baseDir,'job.condor')
   if os.path.exists(jsonFilename):
     print 'ERROR: %s already exists, exiting' % jsonFilename
     return 2
@@ -57,7 +63,6 @@ def run(name,numTrials,numTrialsPerJob,configs):
   
   createPursuitConfig(name,numTrials,numTrialsPerJob,configs,jsonFilename)
   createCondorConfig(name,numJobs,'$(Process) %s' % jsonFilename,condorFilename)
-  makeCondorDirs(name)
   return 0
 
 def main(args):
