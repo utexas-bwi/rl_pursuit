@@ -12,21 +12,13 @@ void World::step() {
   Action::Type action;
   Observation obs;
   std::vector<Point2D> requestedPositions(agents.size());
-  std::cout << "start currentPositions" << std::endl;
-  for (unsigned int i = 0; i < agents.size(); i++)
-    std::cout << world->getAgentPosition(i) << std::endl;
-  std::cout << "stop  currentPositions" << std::endl;
+  
   world->generateObservation(obs);
   for (unsigned int i = 0; i < agents.size(); i++) {
     obs.myInd = i;
     actionProbs = agents[i]->step(obs);
     assert(actionProbs.checkTotal());
-    std::cout << "start Sampling actions " << i << std::endl;
-    for (unsigned int j = 0; j < 5; j++)
-      std::cout << actionProbs[(Action::Type)j] << " ";
-    std::cout << std::endl;
     action = actionProbs.selectAction(rng);
-    std::cout << "stop  Sampling actions " << i << " : " << action << " " << Action::MOVES[action] << std::endl;
     requestedPositions[i] = world->getAgentPosition(i,action);
   }
 
@@ -124,17 +116,10 @@ bool World::getRequestedPositionsForActionIndices(const std::vector<unsigned int
 }
 
 void World::handleCollisions(const std::vector<Point2D> &requestedPositions) {
-  std::cout << "start handleCollisions" << std::endl;
   // ORDERED COLLISION DECISION
   std::vector<unsigned int> agentOrder(agents.size());
   rng->randomOrdering(agentOrder);
-  std::cout << "start ORDERING" << std::endl;
-  for (unsigned int i = 0; i < agentOrder.size(); i++)
-    std::cout << agentOrder[i] << " ";
-  std::cout << std::endl;
-  std::cout << "stop  ORDERING" << std::endl;
   handleCollisionsOrdered(requestedPositions,agentOrder);
-  std::cout << "stop  handleCollisions" << std::endl;
 }
 
 void World::handleCollisionsOrdered(const std::vector<Point2D> &requestedPositions, const std::vector<unsigned int> &agentOrder) {
@@ -148,7 +133,6 @@ void World::handleCollisionsOrdered(const std::vector<Point2D> &requestedPositio
 }
 
 void World::randomizePositions() {
-  std::cout << "start GENERATING START POSITIONS" << std::endl;
   bool collision;
   Point2D pos;
   for (unsigned int i = 0; i < agents.size(); i++) {
@@ -159,9 +143,6 @@ void World::randomizePositions() {
     } while (collision);
     world->setAgentPosition(i,pos);
   } // for loop
-  for (unsigned int i = 0; i < agents.size(); i++)
-    std::cout << world->getAgentPosition(i) << std::endl;
-  std::cout << "stop  GENERATING START POSITIONS" << std::endl;
 }
 
 void World::restartAgents() {

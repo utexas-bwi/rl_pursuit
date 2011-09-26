@@ -56,7 +56,6 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
 }
 
 boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims) {
-  rng = boost::shared_ptr<RNG>(new RNG(rng->randomUInt()));
   // create the world model and controller
   boost::shared_ptr<WorldModel> model = createWorldModel(dims);
   boost::shared_ptr<World> controller = createWorld(rng->randomUInt(),model);

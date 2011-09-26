@@ -63,7 +63,6 @@ bool pickStudentFromFile(const std::string &filename, std::string &student, unsi
 
 boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int randomNum, const Json::Value &options, const Json::Value &rootOptions) {
   typedef boost::shared_ptr<Agent> ptr;
-  std::cout << "CREATE AGENT " << name << std::endl;
   
   boost::to_lower(name);
   if (NAME_IN_SET("prey","preyrandom","random"))
@@ -114,10 +113,8 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       plannerOptions["depth"] = depthFactor * (dims.x + dims.y);
     }
     
-    std::cout << "start CREATING Controller" << std::endl;
     // create the mdp
     boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims);
-    std::cout << "stop  CREATING Controller" << std::endl;
     // create the model updater
     boost::shared_ptr<ModelUpdater> modelUpdater = createModelUpdater(rng,mdp,mdp->getAdhocAgent(),dims,plannerOptions);
     // create the value estimator

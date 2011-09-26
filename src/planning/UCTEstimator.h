@@ -16,7 +16,6 @@ Modified: 2011-08-23
 #include <utility>
 #include <cmath>
 #include <boost/shared_ptr.hpp>
-#include <limits>
 
 #include "ValueEstimator.h"
 #include <common/RNG.h>
@@ -101,7 +100,6 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   //stateActions(std::make_pair(initialValue,initialStateActionVisits)),
   rolloutVisitCounts(0)
 {
-  unseenValue = std::numeric_limits<float>::infinity( );
   if (nrewardBound > 0) {
     if (rewardRangePerStep > 0) {
       std::cerr << "UCTEstimator: ERROR, both rewardBound and rewardRangePerStep > 0, which one do you want?" << std::endl;

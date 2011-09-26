@@ -100,8 +100,7 @@ int main(int argc, const char *argv[])
   unsigned int trialNum;
   for (int trial = 0; trial < numTrials; trial++) {
     trialNum = trial + startTrial;
-    boost::shared_ptr<World> world = createWorldAgents(15,options); // TODO FIXME XXX
-    //boost::shared_ptr<World> world = createWorldAgents(trialNum,options);
+    boost::shared_ptr<World> world = createWorldAgents(trialNum,options);
     boost::shared_ptr<const WorldModel> model = world->getModel();
     if ((trial == 0) && (displayDescriptionQ))
       std::cout << world->generateDescription() << std::endl;
