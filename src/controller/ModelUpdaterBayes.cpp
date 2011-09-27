@@ -6,7 +6,7 @@ Created:  2011-09-21
 Modified: 2011-09-21
 */
 
-#define DEBUG_MODELS
+//#define DEBUG_MODELS
 
 #include "ModelUpdaterBayes.h"
 
