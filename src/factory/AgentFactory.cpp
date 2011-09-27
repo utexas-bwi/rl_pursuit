@@ -40,24 +40,21 @@ bool nameInSet(const std::string &name, ...) {
   return found;
 }
 
-bool pickStudentFromFile(const std::string &filename, std::string &student, unsigned int randomNum) {
+bool getStudentFromFile(const std::string &filename, std::string &student, unsigned int trialNum) {
   std::ifstream in(filename.c_str());
   if (!in.good())
     return false;
-  std::vector<std::string> students;
   std::string name;
-  in >> name;
-  while (in.good()) {
-    //std::cout << "adding: " << name << std::endl;
-    students.push_back(name);
+  for (; trialNum > 0; trialNum--) {
     in >> name;
+    if (!in.good()) {
+      std::cerr << "AgentFactory::getStudentFromFile: ERROR file ended before reaching correct trial num" << std::endl;
+      in.close();
+      return false;
+    }
   }
   in.close();
-  //std::cout << "NUM STUDENTS: " << students.size() << std::endl;
-  if (students.size() == 0)
-    return false;
-  student = students[randomNum % students.size()];
-  //std::cout << student << std::endl;
+  student = name;
   return true;
 }
 
@@ -93,7 +90,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       exit(3);
     }
 
-    pickStudentFromFile(student,student,randomNum);
+    getStudentFromFile(student,student,trialNum);
 
     int predatorInd = options.get("predatorInd",-1).asInt();
     if ((predatorInd < 0) || (predatorInd >= 4)) {
