@@ -63,7 +63,7 @@ unsigned int ModelUpdaterBayes::selectModelInd(const State_t &) {
   float val = rng->randomFloat();
   double total = 0;
   unsigned int selectedInd;
-  for (selectedInd = 0; selectedInd < modelProbs.size(); selectedInd++) {
+  for (selectedInd = 0; selectedInd < modelProbs.size() - 1; selectedInd++) { // -1 because if it's not in the first n - 1, it's in the last and it makes the later processing easier
     total += modelProbs[selectedInd];
     if (val < total)
       break;
