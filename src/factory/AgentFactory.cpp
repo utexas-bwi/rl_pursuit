@@ -45,12 +45,11 @@ bool getStudentFromFile(const std::string &filename, std::string &student, unsig
   if (!in.good())
     return false;
   std::string name;
-  for (; trialNum > 0; trialNum--) {
+  for (int i = (int)trialNum; i >= 0; i--) {
     in >> name;
     if (!in.good()) {
       std::cerr << "AgentFactory::getStudentFromFile: ERROR file ended before reaching correct trial num" << std::endl;
-      in.close();
-      return false;
+      exit(14);
     }
   }
   in.close();
