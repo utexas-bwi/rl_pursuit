@@ -9,6 +9,7 @@ Modified: 2011-09-21
 //#define DEBUG_MODELS
 
 #include "ModelUpdaterBayes.h"
+#include <boost/math/special_functions/fpclassify.hpp>
 
 const float ModelUpdaterBayes::MIN_MODEL_PROB = 0.001;
 
@@ -33,6 +34,8 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
 
   // calculate the new model probabilities
   getNewModelProbs(prevObs,lastAction,currentObs,newModelProbs);
+  // normalize the probabilities
+  normalizeModelProbs(newModelProbs);
   // check if all zero probs
   if (allProbsTooLow(newModelProbs)) {
 #ifdef DEBUG_MODELS
@@ -42,8 +45,6 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
   }
   // set our models
   modelProbs.swap(newModelProbs);
-  // normalize the probabilities
-  normalizeModelProbs(modelProbs);
   // delete models with very low probabilities
   removeLowProbabilityModels();
 #ifdef DEBUG_MODELS
@@ -97,8 +98,9 @@ double ModelUpdaterBayes::calculateModelProb(unsigned int modelInd, const Observ
 }
 
 bool ModelUpdaterBayes::allProbsTooLow(const std::vector<double> &newModelProbs) {
+  // check for a divide by 0
   for (unsigned int i = 0; i < newModelProbs.size(); i++)
-    if (newModelProbs[i] >= MIN_MODEL_PROB)
+    if (!boost::math::isfinite(newModelProbs[i]))
       return false;
   return true;
 }
