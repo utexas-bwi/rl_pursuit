@@ -174,7 +174,7 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
     }
   }
   
-  return maxActions[rng->randomInt(0,maxActions.size())];
+  return maxActions[rng->randomInt(maxActions.size())];
 }
 
 template<class State, class Action>

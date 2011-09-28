@@ -1,4 +1,19 @@
 #include "WorldFactory.h"
+#include <fstream>
+
+int getReplacementInd(unsigned int trialNum) {
+  std::ifstream in("data/replacementInds.txt");
+  unsigned int ind;
+  for (int i = (int)trialNum; i >= 0; i--) {
+    in >> ind;
+    if (!in.good()) {
+      std::cerr << "WorldFactory::getReplacementInd: ERROR file ended before reaching correct trial num" << std::endl;
+      exit(14);
+    }
+  }
+  in.close();
+  return ind;
+}
 
 boost::shared_ptr<WorldModel> createWorldModel(const Point2D &dims) {
   return boost::shared_ptr<WorldModel>(new WorldModel(dims));
@@ -18,41 +33,77 @@ boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<
   return createWorld(rng,model);
 }
 
-boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<World> world, const Json::Value &options) {
-  const Json::Value agents = options["agents"];
-  boost::shared_ptr<Agent> agent;
-  Point2D dims = world->getModel()->getDims();
+void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options, std::vector<boost::shared_ptr<Agent> > &agentControllers, std::vector<AgentModel> &agentModels) {
+  createAgentControllersAndModels(rng,dims,trialNum,replacementInd,options,boost::shared_ptr<Agent>(),agentControllers,agentModels);
+}
 
-  unsigned int randomNum = rng->randomUInt(); // used for things like choosing which student team to use
-  for (unsigned int i = 0; i < agents.size(); ++i) {
-    agent = createAgent(rng->randomUInt(), dims, randomNum, agents[i], options);
-    world->addAgent(AgentModel(0,0,getAgentType(agents[i].get("type","NONE").asString())),agent,true);
+void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options, boost::shared_ptr<Agent> adhocAgent, std::vector<boost::shared_ptr<Agent> > &agentControllers, std::vector<AgentModel> &agentModels) {
+  int numPredators = 4; // can later change this to an option
+  std::string prey = options.get("prey","random").asString();
+  std::string predator = options.get("predator","greedy").asString();
+  std::string adhoc = options.get("adhoc","").asString();
+  const Json::Value preyOptions = options["preyOptions"];
+  const Json::Value predatorOptions = options["predatorOptions"];
+  const Json::Value adhocOptions = options["adhocOptions"];
+  
+  boost::shared_ptr<Agent> agent;
+  agent = createAgent(rng->randomUInt(),dims,prey,trialNum,0,preyOptions,options);
+  agentControllers.push_back(agent);
+  agentModels.push_back(AgentModel(0,0,PREY));
+  for (int predatorInd = 0; predatorInd < numPredators; predatorInd++) {
+    if (predatorInd == replacementInd) {
+      if (adhocAgent.get() != NULL) {
+        agent = adhocAgent;
+      } else {
+        agent = createAgent(rng->randomUInt(),dims,adhoc,trialNum,predatorInd,adhocOptions,options);
+      }
+      agentControllers.push_back(agent);
+      agentModels.push_back(AgentModel(0,0,ADHOC));
+    } else {
+      agent = createAgent(rng->randomUInt(),dims,predator,trialNum,predatorInd,predatorOptions,options);
+      agentControllers.push_back(agent);
+      agentModels.push_back(AgentModel(0,0,PREDATOR));
+    }
   }
+}
+
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<World> world, unsigned int trialNum, const Json::Value &options) {
+  Point2D dims = world->getModel()->getDims();
+  
+  int replacementInd = getReplacementInd(trialNum);
+  
+  std::vector<boost::shared_ptr<Agent> > agentControllers;
+  std::vector<AgentModel> agentModels;
+  createAgentControllersAndModels(rng,dims,trialNum,replacementInd,options,agentControllers,agentModels);
+  for (unsigned int i = 0; i < agentControllers.size(); i++) {
+    world->addAgent(agentModels[i],agentControllers[i],true);
+  }
+
   return world;
 }
 
-boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, const Json::Value &options) {
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, unsigned int trialNum, const Json::Value &options) {
   boost::shared_ptr<World> world = createWorld(rng,model);
-  return createWorldAgents(rng,world,options);
+  return createWorldAgents(rng,world,trialNum,options);
 }
 
-boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options) {
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, const Json::Value &options) {
   boost::shared_ptr<World> world = createWorld(rng,dims);
-  return createWorldAgents(rng,world,options);
+  return createWorldAgents(rng,world,trialNum,options);
 }
 
-boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Point2D &dims, const Json::Value &options) {
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, const Json::Value &options) {
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
-  return createWorldAgents(rng,dims,options);
+  return createWorldAgents(rng,dims,trialNum,options);
 }
 
-boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Json::Value &options) {
-  return createWorldAgents(randomSeed,getDims(options),options);
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, unsigned int trialNum, const Json::Value &options) {
+  return createWorldAgents(randomSeed,getDims(options),trialNum,options);
 }
 
-boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, const Json::Value &options) {
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, unsigned int trialNum, const Json::Value &options) {
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
-  return createWorldAgents(rng,model,options);
+  return createWorldAgents(rng,model,trialNum,options);
 }
 
 Point2D getDims(const Json::Value &options) {

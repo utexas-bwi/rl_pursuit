@@ -98,9 +98,11 @@ int main(int argc, const char *argv[])
   std::cout << "Running for " << numTrials << " trials" << std::endl;
   
   unsigned int trialNum;
+  unsigned int randomSeed;
   for (int trial = 0; trial < numTrials; trial++) {
     trialNum = trial + startTrial;
-    boost::shared_ptr<World> world = createWorldAgents(trialNum,options);
+    randomSeed = trialNum;
+    boost::shared_ptr<World> world = createWorldAgents(randomSeed,trialNum,options);
     boost::shared_ptr<const WorldModel> model = world->getModel();
     if ((trial == 0) && (displayDescriptionQ))
       std::cout << world->generateDescription() << std::endl;
