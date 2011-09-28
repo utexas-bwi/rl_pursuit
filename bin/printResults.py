@@ -40,12 +40,22 @@ def loadResultsFromFileSet(filenames):
     if numSteps is None:
       numSteps = res
     else:
-      numSteps = numpy.vstack((numSteps,res))
+      try:
+        numSteps = numpy.vstack((numSteps,res))
+      except:
+        pass
   return numSteps
 
 def printResults(episodeLengths,label):
+  #for i in range(len(episodeLengths)):
+    #for j in range(len(episodeLengths[i])):
+      #if episodeLengths[i][j] > 1000:
+        #episodeLengths[i][j] = 1000
   print '-----------------------------------'
   print label
+  if episodeLengths is None:
+    print 'Num episodes = ',0
+    return
   print 'Num episodes = ',len(episodeLengths)
   print 'mean=',numpy.mean(episodeLengths)
   print 'means=',numpy.mean(episodeLengths,0)
