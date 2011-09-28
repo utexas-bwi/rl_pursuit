@@ -22,7 +22,7 @@ def run(targetBase,sourceDir):
   if targetName == '':
     _,targetName = os.path.split(dirPath)
   targetCSV = os.path.join(targetBase,'%s.csv'%targetName)
-  targetJSON = os.path.join(targetBase,'%s.json'%targetName)
+  targetJSON = os.path.join(targetBase,'configs','%s.json'%targetName)
   if os.path.exists(targetCSV):
     print 'Target csv already exists:',targetCSV
     return 2
@@ -40,17 +40,23 @@ def run(targetBase,sourceDir):
   return 0
 
 def main(args):
-  usage = 'Usage: combineResults.py targetBase sourceDirectory'
-  if (len(args) == 1) and (args[0] in ('-h','--help')):
+  usage = 'Usage: combineResults.py sourceDirectory [sourceDirectory ...]'
+  if ('-h' in args) or ('--help' in args):
     print usage
     return 0
-  if len(args) < 2:
+  if len(args) < 1:
     print 'Invalid number of arguments'
     print usage
     return 1
-  target = args[0]
-  sourceDir = args[1]
-  return run(target,sourceDir)
+  #target = args[0]
+  target = 'results'
+  sourceDirs = args[0:]
+  for sourceDir in sourceDirs:
+    print 'Combining',sourceDir
+    res = run(target,sourceDir)
+    if res != 0:
+      return res
+  return res
 
 if __name__ == '__main__':
   import sys
