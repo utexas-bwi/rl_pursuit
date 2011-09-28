@@ -40,14 +40,23 @@ def loadResultsFromFileSet(filenames):
     if numSteps is None:
       numSteps = res
     else:
-      numSteps = numpy.hstack((numSteps,res))
+      numSteps = numpy.vstack((numSteps,res))
   return numSteps
+
+def printResults(episodeLengths,label):
+  print '-----------------------------------'
+  print label
+  print 'Num episodes = ',len(episodeLengths)
+  print 'mean=',numpy.mean(episodeLengths)
+  print 'means=',numpy.mean(episodeLengths,0)
+  print 'median=',numpy.median(episodeLengths)
+  print 'std=',numpy.std(episodeLengths)
+  print 'min,max=',numpy.min(episodeLengths),numpy.max(episodeLengths)
 
 def main(paths):
   for path in paths:
-    print path
     numSteps = loadResults(path)
-    print numSteps.size,numSteps.mean()
+    printResults(numSteps,path)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
     #numSteps = loadResultsFromFileSet(filenames)
