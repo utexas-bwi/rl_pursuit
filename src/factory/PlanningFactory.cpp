@@ -6,30 +6,23 @@
 #include <controller/ModelUpdaterSilver.h>
 #include "WorldFactory.h"
 
-boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, const Json::Value &options) {
+boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, int replacementInd, const Json::Value &options) {
   // create the agents
   const Json::Value models = options["models"];
   std::vector<std::vector<boost::shared_ptr<Agent> > > modelList(models.size());
   std::vector<double> modelProbs;
   std::vector<std::string> modelDescriptions;
-  AgentType agentType = PREY;
   for (unsigned int i = 0; i < models.size(); i++) {
     modelProbs.push_back(models[i].get("prob",1.0).asDouble());
     modelDescriptions.push_back(models[i].get("desc","NO DESCRIPTION").asString());
-    unsigned int randomNum = rng->randomUInt(); // used for things like choosing which student team to use
-    const Json::Value model = models[i]["model"];
-    for (unsigned int j = 0; j < model.size(); j++) {
-      agentType = getAgentType(model[j].get("type","UNKNOWN").asString());
-      if (agentType == ADHOC) {
-        modelList[i].push_back(adhocAgent);
-      } else {
-        modelList[i].push_back(createAgent(rng->randomUInt(),dims,randomNum,model[j],options)); // TODO RNG?
-      }
-      
-      // add the first set of agents to the world
-      if (i == 0)
-        mdp->addAgent(agentType,modelList[i][j]);
-        //controller->addAgent(AgentModel(0,0,agentType),modelList[i][j],true);
+
+    std::vector<AgentModel> agentModels;
+    createAgentControllersAndModels(rng,dims,0,replacementInd,models[i],adhocAgent,modelList[i],agentModels);
+    
+    // add the first set of agents to the world
+    if (i == 0) {
+      for (unsigned int j = 0; j < modelList[i].size(); j++)
+        mdp->addAgent(agentModels[j].type,modelList[i][j]);
     }
   }
 

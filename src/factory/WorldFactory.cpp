@@ -1,10 +1,10 @@
 #include "WorldFactory.h"
 #include <fstream>
 
-unsigned int getReplacementInd(unsigned int trialNum) {
+int getReplacementInd(unsigned int trialNum) {
   std::ifstream in("data/replacementInds.txt");
   unsigned int ind;
-  for (; trialNum > 0; trialNum++) {
+  for (int i = (int)trialNum; i >= 0; i--) {
     in >> ind;
     if (!in.good()) {
       std::cerr << "WorldFactory::getReplacementInd: ERROR file ended before reaching correct trial num" << std::endl;
@@ -33,25 +33,52 @@ boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<
   return createWorld(rng,model);
 }
 
-boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<World> world, unsigned int trialNum, const Json::Value &options) {
+void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options, std::vector<boost::shared_ptr<Agent> > &agentControllers, std::vector<AgentModel> &agentModels) {
+  createAgentControllersAndModels(rng,dims,trialNum,replacementInd,options,boost::shared_ptr<Agent>(),agentControllers,agentModels);
+}
+
+void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options, boost::shared_ptr<Agent> adhocAgent, std::vector<boost::shared_ptr<Agent> > &agentControllers, std::vector<AgentModel> &agentModels) {
+  int numPredators = 4; // can later change this to an option
   std::string prey = options.get("prey","random").asString();
   std::string predator = options.get("predator","greedy").asString();
   std::string adhoc = options.get("adhoc","").asString();
-
+  const Json::Value preyOptions = options["preyOptions"];
+  const Json::Value predatorOptions = options["predatorOptions"];
+  const Json::Value adhocOptions = options["adhocOptions"];
+  
   boost::shared_ptr<Agent> agent;
+  agent = createAgent(rng->randomUInt(),dims,prey,trialNum,0,preyOptions,options);
+  agentControllers.push_back(agent);
+  agentModels.push_back(AgentModel(0,0,PREY));
+  for (int predatorInd = 0; predatorInd < numPredators; predatorInd++) {
+    if (predatorInd == replacementInd) {
+      if (adhocAgent.get() != NULL) {
+        agent = adhocAgent;
+      } else {
+        agent = createAgent(rng->randomUInt(),dims,adhoc,trialNum,predatorInd,adhocOptions,options);
+      }
+      agentControllers.push_back(agent);
+      agentModels.push_back(AgentModel(0,0,ADHOC));
+    } else {
+      agent = createAgent(rng->randomUInt(),dims,predator,trialNum,predatorInd,predatorOptions,options);
+      agentControllers.push_back(agent);
+      agentModels.push_back(AgentModel(0,0,PREDATOR));
+    }
+  }
+}
+
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<World> world, unsigned int trialNum, const Json::Value &options) {
   Point2D dims = world->getModel()->getDims();
   
-  unsigned int replacementInd = getReplacementInd(trialNum);
-
-  unsigned int predatorInd = 0;
-  for (unsigned int i = 0; i < agents.size(); ++i) {
-    agent = createAgent(rng->randomUInt(), dims, trialNum, predatorInd, agents[i], options);
-    AgentModel agentModel(0,0,getAgentType(agents[i].get("type","NONE").asString()));
-    world->addAgent(agentModel,agent,true);
-    
-    if ((agentModel.type == PREDATOR) || (agentModel.type == ADHOC))
-      predatorInd++;
+  int replacementInd = getReplacementInd(trialNum);
+  
+  std::vector<boost::shared_ptr<Agent> > agentControllers;
+  std::vector<AgentModel> agentModels;
+  createAgentControllersAndModels(rng,dims,trialNum,replacementInd,options,agentControllers,agentModels);
+  for (unsigned int i = 0; i < agentControllers.size(); i++) {
+    world->addAgent(agentModels[i],agentControllers[i],true);
   }
+
   return world;
 }
 

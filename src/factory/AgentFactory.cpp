@@ -58,7 +58,7 @@ bool getStudentFromFile(const std::string &filename, std::string &student, unsig
   return true;
 }
 
-boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int randomNum, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions) {
   typedef boost::shared_ptr<Agent> ptr;
   
   boost::to_lower(name);
@@ -92,7 +92,6 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
 
     getStudentFromFile(student,student,trialNum);
 
-    int predatorInd = options.get("predatorInd",-1).asInt();
     if ((predatorInd < 0) || (predatorInd >= 4)) {
       std::cerr << "createAgent: ERROR: bad predator ind specified for student: " << student << std::endl;
       exit(3);
@@ -113,7 +112,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     // create the mdp
     boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims);
     // create the model updater
-    boost::shared_ptr<ModelUpdater> modelUpdater = createModelUpdater(rng,mdp,mdp->getAdhocAgent(),dims,plannerOptions);
+    boost::shared_ptr<ModelUpdater> modelUpdater = createModelUpdater(rng,mdp,mdp->getAdhocAgent(),dims,predatorInd,plannerOptions); // predatorInd should be the replacement ind for the model
     // create the value estimator
     boost::shared_ptr<UCTEstimator<State_t,Action::Type> > uct = createUCTEstimator(rng->randomUInt(),Action::NUM_ACTIONS,plannerOptions);
     // create the planner
@@ -126,17 +125,17 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
   }
 }
 
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, unsigned int randomNum, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions) {
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
-  return createAgent(rng,dims,name,randomNum,options,rootOptions);
+  return createAgent(rng,dims,name,trialNum,predatorInd,options,rootOptions);
 }
 
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, unsigned int randomNum, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions) {
   std::string name = options.get("behavior","NONE").asString();
   if (name == "NONE") {
     std::cerr << "createAgent: WARNING: no agent type specified, using random" << std::endl;
     name = "random";
   }
 
-  return createAgent(randomSeed,dims,name,randomNum,options,rootOptions);
+  return createAgent(randomSeed,dims,name,trialNum,predatorInd,options,rootOptions);
 }
