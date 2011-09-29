@@ -7,7 +7,7 @@ def getFilenames(sourceDir):
   filenames = []
   i = 0
   while True:
-    filename = os.path.join(sourceDir,'%i.csv' % i)
+    filename = os.path.join(sourceDir,'results','%i.csv' % i)
     if not(os.path.isfile(filename)):
       return filenames
     filenames.append(filename)
