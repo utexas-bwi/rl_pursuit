@@ -11,8 +11,12 @@ Modified: 2011-08-31
 
 #include "Agent.h"
 #include "AStar.h"
-  
+
+const unsigned int NUM_PREDATORS = 4;
+const unsigned int NUM_DESTS = Action::NUM_NEIGHBORS;
+
 Point2D getTeammateAwareDesiredPosition(const Point2D &dims, const Observation &obs);
+void assignTeammateAwareDesiredDests(const Point2D &dims, const Observation &obs, Point2D dests[NUM_PREDATORS], bool stopAfterAssigningCurrentPred, bool moveOntoPreyIfAtDest, int distFactor = 1);
 
 class PredatorTeammateAware: public Agent {
 public:
