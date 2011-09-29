@@ -54,6 +54,8 @@ void AStar::plan(const Point2D &start, const Point2D &goal, const std::vector<Po
   clear();
   goalNode.reset();
 
+  assert(start != goal);
+
   boost::shared_ptr<Node> newNode;
   Point2D pos;
   //std::set<boost::shared_ptr<Node> >::iterator it;
