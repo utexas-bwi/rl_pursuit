@@ -55,9 +55,9 @@ Point2D PredatorSurround::getMoveToPoint(const Point2D &start, const Point2D &en
   bool destinationBlocked = false;
   Point2D diff;
   if (start == end) {
-    //diff = Point2D(0,0);
-    foundMove = false;
-    return Point2D(0,0);
+    diff = Point2D(0,0);
+    //foundMove = false;
+    //return Point2D(0,0);
   } else {
     if (!destinationBlocked) {
       planner.plan(start,end,avoidLocations);
@@ -162,6 +162,7 @@ void PredatorSurround::assignDesiredDests(const Observation &obs) {
       distances[predInd][chosenDestInd] = -1;
   }
 
+  // don't move if you're next to the prey
   for (int i = 0; i < NUM_DESTS; i++) {
     if (getDistanceToPoint(dims,obs.preyPos(),obs.positions[i+1]) == 1)
       destAssignments[i] = obs.positions[i+1]; // +1 because prey is 0

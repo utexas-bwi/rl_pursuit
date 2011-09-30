@@ -129,7 +129,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new PredatorMCTS(rng,dims,mcts,mdp,modelUpdater));
   } else {
     std::cerr << "createAgent: unknown agent name: " << name << std::endl;
-    assert(false);
+    exit(25);
   }
 }
 

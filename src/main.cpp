@@ -115,6 +115,10 @@ int main(int argc, const char *argv[])
       world->restartAgents();
       while (!model->isPreyCaptured()) {
         numSteps[trial][episode]++;
+        if (numSteps[trial][episode] > 100) {
+          std::cerr << "EPISODE TOO LONG" << std::endl;
+          break;
+        }
         world->step();
         if (displayObsQ) {
           model->generateObservation(obs);
