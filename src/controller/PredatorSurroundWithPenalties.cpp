@@ -12,87 +12,103 @@ Modified: 2011-09-29
 #include "PredatorGreedy.h"
 
 const float PredatorSurroundWithPenalties::penaltyAmount = 0.7;
-const int PredatorSurroundWithPenalties::violationHistorySize = 5;
+const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 5;
 
 PredatorSurroundWithPenalties::PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims):
-  Agent(rng,dims),
-  planner(dims),
-  captureMode(false),
-  penaltyOn(false)
+  PredatorSurround(rng,dims),
+  penaltyOn(false),
+  usePrevObs(false)
 {
 }
 
 ActionProbs PredatorSurroundWithPenalties::step(const Observation &obs) {
-  //std::cout << obs << std::endl;
-  avoidLocations = obs.positions; // reset the avoid locations to the current positions of agents
-  setCaptureMode(obs);
-  //if (captureMode)
-    //std::cout << "CAPTURE MODE ENGAGED" << std::endl;
-  //else
-    //std::cout << "DO NOT CAPTURE" << std::endl;
+  // get the action without penalties
+  ActionProbs action = PredatorSurround::step(obs);
+  // check whether we should penalize
+  setPenaltyMode(obs);
+  // set the expected moves for this step
+  setExpectedMoves(obs);
 
-  Point2D desiredPosition = getDesiredPosition(obs);
-  //std::cout << "DESIRED POSITION: " << desiredPosition << std::endl;
-  //std::cout << "avoidLocations: ";
-  //for (unsigned int i = 0; i < avoidLocations.size(); i++)
-    //std::cout << avoidLocations[i] << " ";
-  //std::cout << std::endl;
-  Point2D diff;
-  if (obs.myPos() == desiredPosition) {
-    diff = Point2D(0,0);
-  } else {
-    planner.plan(obs.myPos(),desiredPosition,avoidLocations);
-    if (!planner.foundPath()) {
-      //std::cout << "NO PATH FOUND, moving randomly: " << obs << " " << dest << std::endl;
-      return ActionProbs(Action::RANDOM);
-    }
-    diff = getDifferenceToPoint(dims,obs.myPos(),planner.getFirstStep());
+  // optionally apply penalty
+  if ((penaltyOn) && (!captureMode)){
+    for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
+      action[(Action::Type)i] *= (1.0 - penaltyAmount);
+    action[Action::NOOP] += penaltyAmount;
   }
-  
+
+  usePrevObs = !captureMode;
   prevObs = obs;
-  return ActionProbs(getAction(diff));
+
+  return action;
 }
 
-Point2D PredatorSurroundWithPenalties::getDesiredPosition(const Observation &obs) {
-  assert(obs.preyInd == 0);
-
-  if (captureMode) {
-    return getGreedyDesiredPosition(dims,obs);
-  } else {
-    // don't get too close to the prey
-    for (unsigned int i = 0; i < Action::NUM_NEIGHBORS; i++) 
-      avoidLocations.push_back(movePosition(dims,obs.preyPos(),(Action::Type)i));
-    // get the desired destination
-    assignTeammateAwareDesiredDests(dims,obs,destAssignments,false,false,2);
-    //std::cout << "destAssignments: ";
-    //for (unsigned int i = 0; i < NUM_DESTS; i++)
-      //std::cout << destAssignments[i] << " ";
-    //std::cout << std::endl;
-    return destAssignments[obs.myInd-1]; // -1 because prey is 1
-  }  
-}
 
 void PredatorSurroundWithPenalties::restart() {
+  PredatorSurround::restart();
   penaltyOn = false;
-  captureMode = false;
-  while (!violationHistory.empty())
-    violationHistory.pop();
+  usePrevObs = false;
+  violationHistory.clear();
 }
 
 std::string PredatorSurroundWithPenalties::generateDescription() {
   return "PredatorSurroundWithPenalties: surrounds the prey at a distance before trying to capture it and punished predators that break this behavior";
 }
-
-void PredatorSurroundWithPenalties::setCaptureMode(const Observation &obs) {
-  unsigned int dist;
-  for (unsigned int i = 0; i < obs.positions.size(); i++) {
-    if ((int)i == obs.preyInd)
-      continue;
-    dist = getDistanceToPoint(dims,obs.positions[i],obs.preyPos());
-    if (dist > 2) {
-      captureMode = false;
-      return;
+  
+void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
+  int stepViolations = 0;
+  if (!captureMode && usePrevObs) {
+    for (int i = 0; i < NUM_PREDATORS; i++) {
+      if (i+1 == (int)obs.myInd) // +1 because prey is 0
+        continue;
+      if (expectedMoves[i] == Action::NUM_ACTIONS)
+        continue; // wasn't sure what that guy was going to do
+      Point2D move = getDifferenceToPoint(dims,prevObs.positions[i+1],obs.positions[i+1]);
+      Point2D desiredPosition = movePosition(dims,prevObs.positions[i+1],expectedMoves[i]);
+      bool desiredPositionOccupied = false;
+      for (unsigned int j = 0; j < obs.positions.size(); j++)
+        if (desiredPosition == obs.positions[j])
+          desiredPositionOccupied = true;
+      if (desiredPositionOccupied)
+        continue;
+      if (move != Action::MOVES[expectedMoves[i]]) {
+        stepViolations++;
+        break;
+      }
     }
   }
-  captureMode = true;
+
+  // add the violation count to the history
+  while (violationHistory.size() >= violationHistorySize)
+    violationHistory.pop_front();
+  violationHistory.push_back(stepViolations);
+  
+  // check the number of violations in history
+  int numViolations = 0;
+  for (unsigned int i = 0; i < violationHistory.size(); i++)
+    numViolations += violationHistory[i];
+  if (numViolations >= 2)
+    penaltyOn = true;
+  else
+    penaltyOn = false;
+}
+
+void PredatorSurroundWithPenalties::setExpectedMoves(const Observation &obs) {
+  // get the desired destination
+  if (!assignedDestsQ)
+    assignDesiredDests(obs);
+
+  // avoidLocations is already set correctly
+  for (int i = 0; i < NUM_PREDATORS; i++) {
+    if (destAssignments[i] == obs.positions[i+1]) {
+      expectedMoves[i] = Action::NOOP;
+      continue;
+    }
+    bool foundMove;
+    Point2D move = getMoveToPoint(obs.positions[i+1],destAssignments[i],foundMove);
+
+    if (foundMove)
+      expectedMoves[i] = getAction(move);
+    else
+      expectedMoves[i] = Action::NUM_ACTIONS;
+  }
 }

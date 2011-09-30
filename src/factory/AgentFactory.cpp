@@ -15,6 +15,7 @@
 #include <controller/PredatorProbabilisticDestinations.h>
 #include <controller/PredatorStudentCpp.h>
 #include <controller/PredatorStudentPython.h>
+#include <controller/PredatorSurround.h>
 #include <controller/PredatorSurroundWithPenalties.h>
 #include <controller/PredatorTeammateAware.h>
 #include <controller/WorldMDP.h>
@@ -74,6 +75,8 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new PredatorTeammateAware(rng,dims));
   else if (NAME_IN_SET("dummy"))
     return ptr(new AgentDummy(rng,dims));
+  else if (NAME_IN_SET("surround","surround","su"))
+    return ptr(new PredatorSurround(rng,dims));
   else if (NAME_IN_SET("surroundpenalties","surround-penalties","sp"))
     return ptr(new PredatorSurroundWithPenalties(rng,dims));
   else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {

@@ -9,12 +9,10 @@ Created:  2011-09-29
 Modified: 2011-09-29
 */
 
-#include <queue>
-#include "Agent.h"
-#include "PredatorTeammateAware.h"
-#include "AStar.h"
+#include "PredatorSurround.h"
+#include <deque>
 
-class PredatorSurroundWithPenalties: public Agent {
+class PredatorSurroundWithPenalties: public PredatorSurround {
 public:
   PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims);
   ActionProbs step(const Observation &obs);
@@ -22,20 +20,18 @@ public:
   std::string generateDescription();
 
 private:
-  void setCaptureMode(const Observation &obs);
-  Point2D getDesiredPosition(const Observation &obs);
+  void setPenaltyMode(const Observation &obs);
+  void setExpectedMoves(const Observation &obs);
 
 private:
   static const float penaltyAmount;
-  static const int violationHistorySize;
+  static const unsigned int violationHistorySize;
   
-  AStar planner;
-  bool captureMode;
   bool penaltyOn;
-  Point2D destAssignments[NUM_PREDATORS];
-  std::queue<int> violationHistory;
+  bool usePrevObs;
+  std::deque<int> violationHistory;
+  Action::Type expectedMoves[NUM_PREDATORS];
   Observation prevObs;
-  std::vector<Point2D> avoidLocations;
 };
 
 #endif /* end of include guard: PREDATORSURROUNDWITHPENALTIES_KDKLSIF4 */
