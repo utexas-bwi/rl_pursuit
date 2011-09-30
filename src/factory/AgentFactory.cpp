@@ -18,6 +18,7 @@
 #include <controller/PredatorSurround.h>
 #include <controller/PredatorSurroundWithPenalties.h>
 #include <controller/PredatorTeammateAware.h>
+#include <controller/PreyAvoidNeighbor.h>
 #include <controller/WorldMDP.h>
 #include <planning/UCTEstimator.h>
 #include <factory/PlanningFactory.h>
@@ -63,8 +64,10 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
   typedef boost::shared_ptr<Agent> ptr;
   
   boost::to_lower(name);
-  if (NAME_IN_SET("prey","preyrandom","random"))
+  if (NAME_IN_SET("prey","preyrandom","random","ra"))
     return ptr(new AgentRandom(rng,dims));
+  if (NAME_IN_SET("preyavoidneighbor","avoidneighbor","preyavoid","avoid", "an"))
+    return ptr(new PreyAvoidNeighbor(rng,dims));
   else if (NAME_IN_SET("greedy","gr"))
     return ptr(new PredatorGreedy(rng,dims));
   else if (NAME_IN_SET("greedyprobabilistic","greedyprob","gp"))
