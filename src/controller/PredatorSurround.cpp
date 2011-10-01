@@ -20,6 +20,12 @@ PredatorSurround::PredatorSurround(boost::shared_ptr<RNG> rng, const Point2D &di
 
 ActionProbs PredatorSurround::step(const Observation &obs) {
   //std::cout << obs << std::endl;
+  isStuck = ((obs == prevObs) || (obs == prevPrevObs));
+  prevPrevObs = prevObs;
+  prevObs = obs;
+  //if (isStuck && obs.myInd == 2)
+    //std::cout << "STUCK" << std::endl;
+
   assignedDestsQ = false;
   avoidLocations = obs.positions; // reset the avoid locations to the current positions of agents
   // don't get too close to the prey
@@ -27,6 +33,8 @@ ActionProbs PredatorSurround::step(const Observation &obs) {
     avoidLocations.push_back(movePosition(dims,obs.preyPos(),(Action::Type)i));
   // get the capture mode
   setCaptureMode(obs);
+  if (isStuck)
+    return ActionProbs(Action::RANDOM);
   //if (captureMode)
     //std::cout << "CAPTURE MODE ENGAGED" << std::endl;
   //else
@@ -92,6 +100,8 @@ Point2D PredatorSurround::getDesiredPosition(const Observation &obs) {
 
 void PredatorSurround::restart() {
   captureMode = false;
+  prevObs = Observation();
+  prevPrevObs = Observation();
 }
 
 std::string PredatorSurround::generateDescription() {
@@ -100,16 +110,16 @@ std::string PredatorSurround::generateDescription() {
 
 void PredatorSurround::setCaptureMode(const Observation &obs) {
   unsigned int dist;
+  captureMode = true;
   for (unsigned int i = 0; i < obs.positions.size(); i++) {
     if ((int)i == obs.preyInd)
       continue;
     dist = getDistanceToPoint(dims,obs.positions[i],obs.preyPos());
-    if (dist > 2) {
+    if (dist > captureDist) {
       captureMode = false;
       return;
     }
   }
-  captureMode = true;
 }
 
 void PredatorSurround::assignDesiredDests(const Observation &obs) {

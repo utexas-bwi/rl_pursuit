@@ -29,12 +29,16 @@ protected:
 protected:
   static const int NUM_PREDATORS = 4;
   static const int NUM_DESTS = 4;
+  static const unsigned int captureDist = 2;
+  bool isStuck;
   
   AStar planner;
   bool captureMode;
   bool assignedDestsQ;
   Point2D destAssignments[NUM_PREDATORS];
   std::vector<Point2D> avoidLocations;
+  Observation prevObs;
+  Observation prevPrevObs;
 };
 
 #endif /* end of include guard: PREDATORSURROUND_YMRYX7FW */
