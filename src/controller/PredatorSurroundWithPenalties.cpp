@@ -36,7 +36,7 @@ ActionProbs PredatorSurroundWithPenalties::step(const Observation &obs) {
     action[Action::NOOP] += penaltyAmount;
   }
 
-  usePrevObs = !captureMode;
+  usePrevObs = (!captureMode && !isStuck);
   prevObs = obs;
 
   return action;
