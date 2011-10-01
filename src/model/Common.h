@@ -68,6 +68,7 @@ struct Observation {
   const Point2D& preyPos() const;
   const Point2D& myPos() const;
   int getCollision(const Point2D &pos) const;
+  bool operator==(const Observation &other) const;
 };
 
 std::ostream& operator<<(std::ostream &out, const Observation &obs) ;

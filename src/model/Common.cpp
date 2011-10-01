@@ -160,3 +160,17 @@ int Observation::getCollision(const Point2D &pos) const{
   }
   return -1;
 }
+
+bool Observation::operator==(const Observation &other) const {
+  if (positions.size() != other.positions.size())
+    return false;
+  for (unsigned int i = 0; i < positions.size(); i++) {
+    if (positions[i] != other.positions[i])
+      return false;
+  }
+  if (preyInd != other.preyInd)
+    return false;
+  if (myInd != other.myInd)
+    return false;
+  return true;
+}
