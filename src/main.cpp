@@ -115,8 +115,8 @@ int main(int argc, const char *argv[])
       world->restartAgents();
       while (!model->isPreyCaptured()) {
         numSteps[trial][episode]++;
-        if (numSteps[trial][episode] > 100) {
-          std::cerr << "EPISODE TOO LONG" << std::endl;
+        if (numSteps[trial][episode] > 10000) {
+          std::cerr << "TRIAL " << trial << " EPISODE " << episode << " TOO LONG" << std::endl;
           break;
         }
         world->step();
