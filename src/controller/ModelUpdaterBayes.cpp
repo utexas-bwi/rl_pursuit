@@ -3,7 +3,7 @@ File: ModelUpdaterBayes.cpp
 Author: Samuel Barrett
 Description: a model updater using bayesian updates, also handles updating by polynomial function of the loss
 Created:  2011-09-21
-Modified: 2011-09-21
+Modified: 2011-10-02
 */
 
 //#define DEBUG_MODELS
@@ -24,6 +24,10 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
   // done if we're down to 1 model
   if (modelProbs.size() == 1)
     return;
+  // done if we're not doing updates
+  if (modelUpdateType == NO_MODEL_UPDATES)
+    return;
+
   std::vector<double> newModelProbs(modelProbs);
 
 #ifdef DEBUG_MODELS
@@ -86,6 +90,9 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
         loss = 1.0 - modelProb;
         newModelProbs[i] *= (1 - eta * loss);
         break;
+      case NO_MODEL_UPDATES:
+        assert(false);
+        break;
     }
   }
 }
@@ -130,5 +137,10 @@ std::string ModelUpdaterBayes::generateSpecificDescription() {
     case POLYNOMIAL_WEIGHTS:
       return "Polynomial";
       break;
+    case NO_MODEL_UPDATES:
+      return "None";
+      break;
+    default:
+      assert(false);
   }
 }

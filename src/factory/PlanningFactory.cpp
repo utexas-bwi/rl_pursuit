@@ -1,3 +1,11 @@
+/*
+File: PlanningFactory.cpp
+Author: Samuel Barrett
+Description: generates objects for planning
+Created:  2011-08-24
+Modified: 2011-10-02
+*/
+
 #include "PlanningFactory.h"
 #include <boost/algorithm/string.hpp>
 //#include <controller/WorldSilverMDP.h>
@@ -40,6 +48,8 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
       updateType = BAYESIAN_UPDATES;
     else if (updateTypeString == "polynomial")
       updateType = POLYNOMIAL_WEIGHTS;
+    else if (updateTypeString == "none")
+      updateType = NO_MODEL_UPDATES;
     else {
       std::cerr << "createModelUpdater: ERROR: unknown updateTypeString: " << updateTypeString;
       assert(false);

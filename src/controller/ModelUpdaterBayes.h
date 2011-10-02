@@ -6,14 +6,15 @@ File: ModelUpdaterBayes.h
 Author: Samuel Barrett
 Description: a model updater using bayesian updates, also handles updating by polynomial function of the loss
 Created:  2011-09-21
-Modified: 2011-09-21
+Modified: 2011-10-02
 */
 
 #include "ModelUpdater.h"
 
 enum ModelUpdateType {
   BAYESIAN_UPDATES,
-  POLYNOMIAL_WEIGHTS
+  POLYNOMIAL_WEIGHTS,
+  NO_MODEL_UPDATES
 };
 
 class ModelUpdaterBayes: public ModelUpdater {
