@@ -18,6 +18,7 @@ void displaySummary(double timePassed, const std::vector<std::vector<unsigned in
 void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial);
 void saveResults(const std::string &filename, int startTrial, const std::vector<std::vector<unsigned int> > &numSteps);
 void saveConfig(const Json::Value &options);
+void outputDTCSV(std::ofstream &dtCSV, const Observation &obs, int trial, unsigned int numSteps, const Point2D &dims);
 
 int main(int argc, const char *argv[])
 {
@@ -74,6 +75,14 @@ int main(int argc, const char *argv[])
     }
   }
 
+  // optionally open the output DT file
+  std::string outputDTCSVFilename = options["verbosity"].get("dtcsv","").asString();
+  bool outputDTCSVQ = (outputDTCSVFilename != "");
+  std::ofstream dtCSV;
+  if (outputDTCSVQ) {
+    dtCSV.open(outputDTCSVFilename.c_str());
+  }
+
   Observation obs;
   double startTime = getTime();
   int startTrial = 0;
@@ -124,6 +133,10 @@ int main(int argc, const char *argv[])
           model->generateObservation(obs);
           std::cout << obs << std::endl;
         }
+        if (outputDTCSVQ) {
+          model->generateObservation(obs);
+          outputDTCSV(dtCSV,obs,trial,numSteps[trial][episode],model->getDims());
+        } // end output dt csv
       } // while the episode lasts
       if (displayStepsPerEpisodeQ)
         std::cout << std::setw(3) << numSteps[trial][episode] << " " << std::flush;
@@ -138,8 +151,39 @@ int main(int argc, const char *argv[])
   // optionally save the results
   if (saveResultsQ)
     saveResults(saveFilename,startTrial,numSteps);
+  // close the dtCSV file
+  if (outputDTCSVQ)
+    dtCSV.close();
 
   return 0;
+}
+
+void outputDTCSV(std::ofstream &dtCSV, const Observation &obs, int trial, unsigned int numSteps, const Point2D &dims) {
+  static Observation prevObs;
+  assert(obs.preyInd == 0);
+  if ((trial == 0)  && (numSteps == 1)) {
+    dtCSV << "Step,Prey.x,Prey.y";
+    for (unsigned int i = 1; i < obs.positions.size(); i++)
+      dtCSV << ",Pred" << i-0 << ".x,Pred" << i-0 << ".y";
+    dtCSV << ",Prey.actDX,Prey.actDY";
+    for (unsigned int i = 1; i < obs.positions.size(); i++)
+      dtCSV << ",Pred" << i-0 << ".actDX,Pred" << i-0 << ".actDY";
+    dtCSV << std::endl;
+  } // end if trial == 0
+  
+  if (numSteps > 1) {
+    dtCSV << numSteps - 1;
+    for (unsigned int i = 0; i < obs.positions.size(); i++)
+      dtCSV << "," << prevObs.positions[i].x << "," << prevObs.positions[i].y;
+    for (unsigned int i = 0; i < obs.positions.size(); i++) {
+      Point2D diff = getDifferenceToPoint(dims,prevObs.positions[i],obs.positions[i]);
+      dtCSV << "," << diff.x << "," << diff.y;
+    }
+    dtCSV << std::endl;
+  }
+
+
+  prevObs = obs;
 }
 
 
