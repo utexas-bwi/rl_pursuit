@@ -45,6 +45,18 @@ void PredatorDecisionTree::extractFeatures(const Observation &obs, Features &fea
   for (boost::unordered_map<std::string,boost::shared_ptr<Agent> >::iterator it = featureAgents.begin(); it != featureAgents.end(); it++) {
     actionProbs = it->second->step(obs);
     features[it->first] = actionProbs.maxAction();
+    // other naming scheme
+    std::string key;
+    if (it->first == "Greedy")
+      key = "Greedy";
+    else if (it->first == "Team Aware")
+      key = "TA";
+    else if (it->first == "Greedy Prob")
+      key = "GP";
+    else if (it->first == "Prob Dest")
+      key = "PD";
+    key += ".des";
+    features[key] = actionProbs.maxAction();
   }
 
   // naming scheme 2
@@ -78,6 +90,9 @@ void PredatorDecisionTree::extractFeatures(const Observation &obs, Features &fea
     }
     features[key] = occupied;
   }
+
+  features["Prey.x"] = obs.preyPos().x;
+  features["Prey.y"] = obs.preyPos().y;
 
   assert(obs.preyInd == 0);
   features["Pred0.y"] = obs.positions[1].y;
