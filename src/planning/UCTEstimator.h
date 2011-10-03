@@ -53,6 +53,7 @@ public:
   virtual float maxValueForState(const State &state);
   virtual float calcActionValue(const State &state, const Action &action, bool useBounds);
   unsigned int getNumVisits(const State &state, const Action &action);
+  Action getNumActions();
 
 protected:
   void checkInternals();
@@ -296,6 +297,10 @@ float UCTEstimator<State,Action>::calcActionValue(const State &state, const Acti
 template<class State, class Action>
 unsigned int UCTEstimator<State,Action>::getNumVisits(const State &state, const Action &action) {
   return stateActionVisits.get(StateAction(state,action));
+}
+template<class State, class Action>
+Action UCTEstimator<State,Action>::getNumActions() {
+  return numActions;
 }
 
 #endif /* end of include guard: UCTESTIMATOR_8N1RY426 */

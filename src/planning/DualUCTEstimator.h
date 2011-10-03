@@ -6,7 +6,7 @@ File: DualUCTEstimator.h
 Author: Samuel Barrett
 Description: combines 2 value estimators
 Created:  2011-10-01
-Modified: 2011-10-01
+Modified: 2011-10-03
 */
 
 #include <boost/shared_ptr.hpp>
@@ -16,8 +16,7 @@ Modified: 2011-10-01
 template<class State, class Action>
 class DualUCTEstimator: public ValueEstimator<State,Action> {
 public:
-  DualUCTEstimator(boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator, float b);
-  void setAssistingValueEstimator(boost::shared_ptr<UCTEstimator<State,Action> > newEstimator);
+  DualUCTEstimator(boost::shared_ptr<RNG> rng, boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator, boost::shared_ptr<UCTEstimator<State,Action> > generalValueEstimator, float b, State (*stateConverter)(const State&));
 
   Action selectWorldAction(const State &state);
   Action selectPlanningAction(const State &state);
@@ -31,21 +30,21 @@ public:
   float calcActionValue(const State &state, const Action &action, bool useBounds);
 
 private:
+  boost::shared_ptr<RNG> rng;
   boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator;
-  boost::shared_ptr<UCTEstimator<State,Action> > assistingValueEstimator;
+  boost::shared_ptr<UCTEstimator<State,Action> > generalValueEstimator;
   float b;
+  State (*stateConverter)(const State &);
 };
 
 template<class State, class Action>
-DualUCTEstimator<State,Action>::DualUCTEstimator(boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator, float b):
+DualUCTEstimator<State,Action>::DualUCTEstimator(boost::shared_ptr<RNG> rng, boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator, boost::shared_ptr<UCTEstimator<State,Action> > generalValueEstimator, float b, State (*stateConverter)(const State&)):
+  rng(rng),
   mainValueEstimator(mainValueEstimator),
-  b(b)
+  generalValueEstimator(generalValueEstimator),
+  b(b),
+  stateConverter(stateConverter)
 {
-}
-
-template<class State, class Action>
-void DualUCTEstimator<State,Action>::setAssistingValueEstimator(boost::shared_ptr<UCTEstimator<State,Action> > newEstimator) {
-  assistingValueEstimator = newEstimator;
 }
 
 template<class State, class Action>
@@ -61,41 +60,44 @@ Action DualUCTEstimator<State,Action>::selectPlanningAction(const State &state) 
 template<class State, class Action>
 void DualUCTEstimator<State,Action>::startRollout() {
   mainValueEstimator->startRollout();
-  assistingValueEstimator->startRollout();
+  generalValueEstimator->startRollout();
 }
 
 template<class State, class Action>
 void DualUCTEstimator<State,Action>::finishRollout(const State &state, bool terminal) {
+  State generalState = stateConverter(state);
   mainValueEstimator->finishRollout(state,terminal);
-  assistingValueEstimator->finishRollout(state,terminal);
+  generalValueEstimator->finishRollout(generalState,terminal);
 }
 
 template<class State, class Action>
 void DualUCTEstimator<State,Action>::visit(const State &state, const Action &action, float reward) {
+  State generalState = stateConverter(state);
   mainValueEstimator->visit(state,action,reward);
-  assistingValueEstimator->visit(state,action,reward);
+  generalValueEstimator->visit(generalState,action,reward);
 }
 
 template<class State, class Action>
 void DualUCTEstimator<State,Action>::restart() {
   mainValueEstimator->restart();
-  assistingValueEstimator->restart();
+  generalValueEstimator->restart();
 }
 
 template<class State, class Action>
 std::string DualUCTEstimator<State,Action>::generateDescription(unsigned int indentation) {
-  return indent(indentation) + "DualUCTEstimator: combining the value functions:\n" + mainValueEstimator->generateDescription(indentation+1) + "\n" + assistingValueEstimator->generateDescription(indentation+1):
+  return indent(indentation) + "DualUCTEstimator: combining the value functions:\n" + mainValueEstimator->generateDescription(indentation+1) + "\n" + generalValueEstimator->generateDescription(indentation+1);
 }
 
 template<class State, class Action>
 float DualUCTEstimator<State,Action>::calcActionValue(const State &state, const Action &action, bool useBounds) {
+  State generalState = stateConverter(state);
   unsigned int n = mainValueEstimator->getNumVisits(state,action);
-  unsigned int nh = assistingValueEstimator->getNumVisits(state,action);
+  unsigned int nh = generalValueEstimator->getNumVisits(generalState,action);
   float mu = 0.5;
   float beta = nh / (n + nh + n * nh * b * b / (mu * (1.0 - mu)));
   float mainVal = mainValueEstimator->calcActionValue(state,action,false);
   float bound = mainValueEstimator->calcActionValue(state,action,useBounds) - mainVal;
-  float val = (1 - beta) * mainVal + assistingValueEstimator->calcActionValue(state,action,false) + bound;
+  float val = (1 - beta) * mainVal + generalValueEstimator->calcActionValue(generalState,action,false) + bound;
   return val;
 }
 
@@ -105,8 +107,8 @@ Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool use
   float maxVal = -BIGNUM;
   float val;
 
-  for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
-    StateAction key(state,a);
+  for (Action a = (Action)0; a < mainValueEstimator->getNumActions(); a = Action(a+1)) {
+    std::pair<State,Action> key(state,a);
     val = calcActionValue(state,a,useBounds);
 
     //std::cerr << val << " " << maxVal << std::endl;
