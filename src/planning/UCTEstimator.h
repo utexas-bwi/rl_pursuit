@@ -50,8 +50,9 @@ public:
   virtual void visit(const State &state, const Action &action, float reward);
   virtual void restart();
   virtual std::string generateDescription(unsigned int indentation = 0);
-  float maxValueForState(const State &state);
-  float calcActionValue(const State &state, const Action &action, bool useBounds);
+  virtual float maxValueForState(const State &state);
+  virtual float calcActionValue(const State &state, const Action &action, bool useBounds);
+  unsigned int getNumVisits(const State &state, const Action &action);
 
 protected:
   void checkInternals();
@@ -290,6 +291,11 @@ float UCTEstimator<State,Action>::calcActionValue(const State &state, const Acti
     }
   } else
     return values.get(key);
+}
+
+template<class State, class Action>
+unsigned int UCTEstimator<State,Action>::getNumVisits(const State &state, const Action &action) {
+  return stateActionVisits.get(StateAction(state,action));
 }
 
 #endif /* end of include guard: UCTESTIMATOR_8N1RY426 */
