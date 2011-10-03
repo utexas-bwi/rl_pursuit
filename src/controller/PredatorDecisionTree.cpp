@@ -46,6 +46,41 @@ void PredatorDecisionTree::extractFeatures(const Observation &obs, Features &fea
     actionProbs = it->second->step(obs);
     features[it->first] = actionProbs.maxAction();
   }
+
+  // naming scheme 2
+  features["Next2Prey"] = (distToPrey == 1);
+  features["DeltaXToPrey"] = diffToPrey.x;
+  features["DeltaYToPrey"] = diffToPrey.y;
+  for (unsigned int i = 0; i < Action::NUM_NEIGHBORS; i++) {
+    std::string key = "Occupied";
+    switch (i) {
+      case Action::UP:
+        key += "U";
+        break;
+      case Action::DOWN:
+        key += "D";
+        break;
+      case Action::LEFT:
+        key += "L";
+        break;
+      case Action::RIGHT:
+        key += "R";
+        break;
+      default:
+        assert(false);
+    }
+    bool occupied = false;
+    for (unsigned int j = 0; j < obs.positions.size(); j++) {
+      if (movePosition(dims,obs.myPos(),(Action::Type)i) == obs.positions[j]) {
+        occupied = true;
+        break;
+      }
+    }
+    features[key] = occupied;
+  }
+
+  assert(obs.preyInd == 0);
+  features["Pred0.y"] = obs.positions[1].y;
 }
 
 void PredatorDecisionTree::addFeatureAgent(const std::string &key, const std::string &name) {
