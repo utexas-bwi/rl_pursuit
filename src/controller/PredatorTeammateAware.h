@@ -24,9 +24,14 @@ public:
   ActionProbs step(const Observation &obs);
   void restart(); // between episodes
   std::string generateDescription();
+  
+  PredatorTeammateAware* clone() {
+    return new PredatorTeammateAware(*this);
+  }
 
 private:
   AStar planner;
+  unsigned int counter;
 };
 
 #endif /* end of include guard: PREDATORTEAMMATEAWARE_78DZXW6S */

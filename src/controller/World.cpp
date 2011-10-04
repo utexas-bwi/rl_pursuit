@@ -8,6 +8,7 @@ World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world):
 }
 
 void World::step() {
+  std::cout << "START WORLD STEP" << std::endl;
   ActionProbs actionProbs;
   Action::Type action;
   Observation obs;
@@ -16,6 +17,7 @@ void World::step() {
   world->generateObservation(obs);
   for (unsigned int i = 0; i < agents.size(); i++) {
     obs.myInd = i;
+    //std::cout << agents[i]->generateDescription() << std::endl;
     actionProbs = agents[i]->step(obs);
     assert(actionProbs.checkTotal());
     action = actionProbs.selectAction(rng);
@@ -23,6 +25,7 @@ void World::step() {
   }
 
   handleCollisions(requestedPositions);
+  std::cout << "STOP  WORLD STEP" << std::endl;
 }
 
 double World::getOutcomeProb(Observation prevObs,const Observation &currentObs) {

@@ -85,5 +85,7 @@ ActionProbs PredatorGreedy::step(const Observation &obs) {
   //if (action == Action::RANDOM)
     //action = (Action::Type)rng->randomInt(Action::NUM_ACTIONS);
   //return action;
+  counter++;
+  std::cout << "GREEDY: " << counter << " " << obs << std::endl;
   return ActionProbs(action);
 }

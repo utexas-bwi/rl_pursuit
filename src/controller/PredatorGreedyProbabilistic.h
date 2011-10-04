@@ -19,6 +19,9 @@ public:
 
   void restart();
   std::string generateDescription();
+  PredatorGreedyProbabilistic* clone() {
+    return new PredatorGreedyProbabilistic(*this);
+  }
 
 private:
   static const unsigned int blockedPenalty;

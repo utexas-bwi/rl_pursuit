@@ -17,6 +17,9 @@ public:
   ActionProbs step(const Observation &obs);
   void restart();
   std::string generateDescription();
+  PreyAvoidNeighbor* clone() {
+    return new PreyAvoidNeighbor(*this);
+  }
 
 private:
   void getNeighborMoves(const Observation &obs, std::vector<Point2D> &neighborMoves);

@@ -19,6 +19,8 @@ Modified: 2011-08-23
 #include <controller/AgentDummy.h>
 #include <controller/State.h>
 
+class ModelUpdater;
+
 class WorldMDP: public Model<State_t,Action::Type> {
 public:
   WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent);
@@ -31,6 +33,12 @@ public:
   double getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs);
   boost::shared_ptr<AgentDummy> getAdhocAgent();
   void addAgent(AgentType agentType, boost::shared_ptr<Agent> agent);
+  Point2D getDims() {
+    return model->getDims();
+  }
+  virtual void setBeliefs(boost::shared_ptr<ModelUpdater> ) {
+    std::cout << "SET BELIEFS" << std::endl;
+  }
 
 protected:
   boost::shared_ptr<RNG> rng;

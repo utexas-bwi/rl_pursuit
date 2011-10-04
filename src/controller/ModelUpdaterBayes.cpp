@@ -98,7 +98,9 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
 }
 
 double ModelUpdaterBayes::calculateModelProb(unsigned int modelInd, const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
-  mdp->setAgents(models[modelInd]);
+  Model model;
+  copyModel(modelInd,model);
+  mdp->setAgents(model);
   double prob = mdp->getOutcomeProb(prevObs,lastAction,currentObs);
   //std::cout << "CALCULATE MODEL PROB FOR " << modelInd << " = " << prob << std::endl;
   return prob;

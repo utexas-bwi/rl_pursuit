@@ -25,6 +25,10 @@ public:
   void restart() {}
 
   std::string generateDescription() { return "AgentRandom: a randomly moving agent"; }
+
+  AgentRandom* clone() {
+    return new AgentRandom(*this);
+  }
 };
 
 #endif /* end of include guard: AGENTRANDOM_2VL5554W */

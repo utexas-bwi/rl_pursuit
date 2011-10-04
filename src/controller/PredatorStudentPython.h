@@ -20,6 +20,10 @@ public:
   ActionProbs step(const Observation &obs);
   void restart();
   std::string generateDescription();
+  
+  PredatorStudentPython* clone() {
+    return new PredatorStudentPython(*this);
+  }
 
 private:
   void initClass();

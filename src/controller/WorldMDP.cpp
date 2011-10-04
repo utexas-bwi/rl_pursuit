@@ -1,4 +1,5 @@
 #include "WorldMDP.h"
+#include <controller/ModelUpdater.h>
 
 WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent):
   rng(rng),
@@ -57,6 +58,9 @@ std::string WorldMDP::generateDescription(unsigned int indentation) {
 }
 
 void WorldMDP::setAgents(const std::vector<boost::shared_ptr<Agent> > &agents) {
+  //for (unsigned int i = 0; i < agents.size(); i++) {
+    //std::cout << typeid(*(agents[i].get())).name() << " " << agents[i].get() << std::endl;
+  //}
   controller->setAgentControllers(agents);
 }
 

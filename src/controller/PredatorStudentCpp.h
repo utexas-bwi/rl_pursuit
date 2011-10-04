@@ -25,6 +25,10 @@ public:
   std::string generateDescription();
   
   static bool handlesStudent(const std::string &name);
+  
+  PredatorStudentCpp* clone() {
+    return new PredatorStudentCpp(*this);
+  }
 
 private:
   boost::shared_ptr<AbstractCppPredator> createPredator(const std::string &name, unsigned int predatorInd);

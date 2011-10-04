@@ -25,6 +25,11 @@ public:
   std::string generateDescription();
   std::string generateLongDescription(unsigned int indentation = 0);
 
+  PredatorMCTS* clone() {
+    assert(false); // don't do this
+    return new PredatorMCTS(*this);
+  }
+
 protected:
   boost::shared_ptr<MCTS<State_t,Action::Type> > planner;
   boost::shared_ptr<WorldMDP> model;

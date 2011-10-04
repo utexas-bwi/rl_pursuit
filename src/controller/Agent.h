@@ -27,6 +27,7 @@ public:
   virtual void restart() = 0; // between episodes
   virtual std::string generateDescription() = 0;
   virtual std::string generateLongDescription(unsigned int indentation = 0) {return indent(indentation) + generateDescription();}
+  virtual Agent* clone() = 0;
 
 protected:
   boost::shared_ptr<RNG> rng;

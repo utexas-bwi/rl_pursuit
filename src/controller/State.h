@@ -17,6 +17,24 @@ typedef uint64_t State_t;
 State_t getStateFromObs(const Point2D &dims, const Observation &obs);
 void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions);
 
+class StateConverter {
+public:
+  StateConverter(unsigned int numBeliefs, unsigned int numBins);
+  State_t convertBeliefStateToGeneralState(const State_t &state);
+  void convertGeneralStateToBeliefState(State_t &state, const std::vector<double> &beliefs);
+  void removeModel(unsigned int ind);
+
+private:
+  unsigned int discretizeProb(double prob);
+
+private:
+  unsigned int numBeliefs;
+  unsigned int numBins;
+  double binSize;
+  std::vector<bool> beliefNonzero;
+};
+
+
 //struct State {
   //State() {};
   //State(const Observation &obs);

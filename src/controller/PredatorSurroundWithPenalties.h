@@ -18,6 +18,10 @@ public:
   ActionProbs step(const Observation &obs);
   void restart(); // between episodes
   std::string generateDescription();
+  
+  PredatorSurroundWithPenalties* clone() {
+    return new PredatorSurroundWithPenalties(*this);
+  }
 
 private:
   void setPenaltyMode(const Observation &obs);

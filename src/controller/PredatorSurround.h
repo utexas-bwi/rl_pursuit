@@ -20,6 +20,10 @@ public:
   virtual void restart(); // between episodes
   virtual std::string generateDescription();
 
+  PredatorSurround* clone() {
+    return new PredatorSurround(*this);
+  }
+
 protected:
   void setCaptureMode(const Observation &obs);
   Point2D getDesiredPosition(const Observation &obs);

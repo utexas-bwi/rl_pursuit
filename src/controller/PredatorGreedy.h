@@ -19,12 +19,20 @@ class PredatorGreedy: public Agent {
 public:
   PredatorGreedy(boost::shared_ptr<RNG> rng, const Point2D &dims):
     Agent(rng,dims)
-  {}
+  {
+    counter = 0;
+  }
 
   ActionProbs step(const Observation &obs);
 
   void restart() {};
   std::string generateDescription() { return "PredatorGreedy: a predator that greedily pursues the prey";}
+  
+  PredatorGreedy* clone() {
+    return new PredatorGreedy(*this);
+  }
+public:
+  unsigned int counter;
 };
 
 #endif /* end of include guard: PREDATORGREEDY_BSWV5ETY */

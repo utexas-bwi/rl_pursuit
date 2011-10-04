@@ -21,6 +21,10 @@ public:
   ActionProbs step(const Observation &obs);
   void restart();
   std::string generateDescription();
+  
+  PredatorDecisionTree* clone() {
+    return new PredatorDecisionTree(*this);
+  }
 
 private:
   void extractFeatures(const Observation &obs, Features &features);

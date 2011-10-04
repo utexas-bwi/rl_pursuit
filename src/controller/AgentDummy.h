@@ -23,6 +23,10 @@ public:
   std::string generateDescription() { return "AgentDummy: returns the last action that was set"; }
 
   void setAction(Action::Type a) { action = a; }
+  
+  AgentDummy* clone() {
+    return new AgentDummy(*this);
+  }
 
 private:
   Action::Type action;

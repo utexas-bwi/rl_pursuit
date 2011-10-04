@@ -14,10 +14,8 @@ Modified: 2011-10-02
 #include <controller/ModelUpdaterSilver.h>
 #include <planning/DualUCTEstimator.h>
 #include "WorldFactory.h"
-
-State_t convertBeliefToGeneralState(const State_t &state) {
-  return state;
-}
+#include <controller/State.h>
+#include <controller/WorldBeliefMDP.h>
 
 // MODEL UPDATER
 
@@ -72,6 +70,10 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
   // create the dummy agent for the ad hoc agent
   boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(boost::shared_ptr<RNG>(new RNG(rng->randomUInt())),dims));
   return boost::shared_ptr<WorldMDP>(new WorldMDP(rng,model,controller,adhocAgent));
+  
+//boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, int replacementInd, const Json::Value &options);
+  //StateConverter stateConverter(5,5);
+  //return boost::shared_ptr<WorldMDP>(new WorldBeliefMDP(rng,model,controller,adhocAgent);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -92,14 +94,15 @@ boost::shared_ptr<ValueEstimator<State_t,Action::Type> > createValueEstimator(bo
   unsigned int initialStateActionVisits = options.get("initialStateActionVisits",0).asUInt();
   bool theoreticallyCorrectLambda = options.get("theoreticallyCorrectLambda",true).asBool();
 
-  bool beliefs = options.get("beliefs",false).asBool();
-  float b = options.get("dualUCTB",0.5).asDouble();
-  if (beliefs) {
-    boost::shared_ptr<UCTEstimator<State_t,Action::Type> > mainValueEstimator = createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,theoreticallyCorrectLambda);
-    boost::shared_ptr<UCTEstimator<State_t,Action::Type> > generalValueEstimator = createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,theoreticallyCorrectLambda);
-    return boost::shared_ptr<ValueEstimator<State_t,Action::Type> >(new DualUCTEstimator<State_t,Action::Type>(rng,mainValueEstimator,generalValueEstimator,b,&convertBeliefToGeneralState));
-  } else {
-    return createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,theoreticallyCorrectLambda); }
+  //bool beliefs = options.get("beliefs",false).asBool();
+  //if (beliefs) {
+    //float b = options.get("dualUCTB",0.5).asDouble();
+    //boost::shared_ptr<UCTEstimator<State_t,Action::Type> > mainValueEstimator = createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,theoreticallyCorrectLambda);
+    //boost::shared_ptr<UCTEstimator<State_t,Action::Type> > generalValueEstimator = createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,theoreticallyCorrectLambda);
+    //return boost::shared_ptr<ValueEstimator<State_t,Action::Type> >(new DualUCTEstimator<State_t,Action::Type>(rng,mainValueEstimator,generalValueEstimator,b,&convertBeliefStateToGeneralState));
+  //} else {
+    return createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,theoreticallyCorrectLambda);
+//}
 }
 
 boost::shared_ptr<ValueEstimator<State_t,Action::Type> > createValueEstimator(unsigned int randomSeed, Action::Type numActions, const Json::Value &options) {

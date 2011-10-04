@@ -19,6 +19,10 @@ public:
 
   void restart();
   std::string generateDescription();
+  
+  PredatorProbabilisticDestinations* clone() {
+    return new PredatorProbabilisticDestinations(*this);
+  }
 
 private:
   void setDistanceProbs(unsigned distanceToPrey);
