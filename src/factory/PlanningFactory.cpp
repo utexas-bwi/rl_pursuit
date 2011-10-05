@@ -17,6 +17,20 @@ Modified: 2011-10-02
 #include <controller/State.h>
 #include <controller/WorldBeliefMDP.h>
 
+ModelUpdateType getModelUpdateType(std::string type) {
+  boost::to_lower(type);
+  if (type == "bayesian")
+    return BAYESIAN_UPDATES;
+  else if (type == "polynomial")
+    return POLYNOMIAL_WEIGHTS;
+  else if (type == "none")
+    return NO_MODEL_UPDATES;
+  else {
+    std::cerr << "getModelUpdateType: ERROR: unknown updateTypeString: " << type;
+    exit(34);
+  }
+}
+
 // MODEL UPDATER
 boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const std::vector<std::vector<boost::shared_ptr<Agent> > > &modelList, const std::vector<double> &modelProbs, const std::vector<std::string> &modelDescriptions, ModelUpdateType updateType) {
     return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType));
@@ -49,24 +63,13 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
   } else {
     // make a bayes updater
     std::string updateTypeString = options.get("update","bayesian").asString();
-    boost::to_lower(updateTypeString);
-    ModelUpdateType updateType;
+    ModelUpdateType updateType = getModelUpdateType(updateTypeString);
 
-    if (updateTypeString == "bayesian")
-      updateType = BAYESIAN_UPDATES;
-    else if (updateTypeString == "polynomial")
-      updateType = POLYNOMIAL_WEIGHTS;
-    else if (updateTypeString == "none")
-      updateType = NO_MODEL_UPDATES;
-    else {
-      std::cerr << "createModelUpdater: ERROR: unknown updateTypeString: " << updateTypeString;
-      assert(false);
-    }
     return createModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType);
   }
 }
 
-boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool beliefMDP, unsigned int numBeliefs, unsigned int numBins) {
+boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool beliefMDP, unsigned int numBeliefs, unsigned int numBins, ModelUpdateType updateType) {
   // create the world model and controller
   boost::shared_ptr<WorldModel> model = createWorldModel(dims);
   boost::shared_ptr<World> controller = createWorld(rng->randomUInt(),model);
@@ -77,7 +80,7 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
     return mdp;
 
   
-  boost::shared_ptr<ModelUpdaterBayes> modelUpdater = createModelUpdaterBayes(rng,mdp,std::vector<std::vector<boost::shared_ptr<Agent> > >(),std::vector<double>(),std::vector<std::string>(),BAYESIAN_UPDATES);
+  boost::shared_ptr<ModelUpdaterBayes> modelUpdater = createModelUpdaterBayes(rng,mdp,std::vector<std::vector<boost::shared_ptr<Agent> > >(),std::vector<double>(),std::vector<std::string>(),updateType);
   StateConverter stateConverter(numBeliefs,numBins);
   return boost::shared_ptr<WorldMDP>(new WorldBeliefMDP(rng,model,controller,adhocAgent,stateConverter,mdp,modelUpdater));
 }
@@ -87,8 +90,10 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
   const Json::Value models = options["models"];
   unsigned int numBeliefs = models.size();
   unsigned int numBins = options.get("numBeliefBins",5).asUInt();
+  std::string updateTypeString = options.get("update","bayesian").asString();
+  ModelUpdateType updateType = getModelUpdateType(updateTypeString);
 
-  return createWorldMDP(rng,dims,beliefMDP,numBeliefs,numBins);
+  return createWorldMDP(rng,dims,beliefMDP,numBeliefs,numBins,updateType);
 }
 
 ///////////////////////////////////////////////////////////////
