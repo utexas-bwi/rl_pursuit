@@ -30,7 +30,7 @@ public:
   std::string generateDescription(unsigned int indentation = 0);
   std::vector<double> getBeliefs();
   void updateControllerInformation(const Observation &obs);
-  void copyModel(unsigned int ind, Model &model);
+  void copyModel(unsigned int ind, Model &model,boost::shared_ptr<Agent> adhocAgent = boost::shared_ptr<Agent>()) const;
 
 protected:
   virtual unsigned int selectModelInd(const State_t &state) = 0;

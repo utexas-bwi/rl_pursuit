@@ -128,10 +128,11 @@ int main(int argc, const char *argv[])
           std::cerr << "TRIAL " << trial << " EPISODE " << episode << " TOO LONG" << std::endl;
           break;
         }
+        double t = getTime();
         world->step();
         if (displayObsQ) {
           model->generateObservation(obs);
-          std::cout << obs << std::endl;
+          std::cout << obs << " " << getTime() - t << std::endl;
         }
         if (outputDTCSVQ) {
           model->generateObservation(obs);

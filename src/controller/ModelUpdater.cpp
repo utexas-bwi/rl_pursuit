@@ -22,18 +22,21 @@ void ModelUpdater::set(const ModelUpdater &other) {
   modelDescriptions = other.modelDescriptions;
   modelProbs = other.modelProbs;
   removedModelInds = other.removedModelInds;
+  models.clear();
+  Model model;
   for (unsigned int i = 0; i < other.models.size(); i++) {
+    other.copyModel(i,model,mdp->getAdhocAgent());
+    models.push_back(model);
   }
-  models = other.models;
-  std::cout << "SET SUCKS" << std::endl;
 }
 
-void ModelUpdater::copyModel(unsigned int ind, Model &model) {
-  AgentDummy *dummy;
+void ModelUpdater::copyModel(unsigned int ind, Model &model, boost::shared_ptr<Agent> adhocAgent) const {
+  model.clear();
+  if (adhocAgent == NULL)
+    adhocAgent = mdp->getAdhocAgent();
   for (unsigned int i = 0; i < models[ind].size(); i++) {
-    dummy = dynamic_cast<AgentDummy*>(models[ind][i].get());
-    if (dummy != NULL)
-      model.push_back(models[ind][i]);
+    if (models[ind][i] == mdp->getAdhocAgent())
+      model.push_back(adhocAgent);
     else
       model.push_back(boost::shared_ptr<Agent>(models[ind][i]->clone()));
   }
@@ -83,7 +86,7 @@ std::vector<double> ModelUpdater::getBeliefs() {
 }
 
 void ModelUpdater::updateControllerInformation(const Observation &obs) {
-  std::cout << "START UPDATE CONTROLLER INFO" << std::endl;
+  //std::cout << "START UPDATE CONTROLLER INFO" << std::endl;
   float reward;
   State_t state;
   bool terminal;
@@ -92,5 +95,5 @@ void ModelUpdater::updateControllerInformation(const Observation &obs) {
     mdp->setAgents(models[i]);
     mdp->takeAction(Action::NOOP,reward,state,terminal);
   }
-  std::cout << "STOP UPDATE CONTROLLER INFO" << std::endl;
+  //std::cout << "STOP UPDATE CONTROLLER INFO" << std::endl;
 }

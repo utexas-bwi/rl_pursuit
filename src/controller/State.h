@@ -23,6 +23,7 @@ public:
   State_t convertBeliefStateToGeneralState(const State_t &state);
   void convertGeneralStateToBeliefState(State_t &state, const std::vector<double> &beliefs);
   void removeModel(unsigned int ind);
+  std::string generateDescription(unsigned int indentation);
 
 private:
   unsigned int discretizeProb(double prob);

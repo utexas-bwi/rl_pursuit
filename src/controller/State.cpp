@@ -8,6 +8,8 @@ Modified: 2011-09-21
 
 #include "State.h"
 #include <iostream>
+#include <boost/lexical_cast.hpp>
+#include <common/Util.h>
 
 /*
 State::State(const Observation &obs) {
@@ -130,4 +132,11 @@ void StateConverter::removeModel(unsigned int ind) {
 
 unsigned int StateConverter::discretizeProb(double prob) {
   return prob / binSize;
+}
+
+std::string StateConverter::generateDescription(unsigned int indentation) {
+  std::string msg;
+  msg += indent(indentation) + "# Beliefs: " + boost::lexical_cast<std::string>(numBeliefs) + "\n";
+  msg += indent(indentation) + "# Bins: " + boost::lexical_cast<std::string>(numBins);
+  return msg;
 }

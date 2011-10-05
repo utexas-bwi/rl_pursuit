@@ -54,7 +54,7 @@ float WorldMDP::getRewardRangePerStep() {
 }
 
 std::string WorldMDP::generateDescription(unsigned int indentation) {
-  return controller->generateDescription(indentation);
+  return indent(indentation) + "WorldMDP:\n" + controller->generateDescription(indentation + 1);
 }
 
 void WorldMDP::setAgents(const std::vector<boost::shared_ptr<Agent> > &agents) {

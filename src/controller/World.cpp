@@ -8,7 +8,7 @@ World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world):
 }
 
 void World::step() {
-  std::cout << "START WORLD STEP" << std::endl;
+  //std::cout << "START WORLD STEP" << std::endl;
   ActionProbs actionProbs;
   Action::Type action;
   Observation obs;
@@ -25,7 +25,7 @@ void World::step() {
   }
 
   handleCollisions(requestedPositions);
-  std::cout << "STOP  WORLD STEP" << std::endl;
+  //std::cout << "STOP  WORLD STEP" << std::endl;
 }
 
 double World::getOutcomeProb(Observation prevObs,const Observation &currentObs) {

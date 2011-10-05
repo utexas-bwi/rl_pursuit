@@ -37,7 +37,7 @@ public:
     return model->getDims();
   }
   virtual void setBeliefs(boost::shared_ptr<ModelUpdater> ) {
-    std::cout << "SET BELIEFS" << std::endl;
+    // do nothing :)
   }
 
 protected:

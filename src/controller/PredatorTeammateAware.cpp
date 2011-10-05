@@ -25,7 +25,7 @@ std::string PredatorTeammateAware::generateDescription() {
 
 ActionProbs PredatorTeammateAware::step(const Observation &obs) {
   counter++;
-  std::cout << "TA: " << counter << " " << obs << std::endl;
+  //std::cout << "TA: " << counter << " " << obs << std::endl;
   Point2D dest = getTeammateAwareDesiredPosition(dims,obs);
   planner.plan(obs.myPos(),dest,obs.positions);
   if (!planner.foundPath()) {
