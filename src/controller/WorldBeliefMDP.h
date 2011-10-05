@@ -26,7 +26,7 @@ protected:
   Observation prevObs;
   Action::Type prevAction;
   StateConverter stateConverter;
-  double time;
+  //double time;
 };
 
 #endif /* end of include guard: WORLDBELIEFMDP_JF3NQXTY */

@@ -17,7 +17,7 @@ WorldBeliefMDP::WorldBeliefMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<Wor
   prevAction(Action::NUM_ACTIONS),
   stateConverter(stateConverter)
 {
-  time = 0;
+  //time = 0;
 }
 
 void WorldBeliefMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
@@ -26,9 +26,9 @@ void WorldBeliefMDP::takeAction(const Action::Type &action, float &reward, State
   Observation obs;
   model->generateObservation(obs);
   if (prevAction < Action::NUM_ACTIONS) {
-    double t = getTime();
+    //double t = getTime();
     modelUpdater->updateRealWorldAction(prevObs,prevAction,obs);
-    time += getTime() - t;
+    //time += getTime() - t;
   }
   modelUpdater->updateControllerInformation(obs);
   // save information for the modelUpdater
@@ -39,8 +39,8 @@ void WorldBeliefMDP::takeAction(const Action::Type &action, float &reward, State
 } 
 
 void WorldBeliefMDP::setBeliefs(boost::shared_ptr<ModelUpdater> newModelUpdater) {
-  std::cout << "BELIEF TIME: " << time << std::endl;
-  time = 0;
+  //std::cout << "BELIEF TIME: " << time << std::endl;
+  //time = 0;
   modelUpdater->set(*newModelUpdater);
 }
 

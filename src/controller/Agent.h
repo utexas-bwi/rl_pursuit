@@ -23,6 +23,9 @@ public:
     dims(dims)
   {}
 
+  virtual ~Agent() {
+  }
+
   virtual ActionProbs step(const Observation &obs) = 0;
   virtual void restart() = 0; // between episodes
   virtual std::string generateDescription() = 0;

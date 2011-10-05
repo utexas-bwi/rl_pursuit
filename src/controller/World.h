@@ -37,6 +37,7 @@ public:
 
   std::string generateDescription(unsigned int indentation = 0);
   double getOutcomeProb(Observation prevObs,const Observation &currentObs);
+  double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs);
 
 protected:
   boost::shared_ptr<RNG> rng;

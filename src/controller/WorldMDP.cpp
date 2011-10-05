@@ -66,7 +66,8 @@ void WorldMDP::setAgents(const std::vector<boost::shared_ptr<Agent> > &agents) {
 
 double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs) {
   adhocAgent->setAction(adhocAction);
-  return controller->getOutcomeProb(prevObs,currentObs);
+  return controller->getOutcomeProbApprox(prevObs,currentObs);
+  //return controller->getOutcomeProb(prevObs,currentObs);
 }
 
 boost::shared_ptr<AgentDummy> WorldMDP::getAdhocAgent() {
