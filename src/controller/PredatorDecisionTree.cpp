@@ -95,7 +95,11 @@ void PredatorDecisionTree::extractFeatures(const Observation &obs, Features &fea
   features["Prey.y"] = obs.preyPos().y;
 
   assert(obs.preyInd == 0);
-  features["Pred0.y"] = obs.positions[1].y;
+  for (unsigned int i = 1; i < obs.positions.size(); i++) {
+    std::string key = "Pred" + boost::lexical_cast<std::string>(i-1);
+    features[key + ".x"] = obs.positions[i].x;
+    features[key + ".y"] = obs.positions[i].y;
+  }
 }
 
 void PredatorDecisionTree::addFeatureAgent(const std::string &key, const std::string &name) {
