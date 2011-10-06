@@ -87,6 +87,7 @@ std::vector<double> ModelUpdater::getBeliefs() {
 
 void ModelUpdater::updateControllerInformation(const Observation &obs) {
   //std::cout << "START UPDATE CONTROLLER INFO" << std::endl;
+  //std::cout << "UCI: " << mdp.get() << " " << mdp->model.get() << std::endl;
   float reward;
   State_t state;
   bool terminal;
@@ -95,5 +96,6 @@ void ModelUpdater::updateControllerInformation(const Observation &obs) {
     mdp->setAgents(models[i]);
     mdp->takeAction(Action::NOOP,reward,state,terminal);
   }
+  mdp->setState(getStateFromObs(mdp->getDims(),obs));
   //std::cout << "STOP UPDATE CONTROLLER INFO" << std::endl;
 }
