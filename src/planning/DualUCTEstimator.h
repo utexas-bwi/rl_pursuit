@@ -16,7 +16,7 @@ Modified: 2011-10-03
 template<class State, class Action>
 class DualUCTEstimator: public ValueEstimator<State,Action> {
 public:
-  DualUCTEstimator(boost::shared_ptr<RNG> rng, boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator, boost::shared_ptr<UCTEstimator<State,Action> > generalValueEstimator, float b, State (*stateConverter)(const State&));
+  DualUCTEstimator(boost::shared_ptr<RNG> rng, boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator, boost::shared_ptr<UCTEstimator<State,Action> > generalValueEstimator, float b, const StateConverter &stateConverter);
 
   Action selectWorldAction(const State &state);
   Action selectPlanningAction(const State &state);
@@ -34,11 +34,11 @@ private:
   boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator;
   boost::shared_ptr<UCTEstimator<State,Action> > generalValueEstimator;
   float b;
-  State (*stateConverter)(const State &);
+  StateConverter stateConverter;
 };
 
 template<class State, class Action>
-DualUCTEstimator<State,Action>::DualUCTEstimator(boost::shared_ptr<RNG> rng, boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator, boost::shared_ptr<UCTEstimator<State,Action> > generalValueEstimator, float b, State (*stateConverter)(const State&)):
+DualUCTEstimator<State,Action>::DualUCTEstimator(boost::shared_ptr<RNG> rng, boost::shared_ptr<UCTEstimator<State,Action> > mainValueEstimator, boost::shared_ptr<UCTEstimator<State,Action> > generalValueEstimator, float b, const StateConverter &stateConverter):
   rng(rng),
   mainValueEstimator(mainValueEstimator),
   generalValueEstimator(generalValueEstimator),
@@ -65,14 +65,14 @@ void DualUCTEstimator<State,Action>::startRollout() {
 
 template<class State, class Action>
 void DualUCTEstimator<State,Action>::finishRollout(const State &state, bool terminal) {
-  State generalState = stateConverter(state);
+  State generalState = stateConverter.convertBeliefStateToGeneralState(state);
   mainValueEstimator->finishRollout(state,terminal);
   generalValueEstimator->finishRollout(generalState,terminal);
 }
 
 template<class State, class Action>
 void DualUCTEstimator<State,Action>::visit(const State &state, const Action &action, float reward) {
-  State generalState = stateConverter(state);
+  State generalState = stateConverter.convertBeliefStateToGeneralState(state);
   mainValueEstimator->visit(state,action,reward);
   generalValueEstimator->visit(generalState,action,reward);
 }
@@ -90,26 +90,33 @@ std::string DualUCTEstimator<State,Action>::generateDescription(unsigned int ind
 
 template<class State, class Action>
 float DualUCTEstimator<State,Action>::calcActionValue(const State &state, const Action &action, bool useBounds) {
-  State generalState = stateConverter(state);
+  State generalState = stateConverter.convertBeliefStateToGeneralState(state);
   unsigned int n = mainValueEstimator->getNumVisits(state,action);
   unsigned int nh = generalValueEstimator->getNumVisits(generalState,action);
   float mu = 0.5;
-  float beta = nh / (n + nh + n * nh * b * b / (mu * (1.0 - mu)));
   float mainVal = mainValueEstimator->calcActionValue(state,action,false);
   float bound = mainValueEstimator->calcActionValue(state,action,useBounds) - mainVal;
-  float val = (1 - beta) * mainVal + generalValueEstimator->calcActionValue(generalState,action,false) + bound;
+  float generalVal = generalValueEstimator->calcActionValue(generalState,action,false);
+  if ((n == 0) && (nh == 0))
+    return bound;
+  float beta = nh / (n + nh + n * nh * b * b / (mu * (1.0 - mu)));
+  float val = (1 - beta) * mainVal + generalVal + bound;
+  //std::cout << "vals: " << mainVal << " " << generalVal << " " << bound << " " << beta << std::endl;
   return val;
 }
 
 template<class State, class Action>
 Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool useBounds) {
+  //std::cout << "TOP SELECT ACTION" << std::endl << std::flush;
   std::vector<Action> maxActions;
   float maxVal = -BIGNUM;
   float val;
 
   for (Action a = (Action)0; a < mainValueEstimator->getNumActions(); a = Action(a+1)) {
     std::pair<State,Action> key(state,a);
+    //std::cout << "before calc" << std::endl;
     val = calcActionValue(state,a,useBounds);
+    //std::cout << "after calc" << std::endl;
 
     //std::cerr << val << " " << maxVal << std::endl;
     if (fabs(val - maxVal) < EPS)
@@ -121,6 +128,7 @@ Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool use
     }
   }
   
+  //std::cout << "BOTTOM SELECT ACTION " << maxActions.size() << std::endl << std::flush;
   return maxActions[rng->randomInt(maxActions.size())];
 }
 
