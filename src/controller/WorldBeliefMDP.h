@@ -14,17 +14,15 @@ Modified: 2011-10-04
 
 class WorldBeliefMDP: public WorldMDP {
 public:
-  WorldBeliefMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, const StateConverter &stateConverter,boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<ModelUpdaterBayes> modelUpdater);
+  WorldBeliefMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, const StateConverter &stateConverter, boost::shared_ptr<ModelUpdaterBayes> modelUpdater);
   
   virtual void setState(const State_t &state);
   virtual State_t getState(const Observation &obs);
   virtual void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
   virtual void setBeliefs(boost::shared_ptr<ModelUpdater> newModelUpdater);
   virtual std::string generateDescription(unsigned int indentation);
-  virtual void addAgent(AgentType agentType, boost::shared_ptr<Agent> agent);
 
 protected:
-  boost::shared_ptr<WorldMDP> mdp;
   boost::shared_ptr<ModelUpdaterBayes> modelUpdater;
   boost::shared_ptr<ModelUpdater> savedModelUpdater;
   Observation prevObs;

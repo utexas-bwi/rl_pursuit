@@ -229,8 +229,8 @@ boost::shared_ptr<const WorldModel> World::getModel() {
 
 void World::setAgentControllers(const std::vector<boost::shared_ptr<Agent> > newAgents) {
   //std::cout << "START SETTING AGENT CONTROLLERS" << std::endl;
-  //if (newAgents.size() != agents.size())
-    //std::cout << "bad sizes: " << agents.size() << " " << newAgents.size() << std::endl;
+  if (newAgents.size() != agents.size())
+    std::cout << "bad sizes: " << agents.size() << " " << newAgents.size() << std::endl;
   assert(newAgents.size() == agents.size());
   for (unsigned int i = 0; i < newAgents.size(); i++) {
     agents[i] = newAgents[i];

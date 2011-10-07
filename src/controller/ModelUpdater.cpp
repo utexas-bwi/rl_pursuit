@@ -100,5 +100,8 @@ void ModelUpdater::updateControllerInformation(const Observation &obs) {
     mdp->setAgents(models[i]);
     mdp->takeAction(Action::NOOP,reward,state,terminal);
   }
+  // reset the mdp
+  mdp->resetAgents();
+  mdp->setState(obs);
   //std::cout << "STOP UPDATE CONTROLLER INFO" << std::endl;
 }

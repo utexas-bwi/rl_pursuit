@@ -41,7 +41,7 @@ void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &
   int numPredators = 4; // can later change this to an option
   std::string prey = options.get("prey","random").asString();
   std::string predator = options.get("predator","greedy").asString();
-  std::string adhoc = options.get("adhoc","").asString();
+  std::string adhoc = options.get("adhoc","greedy").asString();
   const Json::Value preyOptions = options["preyOptions"];
   const Json::Value predatorOptions = options["predatorOptions"];
   const Json::Value adhocOptions = options["adhocOptions"];

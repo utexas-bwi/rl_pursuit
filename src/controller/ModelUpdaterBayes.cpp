@@ -40,6 +40,9 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
 
   // calculate the new model probabilities
   getNewModelProbs(prevObs,lastAction,currentObs,newModelProbs);
+  // reset the mdp
+  mdp->resetAgents();
+  mdp->setState(currentObs);
   // normalize the probabilities
   normalizeModelProbs(newModelProbs);
   // check if all zero probs

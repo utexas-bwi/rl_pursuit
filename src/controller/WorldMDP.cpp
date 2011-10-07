@@ -10,14 +10,14 @@ WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> mod
 }
 
 void WorldMDP::setState(const State_t &state) {
-  std::cout << "worldmdp setState: " << state << std::endl;
+  //std::cout << "worldmdp setState: " << state << std::endl;
   std::vector<Point2D> positions(STATE_SIZE);
   getPositionsFromState(state,model->getDims(),positions);
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,positions[i]);
   Observation obs;
   model->generateObservation(obs);
-  std::cout << "worldmdp setstate2: " << obs << std::endl;
+  //std::cout << "worldmdp setstate2: " << obs << std::endl;
 }
 
 void WorldMDP::setState(const Observation &obs) {
@@ -59,10 +59,17 @@ std::string WorldMDP::generateDescription(unsigned int indentation) {
 }
 
 void WorldMDP::setAgents(const std::vector<boost::shared_ptr<Agent> > &agents) {
+  //std::cout << "START SET AGENTS" << std::endl;
   //for (unsigned int i = 0; i < agents.size(); i++) {
     //std::cout << typeid(*(agents[i].get())).name() << " " << agents[i].get() << std::endl;
   //}
   controller->setAgentControllers(agents);
+  currentModel = agents;
+  //std::cout << "STOP  SET AGENTS" << std::endl;
+}
+
+void WorldMDP::resetAgents() {
+  setAgents(currentModel);
 }
 
 double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs) {
