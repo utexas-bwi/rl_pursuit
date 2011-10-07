@@ -18,6 +18,7 @@ void World::step() {
   for (unsigned int i = 0; i < agents.size(); i++) {
     obs.myInd = i;
     //std::cout << agents[i]->generateDescription() << std::endl;
+    //std::cout << typeid(*agents[i]).name() << std::endl;
     actionProbs = agents[i]->step(obs);
     assert(actionProbs.checkTotal());
     action = actionProbs.selectAction(rng);
@@ -29,35 +30,39 @@ void World::step() {
 }
 
 double World::getOutcomeProbApprox(Observation prevObs, const Observation &currentObs) {
-  double modelProb = 0.0;
+  double modelProb = 1.0;
   ActionProbs actionProbs;
   Point2D requestedPosition;
   for (unsigned int agentInd = 0; agentInd < agents.size(); agentInd++) {
+    //std::cout << "    agent: " << agentInd << std::endl;
     double probOfNoCollision = 1.0;
 
     prevObs.myInd = agentInd;
     actionProbs = agents[agentInd]->step(prevObs);
     assert(actionProbs.checkTotal());
+    double agentProb = 0.0;
     for (unsigned int action = 0; action < Action::NUM_ACTIONS; action++) {
       double prob = actionProbs[(Action::Type)action];
+      //std::cout << "      " << action << " " << prob << std::endl;
       if (prob == 0)
         continue;
       // get the requestedPosition
       requestedPosition = movePosition(world->getDims(),prevObs.positions[agentInd],(Action::Type)action);
 
       if (currentObs.positions[agentInd] != prevObs.positions[agentInd]) {
+        //std::cout << "    agent moved: " << prevObs.positions[agentInd] << " -> " << currentObs.positions[agentInd] << std::endl;
         // the agent moved, so life is simple
         // if the requestedPosition matches what happened, then it works with full prob
         // otherwise, zero prob
         if (requestedPosition == currentObs.positions[agentInd])
-          modelProb += prob;
+          agentProb += prob;
         continue;
       }
       // the agent didn't move
       
       // did the agent decide to stay still?
       if (requestedPosition == currentObs.positions[agentInd]) {
-        modelProb += prob;
+        agentProb += prob;
         continue;
       }
   
@@ -74,13 +79,16 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
           probOfNoCollision *= 0.5;
       }
 
-      modelProb += prob * (1 - probOfNoCollision);
+      agentProb += prob * (1 - probOfNoCollision);
     } // end for action
+    modelProb *= agentProb;
   } // end for agent
   return modelProb;
 }
 
 double World::getOutcomeProb(Observation prevObs,const Observation &currentObs) {
+  assert(false); 
+  // DON'T USE THIS FUNCTION, it's currently buggy, not sure how so, but I don't trust it, drops some probs to 0 that I think it shouldn't
   double modelProb = 0.0;
   std::vector<ActionProbs> actionProbs(agents.size());
   for (unsigned int i = 0; i < agents.size(); i++) {
@@ -220,9 +228,15 @@ boost::shared_ptr<const WorldModel> World::getModel() {
 }
 
 void World::setAgentControllers(const std::vector<boost::shared_ptr<Agent> > newAgents) {
+  //std::cout << "START SETTING AGENT CONTROLLERS" << std::endl;
+  //if (newAgents.size() != agents.size())
+    //std::cout << "bad sizes: " << agents.size() << " " << newAgents.size() << std::endl;
   assert(newAgents.size() == agents.size());
-  for (unsigned int i = 0; i < newAgents.size(); i++)
+  for (unsigned int i = 0; i < newAgents.size(); i++) {
     agents[i] = newAgents[i];
+    //std::cout << typeid(*agents[i]).name() << std::endl;
+  }
+  //std::cout << "STOP  SETTING AGENT CONTROLLERS" << std::endl;
 }
 
 std::string World::generateDescription(unsigned int indentation) {

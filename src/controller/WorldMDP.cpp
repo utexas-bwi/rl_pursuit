@@ -10,24 +10,25 @@ WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> mod
 }
 
 void WorldMDP::setState(const State_t &state) {
-  //std::cout << "*******************************" << std::endl;
-  //std::cout << "START SET STATE" << std::endl;
-  //std::cout << model.get() << " " << model->getDims() << std::endl;
-  //std::cout << "In state: " << state << std::endl;
-  //Observation obs;
-  //model->generateObservation(obs);
-  //std::cout << "PRE: " << obs << std::endl;
-  
+  std::cout << "worldmdp setState: " << state << std::endl;
   std::vector<Point2D> positions(STATE_SIZE);
-  //std::cout << "STATE_SIZE: " << STATE_SIZE << std::endl;
   getPositionsFromState(state,model->getDims(),positions);
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,positions[i]);
-    //model->setAgentPosition(i,state.positions[i]);
-  //model->generateObservation(obs);
-  //std::cout << "POST: " << obs << std::endl;
-  //std::cout << "DONE SET STATE" << std::endl;
-  //std::cout << "*******************************" << std::endl;
+  Observation obs;
+  model->generateObservation(obs);
+  std::cout << "worldmdp setstate2: " << obs << std::endl;
+}
+
+void WorldMDP::setState(const Observation &obs) {
+  //std::cout << "worldmdp setstateobs: " << obs << std::endl;
+  model->setPositionsFromObservation(obs);
+}
+
+State_t WorldMDP::getState(const Observation &obs) {
+  State_t state = getStateFromObs(model->getDims(),obs);
+  //std::cout << "worldmdp getState: " << state << std::endl;
+  return state;
 }
 
 void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
@@ -44,7 +45,7 @@ void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &st
 
   Observation obs;
   model->generateObservation(obs);
-  state = getStateFromObs(model->getDims(),obs);
+  state = getState(obs);
   //for (unsigned int i = 0; i < STATE_SIZE; i++)
     //state.positions[i] = model->getAgentPosition(i);
 }
@@ -66,8 +67,11 @@ void WorldMDP::setAgents(const std::vector<boost::shared_ptr<Agent> > &agents) {
 
 double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs) {
   adhocAgent->setAction(adhocAction);
-  return controller->getOutcomeProbApprox(prevObs,currentObs);
-  //return controller->getOutcomeProb(prevObs,currentObs);
+  double probApprox = controller->getOutcomeProbApprox(prevObs,currentObs);
+  //double probExact = controller->getOutcomeProb(prevObs,currentObs);
+  //std::cout << "probs: " << probApprox << " " << probExact << std::endl;
+  return probApprox;
+  //return probExact;
 }
 
 boost::shared_ptr<AgentDummy> WorldMDP::getAdhocAgent() {

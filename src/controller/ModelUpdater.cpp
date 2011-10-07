@@ -47,6 +47,7 @@ void ModelUpdater::selectModel(const State_t &state) {
   Model model;
   copyModel(ind,model);
   mdp->setAgents(model);
+  //std::cout << "SELECT MODEL: " << modelDescriptions[ind] << std::endl;
   //mdp->setAgents(models[ind]);
 }
 
@@ -54,8 +55,11 @@ void ModelUpdater::normalizeModelProbs(std::vector<double> &modelProbs) {
   double total = 0;
   for (unsigned int i = 0; i < modelProbs.size(); i++)
     total += modelProbs[i];
-  for (unsigned int i = 0; i < modelProbs.size(); i++)
+  //std::cout << "TOTAL: " << total << std::endl;
+  for (unsigned int i = 0; i < modelProbs.size(); i++) {
     modelProbs[i] /= total;
+    //std::cout << "  " << i << ": " << modelProbs[i] << std::endl;
+  }
 }
 
 void ModelUpdater::removeModel(unsigned int ind) {
@@ -92,10 +96,9 @@ void ModelUpdater::updateControllerInformation(const Observation &obs) {
   State_t state;
   bool terminal;
   for (unsigned int i = 0; i < models.size(); i++) {
-    mdp->setState(getStateFromObs(mdp->getDims(),obs));
+    mdp->setState(obs);
     mdp->setAgents(models[i]);
     mdp->takeAction(Action::NOOP,reward,state,terminal);
   }
-  mdp->setState(getStateFromObs(mdp->getDims(),obs));
   //std::cout << "STOP UPDATE CONTROLLER INFO" << std::endl;
 }

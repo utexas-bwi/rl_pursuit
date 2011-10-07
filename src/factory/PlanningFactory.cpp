@@ -79,6 +79,10 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
   if (! beliefMDP)
     return mdp;
 
+  // create another set of dependencies
+  model = createWorldModel(dims);
+  controller = createWorld(rng->randomUInt(),model);
+  adhocAgent = boost::shared_ptr<AgentDummy>(new AgentDummy(boost::shared_ptr<RNG>(new RNG(rng->randomUInt())),dims));
   
   boost::shared_ptr<ModelUpdaterBayes> modelUpdater = createModelUpdaterBayes(rng,mdp,std::vector<std::vector<boost::shared_ptr<Agent> > >(),std::vector<double>(),std::vector<std::string>(),updateType);
   StateConverter stateConverter(numBeliefs,numBins);
@@ -114,8 +118,8 @@ boost::shared_ptr<ValueEstimator<State_t,Action::Type> > createValueEstimator(bo
   unsigned int initialStateActionVisits = options.get("initialStateActionVisits",0).asUInt();
   bool theoreticallyCorrectLambda = options.get("theoreticallyCorrectLambda",true).asBool();
 
-  //bool beliefs = options.get("beliefs",false).asBool();
-  //if (beliefs) {
+  //bool dualUCT = options.get("dualUCT",false).asBool();
+  //if (dualUCT) {
     //float b = options.get("dualUCTB",0.5).asDouble();
     //boost::shared_ptr<UCTEstimator<State_t,Action::Type> > mainValueEstimator = createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,theoreticallyCorrectLambda);
     //boost::shared_ptr<UCTEstimator<State_t,Action::Type> > generalValueEstimator = createUCTEstimator(rng,numActions,lambda,gamma,rewardBound,rewardRangePerStep,initialValue,initialStateVisits,initialStateActionVisits,unseenValue,theoreticallyCorrectLambda);

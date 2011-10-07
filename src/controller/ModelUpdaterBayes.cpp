@@ -21,6 +21,8 @@ ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, boost::shared_p
 }
 
 void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
+  //std::cout << "  " << prevObs << " " << lastAction << std::endl;
+  //std::cout << "  " << currentObs << std::endl;
   // done if we're down to 1 model
   if (modelProbs.size() == 1)
     return;
@@ -102,7 +104,7 @@ double ModelUpdaterBayes::calculateModelProb(unsigned int modelInd, const Observ
   copyModel(modelInd,model);
   mdp->setAgents(model);
   double prob = mdp->getOutcomeProb(prevObs,lastAction,currentObs);
-  //std::cout << "CALCULATE MODEL PROB FOR " << modelInd << " = " << prob << std::endl;
+  //std::cout << "    CALCULATE MODEL PROB FOR " << modelInd << " = " << prob << std::endl;
   return prob;
 }
 
@@ -110,8 +112,8 @@ bool ModelUpdaterBayes::allProbsTooLow(const std::vector<double> &newModelProbs)
   // check for a divide by 0
   for (unsigned int i = 0; i < newModelProbs.size(); i++)
     if (!boost::math::isfinite(newModelProbs[i]))
-      return false;
-  return true;
+      return true;
+  return false;
 }
 
 void ModelUpdaterBayes::removeLowProbabilityModels() {

@@ -109,14 +109,16 @@ void MCTS<State,Action>::checkInternals() {
 
 template<class State, class Action>
 void MCTS<State,Action>::rollout(const State &startState) {
-  //std::cout << "--------------------------" << std::endl;
+  //std::cout << "------------START ROLLOUT--------------" << std::endl;
   modelUpdater->selectModel(startState);
   State state(startState);
   State newState;
   Action action;
   float reward;
   bool terminal = false;
+  //std::cout << "start mcts set state" << std::endl;
   model->setState(startState);
+  //std::cout << "stop  mcts set state" << std::endl;
   valueEstimator->startRollout();
 
   for (unsigned int depth = 0; (depth < maxDepth) || (maxDepth == 0); depth++) {
@@ -133,6 +135,7 @@ void MCTS<State,Action>::rollout(const State &startState) {
   }
 
   valueEstimator->finishRollout(state,terminal);
+  //std::cout << "------------STOP  ROLLOUT--------------" << std::endl;
 }
 
 #endif /* end of include guard: MCTS_MJ647W13 */
