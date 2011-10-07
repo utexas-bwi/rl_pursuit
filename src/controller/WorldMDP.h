@@ -30,11 +30,13 @@ public:
   virtual State_t getState(const Observation &obs);
 
   virtual void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
+  virtual void step(Action::Type adhocAction, std::vector<boost::shared_ptr<Agent> > &agents);
   virtual float getRewardRangePerStep();
   virtual std::string generateDescription(unsigned int indentation = 0);
   void setAgents(const std::vector<boost::shared_ptr<Agent> > &agents);
-  void resetAgents();
-  double getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs);
+  //void saveAgents();
+  //void loadAgents();
+  double getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs, std::vector<boost::shared_ptr<Agent> > &agents);
   boost::shared_ptr<AgentDummy> getAdhocAgent();
   virtual void addAgent(AgentType agentType, boost::shared_ptr<Agent> agent);
   Point2D getDims() {
@@ -51,6 +53,7 @@ protected:
   boost::shared_ptr<World> controller;
   boost::shared_ptr<AgentDummy> adhocAgent;
   std::vector<boost::shared_ptr<Agent> > currentModel;
+  std::vector<boost::shared_ptr<Agent> > savedModel;
 };
 
 #endif /* end of include guard: WORLDMDP_CNHINAVX */

@@ -98,8 +98,7 @@ void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point
 
 StateConverter::StateConverter(unsigned int numBeliefs, unsigned int numBins):
   numBeliefs(numBeliefs),
-  numBins(numBins),
-  beliefNonzero(numBeliefs,true)
+  numBins(numBins)
 {
   const double eps = 1e-10;
   binSize = (1.0 + eps) / numBins;
@@ -113,21 +112,14 @@ State_t StateConverter::convertBeliefStateToGeneralState(const State_t &state) {
 }
 
 void StateConverter::convertGeneralStateToBeliefState(State_t &state, const std::vector<double> &beliefs) {
-  unsigned int ind = 0;
   double val;
   for (unsigned int i = 0; i < numBeliefs; i++) {
-    val = 0;
-    if (beliefNonzero[i]) {
-      val = beliefs[ind];
-      ind++;
-    }
+    val = beliefs[i];
+    //std::cout << val << "(" << discretizeProb(val) <<  ") ";
     state *= numBins;
     state += discretizeProb(val);
   }
-}
-
-void StateConverter::removeModel(unsigned int ind) {
-  beliefNonzero[ind] = false;
+  //std::cout << std::endl;
 }
 
 unsigned int StateConverter::discretizeProb(double prob) {

@@ -54,7 +54,10 @@ Action DualUCTEstimator<State,Action>::selectWorldAction(const State &state) {
 
 template<class State, class Action>
 Action DualUCTEstimator<State,Action>::selectPlanningAction(const State &state) {
-  return selectAction(state,true);
+  Action action = selectAction(state,true);
+  //State generalState = stateConverter.convertBeliefStateToGeneralState(state);
+  //std::cout << generalState << " " << action << std::endl;
+  return action;
 }
 
 template<class State, class Action>
@@ -91,7 +94,7 @@ std::string DualUCTEstimator<State,Action>::generateDescription(unsigned int ind
 template<class State, class Action>
 float DualUCTEstimator<State,Action>::calcActionValue(const State &state, const Action &action, bool useBounds) {
   State generalState = stateConverter.convertBeliefStateToGeneralState(state);
-/*
+
   unsigned int n = mainValueEstimator->getNumVisits(state,action);
   unsigned int nh = generalValueEstimator->getNumVisits(generalState,action);
   float mu = 0.5;
@@ -105,8 +108,8 @@ float DualUCTEstimator<State,Action>::calcActionValue(const State &state, const 
   float val = (1 - beta) * mainVal + generalVal + bound;
   //std::cout << "vals: " << mainVal << " " << generalVal << " " << bound << " " << beta << std::endl;
   return val;
-*/
-  return generalValueEstimator->calcActionValue(generalState,action,useBounds);
+
+  //return generalValueEstimator->calcActionValue(generalState,action,useBounds);
 }
 
 template<class State, class Action>
@@ -121,6 +124,10 @@ Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool use
     //std::cout << "before calc" << std::endl;
     val = calcActionValue(state,a,useBounds);
     //std::cout << "after calc" << std::endl;
+    //if (!useBounds) {
+      //State generalState = stateConverter.convertBeliefStateToGeneralState(state);
+      //std::cout << generalState << " " << a << " " << val << std::endl;
+    //}
 
     //std::cerr << val << " " << maxVal << std::endl;
     if (fabs(val - maxVal) < EPS)
@@ -131,6 +138,14 @@ Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool use
       maxActions.push_back(a);
     }
   }
+  
+  //if (!useBounds) {
+    //State generalState = stateConverter.convertBeliefStateToGeneralState(state);
+    //std::cout << "MAX ACTIONS(" << generalState << " " << maxActions.size() << "): " << std::endl;
+    //for (unsigned int i= 0; i < maxActions.size(); i++)
+      //std::cout << maxActions[i] << " ";
+    //std::cout << std::endl;
+  //}
   
   //std::cout << "BOTTOM SELECT ACTION " << maxActions.size() << std::endl << std::flush;
   return maxActions[rng->randomInt(maxActions.size())];

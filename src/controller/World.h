@@ -28,6 +28,7 @@ public:
   World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world);
   
   void step();
+  void step(std::vector<boost::shared_ptr<Agent> > &agents);
   void generateObservation(Observation &obs);
   void randomizePositions();
   void restartAgents();
@@ -37,7 +38,8 @@ public:
 
   std::string generateDescription(unsigned int indentation = 0);
   double getOutcomeProb(Observation prevObs,const Observation &currentObs);
-  double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs);
+  double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs, std::vector<boost::shared_ptr<Agent> > &agents);
+  void printAgents();
 
 protected:
   boost::shared_ptr<RNG> rng;

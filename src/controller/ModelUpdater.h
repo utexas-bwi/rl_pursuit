@@ -44,7 +44,7 @@ protected:
   std::vector<Model> models;
   std::vector<double> modelProbs;
   std::vector<std::string> modelDescriptions;
-  std::vector<unsigned int> removedModelInds; // original indices
+  std::vector<bool> modelStillUsed;
 };
 
 #endif /* end of include guard: MODELUPDATER_82ED5P8 */

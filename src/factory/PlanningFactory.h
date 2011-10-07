@@ -19,6 +19,7 @@ Modified: 2011-10-02
 #include <planning/UCTEstimator.h>
 
 ModelUpdateType getModelUpdateType(std::string type);
+boost::shared_ptr<RNG> makeRNG(unsigned int seed);
 
 // model updater
 boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const std::vector<std::vector<boost::shared_ptr<Agent> > > &modelList, const std::vector<double> &modelProbs, const std::vector<std::string> &modelDescriptions, ModelUpdateType updateType);

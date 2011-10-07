@@ -8,6 +8,10 @@ World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world):
 }
 
 void World::step() {
+  step(agents);
+}
+
+void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
   //std::cout << "START WORLD STEP" << std::endl;
   ActionProbs actionProbs;
   Action::Type action;
@@ -29,7 +33,7 @@ void World::step() {
   //std::cout << "STOP  WORLD STEP" << std::endl;
 }
 
-double World::getOutcomeProbApprox(Observation prevObs, const Observation &currentObs) {
+double World::getOutcomeProbApprox(Observation prevObs, const Observation &currentObs, std::vector<boost::shared_ptr<Agent> > &agents) {
   double modelProb = 1.0;
   ActionProbs actionProbs;
   Point2D requestedPosition;
@@ -247,4 +251,10 @@ std::string World::generateDescription(unsigned int indentation) {
   for (unsigned int i = 0; i < agents.size(); i++)
     s += agents[i]->generateLongDescription(indentation+2) + "\n";
   return s;
+}
+
+void World::printAgents() {
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    std::cout << typeid(*agents[i]).name() << std::endl;
+  }
 }

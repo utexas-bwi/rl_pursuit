@@ -22,7 +22,6 @@ public:
   StateConverter(unsigned int numBeliefs, unsigned int numBins);
   State_t convertBeliefStateToGeneralState(const State_t &state);
   void convertGeneralStateToBeliefState(State_t &state, const std::vector<double> &beliefs);
-  void removeModel(unsigned int ind);
   std::string generateDescription(unsigned int indentation);
 
 private:
@@ -32,7 +31,6 @@ private:
   unsigned int numBeliefs;
   unsigned int numBins;
   double binSize;
-  std::vector<bool> beliefNonzero;
 };
 
 

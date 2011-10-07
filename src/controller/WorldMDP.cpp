@@ -15,8 +15,8 @@ void WorldMDP::setState(const State_t &state) {
   getPositionsFromState(state,model->getDims(),positions);
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,positions[i]);
-  Observation obs;
-  model->generateObservation(obs);
+  //Observation obs;
+  //model->generateObservation(obs);
   //std::cout << "worldmdp setstate2: " << obs << std::endl;
 }
 
@@ -29,6 +29,11 @@ State_t WorldMDP::getState(const Observation &obs) {
   State_t state = getStateFromObs(model->getDims(),obs);
   //std::cout << "worldmdp getState: " << state << std::endl;
   return state;
+}
+
+void WorldMDP::step(Action::Type adhocAction, std::vector<boost::shared_ptr<Agent> > &agents) {
+  adhocAgent->setAction(adhocAction);
+  controller->step(agents);
 }
 
 void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
@@ -46,6 +51,7 @@ void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &st
   Observation obs;
   model->generateObservation(obs);
   state = getState(obs);
+  //std::cout << obs << std::endl;
   //for (unsigned int i = 0; i < STATE_SIZE; i++)
     //state.positions[i] = model->getAgentPosition(i);
 }
@@ -64,17 +70,21 @@ void WorldMDP::setAgents(const std::vector<boost::shared_ptr<Agent> > &agents) {
     //std::cout << typeid(*(agents[i].get())).name() << " " << agents[i].get() << std::endl;
   //}
   controller->setAgentControllers(agents);
-  currentModel = agents;
+  //currentModel = agents;
   //std::cout << "STOP  SET AGENTS" << std::endl;
 }
-
-void WorldMDP::resetAgents() {
-  setAgents(currentModel);
+/*
+void WorldMDP::saveAgents() {
+  savedModel = currentModel;
 }
 
-double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs) {
+void WorldMDP::loadAgents() {
+  setAgents(savedModel);
+}
+*/
+double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs,std::vector<boost::shared_ptr<Agent> > &agents) {
   adhocAgent->setAction(adhocAction);
-  double probApprox = controller->getOutcomeProbApprox(prevObs,currentObs);
+  double probApprox = controller->getOutcomeProbApprox(prevObs,currentObs,agents);
   //double probExact = controller->getOutcomeProb(prevObs,currentObs);
   //std::cout << "probs: " << probApprox << " " << probExact << std::endl;
   return probApprox;

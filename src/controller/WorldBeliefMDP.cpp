@@ -29,7 +29,10 @@ void WorldBeliefMDP::setState(const State_t &state) {
 
 State_t WorldBeliefMDP::getState(const Observation &obs) {
   State_t state = WorldMDP::getState(obs);
+  //State_t savedState = state;
   stateConverter.convertGeneralStateToBeliefState(state,modelUpdater->getBeliefs());
+  //std::cout << "get state: " << savedState << " ";
+  //std::cout << state << std::endl;
   //std::cout << "worldbeliefmdp getState: " << state << std::endl;
   return state;
 }
@@ -39,32 +42,18 @@ void WorldBeliefMDP::takeAction(const Action::Type &action, float &reward, State
   Observation obs;
 
   model->generateObservation(origObs);
-  //std::cout << "world beliefMDP obs at start: " << origObs << std::endl;
   WorldMDP::takeAction(action,reward,state,terminal);
   model->generateObservation(obs);
-  //std::cout << "world beliefMDP obs after action: " << obs << std::endl;
-  
-  //std::cout << modelUpdater->generateDescription(1) << std::endl;
   // update the beliefs
-  if (prevAction < Action::NUM_ACTIONS) {
-    //double t = getTime();
-    //std::cout << "start belief model update" << std::endl;
+  if (prevAction < Action::NUM_ACTIONS)
     modelUpdater->updateRealWorldAction(prevObs,prevAction,origObs);
-    //std::cout << "stop  belief model update" << std::endl;
-    //time += getTime() - t;
-  }
-  //std::cout << modelUpdater->generateDescription(1) << std::endl;
-  model->generateObservation(obs);
-  //std::cout << "world beliefMDP obs after its model updater: " << obs << std::endl;
-  //std::cout << "start update UCI" << std::endl;
+  // update the controllers
   modelUpdater->updateControllerInformation(origObs);
+  // set the state back
   WorldMDP::setState(obs);
-  //std::cout << "stop  update UCI" << std::endl;
-  // save information for the modelUpdater
+  // save information for updating realWorldAction
   prevObs = origObs;
   prevAction = action;
-  // change the state
-  //stateConverter.convertGeneralStateToBeliefState(state,modelUpdater->getBeliefs());
 } 
 
 void WorldBeliefMDP::setBeliefs(boost::shared_ptr<ModelUpdater> newModelUpdater) {

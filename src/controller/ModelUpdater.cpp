@@ -14,14 +14,15 @@ ModelUpdater::ModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMD
   mdp(mdp),
   models(models),
   modelProbs(modelPrior),
-  modelDescriptions(modelDescriptions)
+  modelDescriptions(modelDescriptions),
+  modelStillUsed(models.size(),true)
 {
 }
 
 void ModelUpdater::set(const ModelUpdater &other) {
   modelDescriptions = other.modelDescriptions;
   modelProbs = other.modelProbs;
-  removedModelInds = other.removedModelInds;
+  modelStillUsed = other.modelStillUsed;
   models.clear();
   Model model;
   for (unsigned int i = 0; i < other.models.size(); i++) {
@@ -67,15 +68,14 @@ void ModelUpdater::removeModel(unsigned int ind) {
   modelProbs.erase(modelProbs.begin()+ind,modelProbs.begin()+ind+1);
   modelDescriptions.erase(modelDescriptions.begin()+ind,modelDescriptions.begin()+ind+1);
 
-  unsigned int originalInd = ind;
-  std::vector<unsigned int>::iterator it;
-  for (it = removedModelInds.begin(); it != removedModelInds.end(); it++) {
-    if (*it <= originalInd)
-      originalInd++;
-    else
+  for (unsigned int i = 0; i < modelStillUsed.size(); i++) {
+    if ((modelStillUsed[i]) && (i == ind)) {
+      modelStillUsed[i] = false;
       break;
+    }
+    if (!modelStillUsed[i])
+      ind++;
   }
-  removedModelInds.insert(it,originalInd);
 }
 
 std::string ModelUpdater::generateDescription(unsigned int indentation) {
@@ -86,22 +86,30 @@ std::string ModelUpdater::generateDescription(unsigned int indentation) {
 }
 
 std::vector<double> ModelUpdater::getBeliefs() {
-  return modelProbs;
+  std::vector<double> probs(modelStillUsed.size(),0);
+  unsigned int ind = 0;
+  for (unsigned int i = 0; i < modelStillUsed.size(); i++) {
+    if (modelStillUsed[i]) {
+      probs[i] = modelProbs[ind];
+      ind++;
+    }
+  }
+  return probs;
 }
 
 void ModelUpdater::updateControllerInformation(const Observation &obs) {
   //std::cout << "START UPDATE CONTROLLER INFO" << std::endl;
   //std::cout << "UCI: " << mdp.get() << " " << mdp->model.get() << std::endl;
-  float reward;
-  State_t state;
-  bool terminal;
+  //float reward;
+  //State_t state;
+  //bool terminal;
   for (unsigned int i = 0; i < models.size(); i++) {
     mdp->setState(obs);
-    mdp->setAgents(models[i]);
-    mdp->takeAction(Action::NOOP,reward,state,terminal);
+    mdp->step(Action::NOOP,models[i]);
+    //mdp->setAgents(models[i]);
+    //mdp->takeAction(Action::NOOP,reward,state,terminal);
   }
   // reset the mdp
-  mdp->resetAgents();
-  mdp->setState(obs);
+  //mdp->setState(obs);
   //std::cout << "STOP UPDATE CONTROLLER INFO" << std::endl;
 }

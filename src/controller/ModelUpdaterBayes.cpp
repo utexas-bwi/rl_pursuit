@@ -41,7 +41,6 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
   // calculate the new model probabilities
   getNewModelProbs(prevObs,lastAction,currentObs,newModelProbs);
   // reset the mdp
-  mdp->resetAgents();
   mdp->setState(currentObs);
   // normalize the probabilities
   normalizeModelProbs(newModelProbs);
@@ -105,8 +104,8 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
 double ModelUpdaterBayes::calculateModelProb(unsigned int modelInd, const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
   Model model;
   copyModel(modelInd,model);
-  mdp->setAgents(model);
-  double prob = mdp->getOutcomeProb(prevObs,lastAction,currentObs);
+  //mdp->setAgents(model);
+  double prob = mdp->getOutcomeProb(prevObs,lastAction,currentObs,model);
   //std::cout << "    CALCULATE MODEL PROB FOR " << modelInd << " = " << prob << std::endl;
   return prob;
 }

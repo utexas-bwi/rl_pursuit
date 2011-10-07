@@ -31,6 +31,10 @@ ModelUpdateType getModelUpdateType(std::string type) {
   }
 }
 
+boost::shared_ptr<RNG> makeRNG(unsigned int seed) {
+  return boost::shared_ptr<RNG>(new RNG(seed));
+}
+
 // MODEL UPDATER
 boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const std::vector<std::vector<boost::shared_ptr<Agent> > > &modelList, const std::vector<double> &modelProbs, const std::vector<std::string> &modelDescriptions, ModelUpdateType updateType) {
     return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType));
@@ -70,21 +74,39 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
 }
 
 boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool beliefMDP, ModelUpdateType updateType, const StateConverter &stateConverter) {
+  // create some rngs
+  boost::shared_ptr<RNG> rngWorld1 = makeRNG(rng->randomUInt());
+  boost::shared_ptr<RNG> rngWorld2 = makeRNG(rng->randomUInt());
+  boost::shared_ptr<RNG> rngMDP1 = makeRNG(rng->randomUInt());
+  boost::shared_ptr<RNG> rngMDP2 = makeRNG(rng->randomUInt());
+  boost::shared_ptr<RNG> rngModelUpdater = makeRNG(rng->randomUInt());
+  boost::shared_ptr<RNG> rngDummy = makeRNG(rng->randomUInt());
+  //boost::shared_ptr<RNG> rngOther = makeRNG(rng->randomUInt());
+
+  if (!beliefMDP) {
+    rngWorld1 = rngWorld2;
+    rngMDP1 = rngMDP2;
+  }
+
   // create the world model and controller
   boost::shared_ptr<WorldModel> model = createWorldModel(dims);
-  boost::shared_ptr<World> controller = createWorld(rng->randomUInt(),model);
+  boost::shared_ptr<World> controller = createWorld(rngWorld1,model);
   // create the dummy agent for the ad hoc agent
-  boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(boost::shared_ptr<RNG>(new RNG(rng->randomUInt())),dims));
-  boost::shared_ptr<WorldMDP> mdp(new WorldMDP(rng,model,controller,adhocAgent));
+  boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(rngDummy,dims));
+
+  boost::shared_ptr<WorldMDP> mdp(new WorldMDP(rngMDP1,model,controller,adhocAgent));
   if (! beliefMDP)
     return mdp;
 
+  //model = createWorldModel(dims);
+  controller = createWorld(rngWorld2,model);
+
   //std::cout << "HERE" << std::endl;
-  //controller = createWorldAgents(boost::shared_ptr<RNG>(new RNG(rng->randomUInt())),controller,0,Json::Value());
+  //controller = createWorldAgents(rngOther,controller,0,Json::Value());
   //std::cout << "HERE2" << std::endl;
  
-  boost::shared_ptr<ModelUpdaterBayes> modelUpdater = createModelUpdaterBayes(rng,mdp,std::vector<std::vector<boost::shared_ptr<Agent> > >(),std::vector<double>(),std::vector<std::string>(),updateType);
-  return boost::shared_ptr<WorldMDP>(new WorldBeliefMDP(rng,model,controller,adhocAgent,stateConverter,modelUpdater));
+  boost::shared_ptr<ModelUpdaterBayes> modelUpdater = createModelUpdaterBayes(rngModelUpdater,mdp,std::vector<std::vector<boost::shared_ptr<Agent> > >(),std::vector<double>(),std::vector<std::string>(),updateType);
+  return boost::shared_ptr<WorldMDP>(new WorldBeliefMDP(rngMDP2,model,controller,adhocAgent,stateConverter,modelUpdater));
 }
 
 boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options) {

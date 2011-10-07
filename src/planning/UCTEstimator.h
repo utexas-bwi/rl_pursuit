@@ -165,6 +165,9 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
   for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
     StateAction key(state,a);
     val = calcActionValue(state,a,useBounds);
+    //if (!useBounds) {
+      //std::cout << state << " " << a << " " << val << std::endl;
+    //}
 
     //std::cerr << val << " " << maxVal << std::endl;
     if (fabs(val - maxVal) < EPS)
@@ -175,6 +178,13 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
       maxActions.push_back(a);
     }
   }
+
+  //if (!useBounds) {
+    //std::cout << "MAX ACTIONS(" << state << " " << maxActions.size() << "): " << std::endl;
+    //for (unsigned int i= 0; i < maxActions.size(); i++)
+      //std::cout << maxActions[i] << " ";
+    //std::cout << std::endl;
+  //}
   
   return maxActions[rng->randomInt(maxActions.size())];
 }
@@ -193,7 +203,9 @@ Action UCTEstimator<State,Action>::selectWorldAction(const State &state) {
 
 template<class State, class Action>
 Action UCTEstimator<State,Action>::selectPlanningAction(const State &state) {
-  return selectAction(state,true);
+  Action action = selectAction(state,true);
+  //std::cout << state << " " << action << std::endl;
+  return action;
 }
 
 template<class State, class Action>
@@ -279,6 +291,7 @@ std::string UCTEstimator<State,Action>::generateDescription(unsigned int indenta
   
 template<class State, class Action>
 float UCTEstimator<State,Action>::calcActionValue(const State &state, const Action &action, bool useBounds) {
+  //std::cout << "calcActionValue for " << state << " " << action << " " << useBounds << std::endl;
   unsigned int na;
   StateAction key = StateAction(state,action);
   if (useBounds) {
