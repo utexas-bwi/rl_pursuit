@@ -102,11 +102,15 @@ float DualUCTEstimator<State,Action>::calcActionValue(const State &state, const 
   float useBoundsVal = mainValueEstimator->calcActionValue(state,action,useBounds);
   float bound = useBoundsVal - mainVal;
   float generalVal = generalValueEstimator->calcActionValue(generalState,action,false);
-  if ((n == 0) && (nh == 0))
-    return useBoundsVal;
   float beta = nh / (n + nh + n * nh * b * b / (mu * (1.0 - mu)));
-  float val = (1 - beta) * mainVal + generalVal + bound;
-  //std::cout << "vals: " << mainVal << " " << generalVal << " " << bound << " " << beta << std::endl;
+  if ((n == 0) && (nh == 0)) {
+    return useBoundsVal;
+  }
+  float val = (1 - beta) * mainVal + beta * generalVal + bound;
+  //if (fabs(mainVal - generalVal) > 1e-1) {
+    //std::cout << "vals: " << mainVal << " " << generalVal << " " << bound << " " << beta << " ";
+    //std::cout << val << std::endl;
+  //}
   return val;
 
   //return generalValueEstimator->calcActionValue(generalState,action,useBounds);
