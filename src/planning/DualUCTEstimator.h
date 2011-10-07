@@ -91,18 +91,22 @@ std::string DualUCTEstimator<State,Action>::generateDescription(unsigned int ind
 template<class State, class Action>
 float DualUCTEstimator<State,Action>::calcActionValue(const State &state, const Action &action, bool useBounds) {
   State generalState = stateConverter.convertBeliefStateToGeneralState(state);
+/*
   unsigned int n = mainValueEstimator->getNumVisits(state,action);
   unsigned int nh = generalValueEstimator->getNumVisits(generalState,action);
   float mu = 0.5;
   float mainVal = mainValueEstimator->calcActionValue(state,action,false);
-  float bound = mainValueEstimator->calcActionValue(state,action,useBounds) - mainVal;
+  float useBoundsVal = mainValueEstimator->calcActionValue(state,action,useBounds);
+  float bound = useBoundsVal - mainVal;
   float generalVal = generalValueEstimator->calcActionValue(generalState,action,false);
   if ((n == 0) && (nh == 0))
-    return bound;
+    return useBoundsVal;
   float beta = nh / (n + nh + n * nh * b * b / (mu * (1.0 - mu)));
   float val = (1 - beta) * mainVal + generalVal + bound;
   //std::cout << "vals: " << mainVal << " " << generalVal << " " << bound << " " << beta << std::endl;
   return val;
+*/
+  return generalValueEstimator->calcActionValue(generalState,action,useBounds);
 }
 
 template<class State, class Action>
