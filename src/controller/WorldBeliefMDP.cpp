@@ -11,7 +11,6 @@ Modified: 2011-10-04
 WorldBeliefMDP::WorldBeliefMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, const StateConverter &stateConverter, boost::shared_ptr<ModelUpdaterBayes> modelUpdater):
   WorldMDP(rng,model,controller,adhocAgent),
   modelUpdater(modelUpdater),
-  prevAction(Action::NUM_ACTIONS),
   stateConverter(stateConverter)
 {
   //time = 0;
@@ -23,14 +22,14 @@ void WorldBeliefMDP::setState(const State_t &state) {
   WorldMDP::setState(generalState);
   // IGNORING THE belief part here, using our saved version
   modelUpdater->set(*savedModelUpdater);
-  // also reset what we know about previous actions
-  prevAction = Action::NUM_ACTIONS;
 }
 
 State_t WorldBeliefMDP::getState(const Observation &obs) {
   State_t state = WorldMDP::getState(obs);
   //State_t savedState = state;
   stateConverter.convertGeneralStateToBeliefState(state,modelUpdater->getBeliefs());
+  //std::vector<double> probs(5,0);
+  //stateConverter.convertGeneralStateToBeliefState(state,probs);
   //std::cout << "get state: " << savedState << " ";
   //std::cout << state << std::endl;
   //std::cout << "worldbeliefmdp getState: " << state << std::endl;
