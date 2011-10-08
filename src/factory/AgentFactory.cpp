@@ -80,9 +80,10 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new AgentDummy(rng,dims));
   else if (NAME_IN_SET("surround","surround","su"))
     return ptr(new PredatorSurround(rng,dims));
-  else if (NAME_IN_SET("surroundpenalties","surround-penalties","sp"))
-    return ptr(new PredatorSurroundWithPenalties(rng,dims));
-  else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {
+  else if (NAME_IN_SET("surroundpenalties","surround-penalties","sp")) {
+    bool outputPenaltyMode = options.get("outputPenaltyMode",false).asBool();
+    return ptr(new PredatorSurroundWithPenalties(rng,dims,outputPenaltyMode));
+  } else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {
     std::string filename = options.get("filename","").asString();
     std::string sizeId = "$(SIZE)";
     size_t ind = filename.find(sizeId);

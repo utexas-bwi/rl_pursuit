@@ -14,7 +14,7 @@ Modified: 2011-09-29
 
 class PredatorSurroundWithPenalties: public PredatorSurround {
 public:
-  PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims);
+  PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims, bool outputPenaltyMode);
   ActionProbs step(const Observation &obs);
   void restart(); // between episodes
   std::string generateDescription();
@@ -36,6 +36,7 @@ private:
   std::deque<int> violationHistory;
   Action::Type expectedMoves[NUM_PREDATORS];
   Observation prevObs;
+  bool outputPenaltyMode;
 };
 
 #endif /* end of include guard: PREDATORSURROUNDWITHPENALTIES_KDKLSIF4 */
