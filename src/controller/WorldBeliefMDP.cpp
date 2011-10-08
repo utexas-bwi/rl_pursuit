@@ -38,22 +38,21 @@ State_t WorldBeliefMDP::getState(const Observation &obs) {
 }
 
 void WorldBeliefMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
-  Observation origObs;
-  Observation obs;
+  Observation prevObs;
+  Observation newObs;
 
-  model->generateObservation(origObs);
+  model->generateObservation(prevObs);
   WorldMDP::takeAction(action,reward,state,terminal);
-  model->generateObservation(obs);
-  // update the beliefs
-  if (prevAction < Action::NUM_ACTIONS)
-    modelUpdater->updateRealWorldAction(prevObs,prevAction,origObs);
-  // update the controllers
-  modelUpdater->updateControllerInformation(origObs);
-  // set the state back
-  WorldMDP::setState(obs);
-  // save information for updating realWorldAction
-  prevObs = origObs;
-  prevAction = action;
+  model->generateObservation(newObs);
+  if (!terminal) {
+    // update the beliefs
+    modelUpdater->updateRealWorldAction(prevObs,action,newObs);
+    // update the controllers
+    modelUpdater->updateControllerInformation(newObs);
+    // set the state back
+    WorldMDP::setState(newObs);
+  }
+  state = getState(newObs);
 } 
 
 void WorldBeliefMDP::setBeliefs(boost::shared_ptr<ModelUpdater> newModelUpdater) {
