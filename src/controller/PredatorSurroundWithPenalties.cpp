@@ -27,8 +27,6 @@ ActionProbs PredatorSurroundWithPenalties::step(const Observation &obs) {
   ActionProbs action = PredatorSurround::step(obs);
   // check whether we should penalize
   setPenaltyMode(obs);
-  // set the expected moves for this step
-  setExpectedMoves(obs);
 
   // optionally apply penalty
   if ((penaltyOn) && (!captureMode)){
@@ -39,7 +37,7 @@ ActionProbs PredatorSurroundWithPenalties::step(const Observation &obs) {
     action[Action::NOOP] += penaltyAmount;
   }
 
-  usePrevObs = (!captureMode && !isStuck);
+  usePrevObs = !captureMode;
   prevObs = obs;
 
   return action;
@@ -59,23 +57,26 @@ std::string PredatorSurroundWithPenalties::generateDescription() {
   
 void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
   int stepViolations = 0;
-  if (!captureMode && usePrevObs) {
+  if (captureMode) {
+    return;
+  }
+  if (usePrevObs) {
     for (int i = 0; i < NUM_PREDATORS; i++) {
-      if (i+1 == (int)obs.myInd) // +1 because prey is 0
+      if (i+1 == (int)obs.myInd) {// +1 because prey is 0
         continue;
-      if (expectedMoves[i] == Action::NUM_ACTIONS)
-        continue; // wasn't sure what that guy was going to do
-      Point2D move = getDifferenceToPoint(dims,prevObs.positions[i+1],obs.positions[i+1]);
-      Point2D desiredPosition = movePosition(dims,prevObs.positions[i+1],expectedMoves[i]);
-      bool desiredPositionOccupied = false;
-      for (unsigned int j = 0; j < obs.positions.size(); j++) {
-        if ((desiredPosition == obs.positions[j]) || (desiredPosition == prevObs.positions[j])){
-          desiredPositionOccupied = true;
-          break;
-        }
       }
-      if (desiredPositionOccupied)
+      if (expectedMoves[i] == Action::NUM_ACTIONS) {
+        continue; // wasn't sure what that guy was going to do
+      }
+      Point2D move = getDifferenceToPoint(dims,prevObs.positions[i+1],obs.positions[i+1]);
+      Point2D desiredPosition = movePosition(dims,obs.positions[i+1],expectedMoves[i]);
+      bool desiredPositionOccupied = false;
+      for (unsigned int j = 0; j < obs.positions.size(); j++)
+        if (desiredPosition == obs.positions[j])
+          desiredPositionOccupied = true;
+      if (desiredPositionOccupied) {
         continue;
+      }
       if (move != Action::MOVES[expectedMoves[i]]) {
         stepViolations++;
         //std::cout << prevObs.positions[i+1] << " " << obs.positions[i+1] << " " << i+1 << " " << desiredPosition << std::endl;
@@ -95,10 +96,23 @@ void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
   for (unsigned int i = 0; i < violationHistory.size(); i++)
     numViolations += violationHistory[i];
   //std::cout << "NUM VIOLATIONS: " << numViolations << std::endl;
-  if (numViolations >= 2)
+  if (numViolations >= 2) {
     penaltyOn = true;
-  else
+  } else {
     penaltyOn = false;
+  }
+  
+  // set the expected moves for this step
+  setExpectedMoves(obs);
+  
+  std::cout << "EXPECTED MOVES: ";
+  for (int i = 0; i < NUM_PREDATORS; i++) {
+    if (expectedMoves[i] == Action::NUM_MOVES)
+      std::cout << "UNKNOWN ";
+    else
+      std::cout << Action::MOVES[expectedMoves[i]] << " ";
+  }
+  std::cout << std::endl;
 }
 
 void PredatorSurroundWithPenalties::setExpectedMoves(const Observation &obs) {
@@ -115,9 +129,9 @@ void PredatorSurroundWithPenalties::setExpectedMoves(const Observation &obs) {
     bool foundMove;
     Point2D move = getMoveToPoint(obs.positions[i+1],destAssignments[i],foundMove);
 
-    if (foundMove)
+    if (foundMove) {
       expectedMoves[i] = getAction(move);
-    else
+    } else {
       expectedMoves[i] = Action::NUM_ACTIONS;
   }
 }

@@ -20,12 +20,6 @@ PredatorSurround::PredatorSurround(boost::shared_ptr<RNG> rng, const Point2D &di
 
 ActionProbs PredatorSurround::step(const Observation &obs) {
   //std::cout << obs << std::endl;
-  isStuck = ((obs == prevObs) || (obs == prevPrevObs));
-  prevPrevObs = prevObs;
-  prevObs = obs;
-  //if (isStuck && obs.myInd == 2)
-    //std::cout << "STUCK" << std::endl;
-
   assignedDestsQ = false;
   avoidLocations = obs.positions; // reset the avoid locations to the current positions of agents
   // don't get too close to the prey
@@ -33,8 +27,6 @@ ActionProbs PredatorSurround::step(const Observation &obs) {
     avoidLocations.push_back(movePosition(dims,obs.preyPos(),(Action::Type)i));
   // get the capture mode
   setCaptureMode(obs);
-  if (isStuck)
-    return ActionProbs(Action::RANDOM);
   //if (captureMode)
     //std::cout << "CAPTURE MODE ENGAGED" << std::endl;
   //else
@@ -63,9 +55,9 @@ Point2D PredatorSurround::getMoveToPoint(const Point2D &start, const Point2D &en
   bool destinationBlocked = false;
   Point2D diff;
   if (start == end) {
-    diff = Point2D(0,0);
-    //foundMove = false;
-    //return Point2D(0,0);
+    //diff = Point2D(0,0);
+    foundMove = false;
+    return Point2D(0,0);
   } else {
     if (!destinationBlocked) {
       planner.plan(start,end,avoidLocations);
@@ -100,8 +92,6 @@ Point2D PredatorSurround::getDesiredPosition(const Observation &obs) {
 
 void PredatorSurround::restart() {
   captureMode = false;
-  prevObs = Observation();
-  prevPrevObs = Observation();
 }
 
 std::string PredatorSurround::generateDescription() {
@@ -110,7 +100,6 @@ std::string PredatorSurround::generateDescription() {
 
 void PredatorSurround::setCaptureMode(const Observation &obs) {
   unsigned int dist;
-  captureMode = true;
   for (unsigned int i = 0; i < obs.positions.size(); i++) {
     if ((int)i == obs.preyInd)
       continue;
@@ -120,6 +109,7 @@ void PredatorSurround::setCaptureMode(const Observation &obs) {
       return;
     }
   }
+  captureMode = true;
 }
 
 void PredatorSurround::assignDesiredDests(const Observation &obs) {
@@ -155,10 +145,10 @@ void PredatorSurround::assignDesiredDests(const Observation &obs) {
     }
 
     // select the dest with the largest dist to a predator
-    int maxDist = -1;
+    int maxDist = 999999;
     int chosenDestInd = -1;
     for (int destInd = 0; destInd < NUM_DESTS; destInd++) {
-      if (minDists[destInd] > maxDist) {
+      if (minDists[destInd] < maxDist) {
         maxDist = minDists[destInd];
         chosenDestInd = destInd;
       }
@@ -169,7 +159,7 @@ void PredatorSurround::assignDesiredDests(const Observation &obs) {
     for (int destInd = 0; destInd < NUM_DESTS; destInd++)
       distances[chosenPredInd][destInd] = 999999;
     for (int predInd = 0; predInd < NUM_PREDATORS; predInd++)
-      distances[predInd][chosenDestInd] = -1;
+      distances[predInd][chosenDestInd] = 999999;
   }
 
   // don't move if you're next to the prey
