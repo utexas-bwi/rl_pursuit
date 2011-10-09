@@ -104,15 +104,6 @@ void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
   
   // set the expected moves for this step
   setExpectedMoves(obs);
-  
-  std::cout << "EXPECTED MOVES: ";
-  for (int i = 0; i < NUM_PREDATORS; i++) {
-    if (expectedMoves[i] == Action::NUM_MOVES)
-      std::cout << "UNKNOWN ";
-    else
-      std::cout << Action::MOVES[expectedMoves[i]] << " ";
-  }
-  std::cout << std::endl;
 }
 
 void PredatorSurroundWithPenalties::setExpectedMoves(const Observation &obs) {
@@ -133,5 +124,6 @@ void PredatorSurroundWithPenalties::setExpectedMoves(const Observation &obs) {
       expectedMoves[i] = getAction(move);
     } else {
       expectedMoves[i] = Action::NUM_ACTIONS;
+    }
   }
 }
