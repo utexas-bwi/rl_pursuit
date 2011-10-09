@@ -22,6 +22,7 @@
 #include <controller/WorldMDP.h>
 #include <planning/UCTEstimator.h>
 #include <factory/PlanningFactory.h>
+#include <factory/WorldFactory.h>
 
 #define NAME_IN_SET(...) nameInSet(name,__VA_ARGS__,NULL)
 
@@ -117,9 +118,11 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       unsigned int depthFactor = plannerOptions.get("depthFactor",0).asUInt();
       plannerOptions["depth"] = depthFactor * (dims.x + dims.y);
     }
+
+    double actionNoise = getActionNoise(rootOptions);
     
     // create the mdp
-    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,plannerOptions);
+    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,actionNoise,plannerOptions);
     // create the model updater
     boost::shared_ptr<ModelUpdater> modelUpdater = createModelUpdater(rng,mdp,mdp->getAdhocAgent(),dims,predatorInd,plannerOptions); // predatorInd should be the replacement ind for the model
     // create the value estimator

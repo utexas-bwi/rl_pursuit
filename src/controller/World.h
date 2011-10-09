@@ -25,7 +25,7 @@ Modified: 2011-08-22
 
 class World {
 public:
-  World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world);
+  World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise);
   
   void step();
   void step(std::vector<boost::shared_ptr<Agent> > &agents);
@@ -46,6 +46,7 @@ protected:
   boost::shared_ptr<WorldModel> world;
   const Point2D dims;
   std::vector<boost::shared_ptr<Agent> > agents;
+  double actionNoise;
 
 protected:
   void handleCollisions(const std::vector<Point2D> &requestedPositions);
@@ -53,6 +54,7 @@ protected:
 
   bool incrementActionIndices(std::vector<unsigned int> &actionInds);
   bool getRequestedPositionsForActionIndices(const std::vector<unsigned int> &actionInds, const std::vector<ActionProbs> &actionProbs, std::vector<Point2D> &requestedPositions);
+  ActionProbs getAgentAction(unsigned int ind, boost::shared_ptr<Agent> agent, Observation &obs);
 
   FRIEND_TEST(WorldTest,Collisions);
 };

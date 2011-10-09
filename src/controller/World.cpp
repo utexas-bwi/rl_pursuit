@@ -1,9 +1,11 @@
 #include "World.h"
+#include <boost/lexical_cast.hpp>
 
-World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world):
+World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise):
   rng(rng),
   world(world),
-  dims(world->getDims())
+  dims(world->getDims()),
+  actionNoise(actionNoise)
 {
 }
 
@@ -20,10 +22,7 @@ void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
   
   world->generateObservation(obs);
   for (unsigned int i = 0; i < agents.size(); i++) {
-    obs.myInd = i;
-    //std::cout << agents[i]->generateDescription() << std::endl;
-    //std::cout << typeid(*agents[i]).name() << std::endl;
-    actionProbs = agents[i]->step(obs);
+    actionProbs = getAgentAction(i,agents[i],obs);
     assert(actionProbs.checkTotal());
     action = actionProbs.selectAction(rng);
     requestedPositions[i] = world->getAgentPosition(i,action);
@@ -41,8 +40,7 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
     //std::cout << "    agent: " << agentInd << std::endl;
     double probOfNoCollision = 1.0;
 
-    prevObs.myInd = agentInd;
-    actionProbs = agents[agentInd]->step(prevObs);
+    actionProbs = getAgentAction(agentInd,agents[agentInd],prevObs);
     assert(actionProbs.checkTotal());
     double agentProb = 0.0;
     for (unsigned int action = 0; action < Action::NUM_ACTIONS; action++) {
@@ -96,8 +94,7 @@ double World::getOutcomeProb(Observation prevObs,const Observation &currentObs) 
   double modelProb = 0.0;
   std::vector<ActionProbs> actionProbs(agents.size());
   for (unsigned int i = 0; i < agents.size(); i++) {
-    prevObs.myInd = i;
-    actionProbs[i] = agents[i]->step(prevObs);
+    actionProbs[i] = getAgentAction(i,agents[i],prevObs);
     assert(actionProbs[i].checkTotal());
   }
   // get the number of orderings
@@ -246,6 +243,7 @@ void World::setAgentControllers(const std::vector<boost::shared_ptr<Agent> > new
 std::string World::generateDescription(unsigned int indentation) {
   std::string s;
   s += indent(indentation) + "World:\n";
+  s += indent(indentation+1) + "Action Noise: " + boost::lexical_cast<std::string>(actionNoise) + "\n";
   s += world->generateDescription(indentation+1) + "\n";
   s += indent(indentation+1) + "Agents:\n";
   for (unsigned int i = 0; i < agents.size(); i++)
@@ -257,4 +255,19 @@ void World::printAgents() {
   for (unsigned int i = 0; i < agents.size(); i++) {
     std::cout << typeid(*agents[i]).name() << std::endl;
   }
+}
+
+ActionProbs World::getAgentAction(unsigned int ind, boost::shared_ptr<Agent> agent, Observation &obs) {
+  ActionProbs actionProbs;
+  obs.myInd = ind;
+  actionProbs = agent->step(obs);
+
+  if (actionNoise > 0) {
+    double origWeight = 1 - actionNoise;
+    double noiseWeight = actionNoise / Action::NUM_ACTIONS;
+    for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
+      actionProbs[(Action::Type)i] = origWeight * actionProbs[(Action::Type)i] + noiseWeight;
+  }
+
+  return actionProbs;
 }
