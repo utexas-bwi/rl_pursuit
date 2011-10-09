@@ -30,7 +30,7 @@ private:
 private:
   static const float penaltyAmount;
   static const unsigned int violationHistorySize;
-  static const unsigned int penaltyViolations;
+  static const int penaltyViolations;
   
   bool penaltyOn;
   bool usePrevObs;
