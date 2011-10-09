@@ -12,7 +12,8 @@ Modified: 2011-09-29
 #include "PredatorGreedy.h"
 
 const float PredatorSurroundWithPenalties::penaltyAmount = 0.7;
-const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 5;
+const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 10;
+const int PredatorSurroundWithPenalties::numViolationsToPenalize = 8;
 
 PredatorSurroundWithPenalties::PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims, bool outputPenaltyMode):
   PredatorSurround(rng,dims),
@@ -80,7 +81,7 @@ void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
         stepViolations++;
         //std::cout << prevObs.positions[i+1] << " " << obs.positions[i+1] << " " << i+1 << " " << desiredPosition << std::endl;
         //std::cout << prevObs << " " << obs << " " << i << " " << desiredPosition << std::endl;
-        break;
+        //break;
       }
     }
   }
@@ -95,7 +96,7 @@ void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
   for (unsigned int i = 0; i < violationHistory.size(); i++)
     numViolations += violationHistory[i];
   //std::cout << "NUM VIOLATIONS: " << numViolations << std::endl;
-  if (numViolations >= 2)
+  if (numViolations >= numViolationsToPenalize)
     penaltyOn = true;
   else
     penaltyOn = false;

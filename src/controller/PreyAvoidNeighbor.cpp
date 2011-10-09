@@ -9,7 +9,7 @@ Modified: 2011-09-30
 #include "PreyAvoidNeighbor.h"
 #include <boost/lexical_cast.hpp>
 
-const float PreyAvoidNeighbor::noopWeight = 0.25;
+const float PreyAvoidNeighbor::noopWeight = 0.75;
 
 PreyAvoidNeighbor::PreyAvoidNeighbor(boost::shared_ptr<RNG> rng, const Point2D &dims):
   Agent(rng,dims)
@@ -85,17 +85,17 @@ void PreyAvoidNeighbor::getNeighborMoves(const Observation &obs, std::vector<Poi
 
 ActionProbs PreyAvoidNeighbor::moveWithNoNeighbors() {
   ActionProbs action;
-  action[Action::NOOP] = 0.75;
-  action[Action::RIGHT] = 0.1875;
-  action[Action::LEFT] = 0.0625;
-  action[Action::UP] = 0.0;
-  action[Action::DOWN] = 0.0;
-  //float weight = (1 - noopWeight) / (Action::NUM_ACTIONS - 1);
-  //for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++) {
-    //if (i == Action::NOOP)
-      //action[(Action::Type)i] = noopWeight;
-    //else
-      //action[(Action::Type)i] = weight;
-  //}
+  //action[Action::NOOP] = 0.75;
+  //action[Action::RIGHT] = 0.1875;
+  //action[Action::LEFT] = 0.0625;
+  //action[Action::UP] = 0.0;
+  //action[Action::DOWN] = 0.0;
+  float weight = (1 - noopWeight) / (Action::NUM_ACTIONS - 1);
+  for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++) {
+    if (i == Action::NOOP)
+      action[(Action::Type)i] = noopWeight;
+    else
+      action[(Action::Type)i] = weight;
+  }
   return action;
 }
