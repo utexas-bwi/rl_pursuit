@@ -23,6 +23,11 @@ void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
   world->generateObservation(obs);
   for (unsigned int i = 0; i < agents.size(); i++) {
     actionProbs = getAgentAction(i,agents[i],obs);
+    if (!actionProbs.checkTotal()) {
+      for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
+        std::cout << actionProbs[(Action::Type)i] << " ";
+      std::cout << std::endl;
+    }
     assert(actionProbs.checkTotal());
     action = actionProbs.selectAction(rng);
     requestedPositions[i] = world->getAgentPosition(i,action);
@@ -264,9 +269,15 @@ ActionProbs World::getAgentAction(unsigned int ind, boost::shared_ptr<Agent> age
 
   if (actionNoise > 0) {
     double origWeight = 1 - actionNoise;
-    double noiseWeight = actionNoise / Action::NUM_ACTIONS;
-    for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
-      actionProbs[(Action::Type)i] = origWeight * actionProbs[(Action::Type)i] + noiseWeight;
+    double noiseWeight = 0;
+    for (unsigned int i = 0; i < Action::NUM_NEIGHBORS; i++) {
+      noiseWeight += actionNoise * actionProbs[(Action::Type)i]; 
+      actionProbs[(Action::Type)i] *= origWeight;
+    }
+    noiseWeight /= Action::NUM_ACTIONS;
+    for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++) {
+      actionProbs[(Action::Type)i] += noiseWeight;
+    }
   }
 
   return actionProbs;
