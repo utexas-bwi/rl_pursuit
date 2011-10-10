@@ -13,7 +13,7 @@ Modified: 2011-09-29
 
 const float PredatorSurroundWithPenalties::penaltyAmount = 0.7;
 const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 10;
-const int PredatorSurroundWithPenalties::numViolationsToPenalize = 8;
+const int PredatorSurroundWithPenalties::numViolationsToPenalize = 12;
 
 PredatorSurroundWithPenalties::PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims, bool outputPenaltyMode):
   PredatorSurround(rng,dims),
@@ -62,8 +62,8 @@ void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
   int stepViolations = 0;
   if (!captureMode && usePrevObs) {
     for (int i = 0; i < NUM_PREDATORS; i++) {
-      if (i+1 == (int)obs.myInd) // +1 because prey is 0
-        continue;
+      //if (i+1 == (int)obs.myInd) // +1 because prey is 0
+        //continue;
       if (expectedMoves[i] == Action::NUM_ACTIONS)
         continue; // wasn't sure what that guy was going to do
       Point2D move = getDifferenceToPoint(dims,prevObs.positions[i+1],obs.positions[i+1]);
