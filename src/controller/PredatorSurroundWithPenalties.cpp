@@ -11,9 +11,9 @@ Modified: 2011-09-29
 #include <model/Common.h>
 #include "PredatorGreedy.h"
 
-const float PredatorSurroundWithPenalties::penaltyAmount = 0.7;
-const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 10;
-const int PredatorSurroundWithPenalties::numViolationsToPenalize = 12;
+const float PredatorSurroundWithPenalties::penaltyAmount = 0.5;
+const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 100;
+const int PredatorSurroundWithPenalties::numViolationsToPenalize = 2;
 
 PredatorSurroundWithPenalties::PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims, bool outputPenaltyMode):
   PredatorSurround(rng,dims),
@@ -81,7 +81,7 @@ void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
         stepViolations++;
         //std::cout << prevObs.positions[i+1] << " " << obs.positions[i+1] << " " << i+1 << " " << desiredPosition << std::endl;
         //std::cout << prevObs << " " << obs << " " << i << " " << desiredPosition << std::endl;
-        //break;
+        break;
       }
     }
   }
