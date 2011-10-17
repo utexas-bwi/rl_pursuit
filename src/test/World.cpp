@@ -12,28 +12,14 @@ Modified: 2011-08-29
 #include <common/RNG.h>
 #include <model/WorldModel.h>
 #include <controller/World.h>
-#include <controller/AgentDummy.h>
-
-class AgentDummyTest: public AgentDummy {
-public:
-  AgentDummyTest(boost::shared_ptr<RNG> rng, const Point2D &dims):
-    AgentDummy(rng,dims),
-    numSteps(0)
-  {}
-
-  ActionProbs step(const Observation &obs) {
-    numSteps++;
-    return AgentDummy::step(obs);
-  }
-  unsigned int numSteps;
-};
+#include "AgentDummyTest.h"
 
 class WorldTest: public ::testing::Test {
 public:
   WorldTest():
     rng(new RNG(0)),
     model(new WorldModel(Point2D(5,5))),
-    world(rng,model)
+    world(rng,model,0.0)
   {
     for (int i = 0; i < 5; i++) {
       agents.push_back(boost::shared_ptr<AgentDummyTest>(new AgentDummyTest(rng,Point2D(5,5))));
