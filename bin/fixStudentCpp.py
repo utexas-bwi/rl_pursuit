@@ -44,7 +44,7 @@ def main():
       ind += 1
     ind += 1
     newContents = contents[:ind] + namespaceStr + contents[ind:] + '\n}\n'
-    with open('src/studentAgents/agents/%s/Predator.cxx' % student,'w') as f:
+    with open('src/studentAgents/agents/%s/Predator.cpp' % student,'w') as f:
       f.write(newContents)
     
 
