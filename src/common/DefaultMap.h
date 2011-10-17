@@ -9,8 +9,13 @@ Created:  2011-08-23
 Modified: 2011-08-23
 */
 
-//#include <map>
+//#define DEFAULTMAP_USE_BOOST
+
+#ifdef DEFAULTMAP_USE_BOOST
 #include <boost/unordered_map.hpp>
+#else
+#include <map>
+#endif
 
 template <class Key, class T>
 class DefaultMap{
@@ -20,8 +25,11 @@ public:
   {}
 
   T get(const Key &key) {
-    //typename std::map<Key,T>::iterator it = vals.find(key);
+#ifdef DEFAULTMAP_USE_BOOST
     typename boost::unordered_map<Key,T>::iterator it = vals.find(key);
+#else
+    typename std::map<Key,T>::iterator it = vals.find(key);
+#endif
     if (it == vals.end())
       return defaultValue;
     else
@@ -47,8 +55,11 @@ public:
   }
 
 private:
-  //std::map<Key,T> vals;
+#ifdef DEFAULTMAP_USE_BOOST
   boost::unordered_map<Key,T> vals;
+#else
+  std::map<Key,T> vals;
+#endif
   const T defaultValue;
 };
 
