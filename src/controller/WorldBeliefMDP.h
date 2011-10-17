@@ -25,8 +25,6 @@ public:
 protected:
   boost::shared_ptr<ModelUpdaterBayes> modelUpdater;
   boost::shared_ptr<ModelUpdater> savedModelUpdater;
-  Observation prevObs;
-  Action::Type prevAction;
   StateConverter stateConverter;
   //double time;
 };

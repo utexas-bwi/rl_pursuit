@@ -22,6 +22,7 @@
 #include <controller/WorldMDP.h>
 #include <planning/UCTEstimator.h>
 #include <factory/PlanningFactory.h>
+#include <factory/WorldFactory.h>
 
 #define NAME_IN_SET(...) nameInSet(name,__VA_ARGS__,NULL)
 
@@ -78,11 +79,28 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new PredatorTeammateAware(rng,dims));
   else if (NAME_IN_SET("dummy"))
     return ptr(new AgentDummy(rng,dims));
+  else if (NAME_IN_SET("mixed")) {
+    Json::Value types = options["types"];
+    std::string typeName;
+    if (types.size() > 0) {
+      typeName = types[predatorInd].asString();
+    } else {
+      std::vector<std::string> typeNames;
+      typeNames.push_back("gr");
+      typeNames.push_back("ta");
+      typeNames.push_back("gp");
+      typeNames.push_back("gp");
+      int ind = rng->randomInt(typeNames.size());
+      typeName = typeNames[ind];
+    }
+    return createAgent(rng,dims,typeName,trialNum,predatorInd,options,rootOptions);
+  }
   else if (NAME_IN_SET("surround","surround","su"))
     return ptr(new PredatorSurround(rng,dims));
-  else if (NAME_IN_SET("surroundpenalties","surround-penalties","sp"))
-    return ptr(new PredatorSurroundWithPenalties(rng,dims));
-  else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {
+  else if (NAME_IN_SET("surroundpenalties","surround-penalties","sp")) {
+    bool outputPenaltyMode = options.get("outputPenaltyMode",false).asBool();
+    return ptr(new PredatorSurroundWithPenalties(rng,dims,outputPenaltyMode));
+  } else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {
     std::string filename = options.get("filename","").asString();
     std::string sizeId = "$(SIZE)";
     size_t ind = filename.find(sizeId);
@@ -116,9 +134,11 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       unsigned int depthFactor = plannerOptions.get("depthFactor",0).asUInt();
       plannerOptions["depth"] = depthFactor * (dims.x + dims.y);
     }
+
+    double actionNoise = getActionNoise(rootOptions);
     
     // create the mdp
-    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,plannerOptions);
+    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,actionNoise,plannerOptions);
     // create the model updater
     boost::shared_ptr<ModelUpdater> modelUpdater = createModelUpdater(rng,mdp,mdp->getAdhocAgent(),dims,predatorInd,plannerOptions); // predatorInd should be the replacement ind for the model
     // create the value estimator

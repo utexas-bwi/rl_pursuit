@@ -73,7 +73,7 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
   }
 }
 
-boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool beliefMDP, ModelUpdateType updateType, const StateConverter &stateConverter) {
+boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool beliefMDP, ModelUpdateType updateType, const StateConverter &stateConverter, double actionNoise) {
   // create some rngs
   boost::shared_ptr<RNG> rngWorld1 = makeRNG(rng->randomUInt());
   boost::shared_ptr<RNG> rngWorld2 = makeRNG(rng->randomUInt());
@@ -90,7 +90,7 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
 
   // create the world model and controller
   boost::shared_ptr<WorldModel> model = createWorldModel(dims);
-  boost::shared_ptr<World> controller = createWorld(rngWorld1,model);
+  boost::shared_ptr<World> controller = createWorld(rngWorld1,model,actionNoise);
   // create the dummy agent for the ad hoc agent
   boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(rngDummy,dims));
 
@@ -99,7 +99,7 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
     return mdp;
 
   //model = createWorldModel(dims);
-  controller = createWorld(rngWorld2,model);
+  controller = createWorld(rngWorld2,model,actionNoise);
 
   //std::cout << "HERE" << std::endl;
   //controller = createWorldAgents(rngOther,controller,0,Json::Value());
@@ -109,13 +109,13 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
   return boost::shared_ptr<WorldMDP>(new WorldBeliefMDP(rngMDP2,model,controller,adhocAgent,stateConverter,modelUpdater));
 }
 
-boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, const Json::Value &options) {
+boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, double actionNoise, const Json::Value &options) {
   bool beliefMDP = options.get("beliefMDP",false).asBool();
   std::string updateTypeString = options.get("update","bayesian").asString();
   ModelUpdateType updateType = getModelUpdateType(updateTypeString);
 
   StateConverter stateConverter = createStateConverter(options);
-  return createWorldMDP(rng,dims,beliefMDP,updateType,stateConverter);
+  return createWorldMDP(rng,dims,beliefMDP,updateType,stateConverter,actionNoise);
 }
 
 StateConverter createStateConverter(const Json::Value &options) {

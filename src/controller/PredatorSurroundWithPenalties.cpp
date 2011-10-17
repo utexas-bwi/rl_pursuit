@@ -11,13 +11,15 @@ Modified: 2011-09-29
 #include <model/Common.h>
 #include "PredatorGreedy.h"
 
-const float PredatorSurroundWithPenalties::penaltyAmount = 0.7;
-const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 5;
+const float PredatorSurroundWithPenalties::penaltyAmount = 0.5;
+const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 100;
+const int PredatorSurroundWithPenalties::numViolationsToPenalize = 2;
 
-PredatorSurroundWithPenalties::PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims):
+PredatorSurroundWithPenalties::PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims, bool outputPenaltyMode):
   PredatorSurround(rng,dims),
   penaltyOn(false),
-  usePrevObs(false)
+  usePrevObs(false),
+  outputPenaltyMode(outputPenaltyMode)
 {
 }
 
@@ -31,6 +33,8 @@ ActionProbs PredatorSurroundWithPenalties::step(const Observation &obs) {
 
   // optionally apply penalty
   if ((penaltyOn) && (!captureMode)){
+    if (outputPenaltyMode)
+      std::cout << "PENALTY MODE" << std::endl;
     for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
       action[(Action::Type)i] *= (1.0 - penaltyAmount);
     action[Action::NOOP] += penaltyAmount;
@@ -58,20 +62,25 @@ void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
   int stepViolations = 0;
   if (!captureMode && usePrevObs) {
     for (int i = 0; i < NUM_PREDATORS; i++) {
-      if (i+1 == (int)obs.myInd) // +1 because prey is 0
-        continue;
+      //if (i+1 == (int)obs.myInd) // +1 because prey is 0
+        //continue;
       if (expectedMoves[i] == Action::NUM_ACTIONS)
         continue; // wasn't sure what that guy was going to do
       Point2D move = getDifferenceToPoint(dims,prevObs.positions[i+1],obs.positions[i+1]);
       Point2D desiredPosition = movePosition(dims,prevObs.positions[i+1],expectedMoves[i]);
       bool desiredPositionOccupied = false;
-      for (unsigned int j = 0; j < obs.positions.size(); j++)
-        if (desiredPosition == obs.positions[j])
+      for (unsigned int j = 0; j < obs.positions.size(); j++) {
+        if ((desiredPosition == obs.positions[j]) || (desiredPosition == prevObs.positions[j])){
           desiredPositionOccupied = true;
+          break;
+        }
+      }
       if (desiredPositionOccupied)
         continue;
       if (move != Action::MOVES[expectedMoves[i]]) {
         stepViolations++;
+        //std::cout << prevObs.positions[i+1] << " " << obs.positions[i+1] << " " << i+1 << " " << desiredPosition << std::endl;
+        //std::cout << prevObs << " " << obs << " " << i << " " << desiredPosition << std::endl;
         break;
       }
     }
@@ -86,7 +95,8 @@ void PredatorSurroundWithPenalties::setPenaltyMode(const Observation &obs) {
   int numViolations = 0;
   for (unsigned int i = 0; i < violationHistory.size(); i++)
     numViolations += violationHistory[i];
-  if (numViolations >= 2)
+  //std::cout << "NUM VIOLATIONS: " << numViolations << std::endl;
+  if (numViolations >= numViolationsToPenalize)
     penaltyOn = true;
   else
     penaltyOn = false;
