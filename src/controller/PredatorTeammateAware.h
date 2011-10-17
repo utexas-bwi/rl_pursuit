@@ -31,7 +31,6 @@ public:
 
 private:
   AStar planner;
-  unsigned int counter;
 };
 
 #endif /* end of include guard: PREDATORTEAMMATEAWARE_78DZXW6S */

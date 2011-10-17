@@ -13,7 +13,6 @@ PredatorTeammateAware::PredatorTeammateAware(boost::shared_ptr<RNG> rng, const P
   Agent(rng,dims),
   planner(dims)
 {
-  counter = 0;
 }
 
 void PredatorTeammateAware::restart() {
@@ -24,8 +23,6 @@ std::string PredatorTeammateAware::generateDescription() {
 }
 
 ActionProbs PredatorTeammateAware::step(const Observation &obs) {
-  counter++;
-  //std::cout << "TA: " << counter << " " << obs << std::endl;
   Point2D dest = getTeammateAwareDesiredPosition(dims,obs);
   planner.plan(obs.myPos(),dest,obs.positions);
   if (!planner.foundPath()) {

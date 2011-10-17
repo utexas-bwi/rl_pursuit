@@ -82,10 +82,5 @@ Action::Type greedyObstacleAvoid(const Point2D &dims, const Observation &obs, co
 ActionProbs PredatorGreedy::step(const Observation &obs) {
   Point2D dest = getGreedyDesiredPosition(dims,obs);
   Action::Type action = greedyObstacleAvoid(dims,obs,dest);
-  //if (action == Action::RANDOM)
-    //action = (Action::Type)rng->randomInt(Action::NUM_ACTIONS);
-  //return action;
-  counter++;
-  //std::cout << "GREEDY: " << counter << " " << obs << std::endl;
   return ActionProbs(action);
 }
