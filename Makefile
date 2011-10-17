@@ -18,6 +18,7 @@ FACTORY_DIR = factory
 MODEL_DIR = model
 PLANNING_DIR = planning
 TEST_DIR = test
+STUDENT_DIR= studentAgents/agents
 # specify compile and flags
 ifeq ($(shell bin/onLabMachine.sh),yes)
 PYTHON_VERSION=2.6
@@ -33,19 +34,13 @@ STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
 
 RM = rm -f
 # source files
-MAIN_SOURCES = $(SOURCE_DIR)/main.cpp
+MAIN_SOURCES = main.cpp
 COMMON_SOURCES = DecisionTree.cpp Point2D.cpp tinymt32.cpp Util.cpp WekaParser.cpp
 CONTROLLER_SOURCES = AStar.cpp ModelUpdater.cpp ModelUpdaterBayes.cpp ModelUpdaterSilver.cpp PredatorDecisionTree.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentCpp.cpp PredatorStudentCpp_gen.cpp PredatorStudentPython.cpp PredatorSurround.cpp PredatorSurroundWithPenalties.cpp PredatorTeammateAware.cpp PreyAvoidNeighbor.cpp State.cpp World.cpp WorldBeliefMDP.cpp WorldMDP.cpp# WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
-STUDENT_SOURCES = $(wildcard $(SOURCE_DIR)/studentAgents/agents/*/Predator.cxx)
-# Headers
-COMMON_HEADERS = DecisionTree.h DefaultMap.h Point2D.h RNG.h tinymt32.h Util.h WekaParser.h
-CONTROLLER_HEADERS = Agent.h AgentDummy.h AgentRandom.h AStar.h ModelUpdater.h ModelUpdaterBayes.h ModelUpdaterSilver.h PredatorDecisionTree.h PredatorGreedy.h PredatorGreedyProbabilistic.h PredatorMCTS.h PredatorProbabilisticDestinations.h PredatorStudentCpp.h PredatorStudentPython.h PredatorSurround.h PredatorSurroundWithPenalties.h PredatorTeammateAware.h PreyAvoidNeighbor.h State.h World.h WorldBeliefMDP.h WorldMDP.h# WorldMultiModelMDP.h WorldSilverMDP.h WorldSilverWeightedMDP.h
-FACTORY_HEADERS = AgentFactory.h PlanningFactory.h WorldFactory.h
-MODEL_HEADERS = AgentModel.h Common.h WorldModel.h
-PLANNING_HEADERS = DualUCTEstimator.h MCTS.h Model.h UCTEstimator.h ValueEstimator.h
+STUDENT_SOURCES = $(patsubst $(SOURCE_DIR)/%, %, $(wildcard $(SOURCE_DIR)/$(STUDENT_DIR)/*/Predator.cpp))
 #TEST_SOURCES = planningSpeed.cpp
 #TEST_SOURCES = pursuitTest.cpp
 #TEST_SOURCES = jsonTest.cpp
@@ -55,30 +50,25 @@ TEST_SOURCES = main.cpp DefaultMap.cpp UCTEstimator.cpp World.cpp WorldModel.cpp
 ##############################################################
 
 # full paths to the source files
-COMMON_SOURCES_PATH = $(addprefix $(SOURCE_DIR)/$(COMMON_DIR)/, $(COMMON_SOURCES))
-CONTROLLER_SOURCES_PATH = $(addprefix $(SOURCE_DIR)/$(CONTROLLER_DIR)/, $(CONTROLLER_SOURCES))
-FACTORY_SOURCES_PATH = $(addprefix $(SOURCE_DIR)/$(FACTORY_DIR)/, $(FACTORY_SOURCES))
-MODEL_SOURCES_PATH = $(addprefix $(SOURCE_DIR)/$(MODEL_DIR)/, $(MODEL_SOURCES))
-PLANNING_SOURCES_PATH = $(addprefix $(SOURCE_DIR)/$(PLANNING_DIR)/, $(PLANNING_SOURCES))
-# full paths to the headers
-COMMON_HEADERS_PATH = $(addprefix $(SOURCE_DIR)/$(COMMON_DIR)/, $(COMMON_HEADERS))
-CONTROLLER_HEADERS_PATH = $(addprefix $(SOURCE_DIR)/$(CONTROLLER_DIR)/, $(CONTROLLER_HEADERS))
-FACTORY_HEADERS_PATH = $(addprefix $(SOURCE_DIR)/$(FACTORY_DIR)/, $(FACTORY_HEADERS))
-MODEL_HEADERS_PATH = $(addprefix $(SOURCE_DIR)/$(MODEL_DIR)/, $(MODEL_HEADERS))
-PLANNING_HEADERS_PATH = $(addprefix $(SOURCE_DIR)/$(PLANNING_DIR)/, $(PLANNING_HEADERS))
-# the sources - tests
-SOURCES = $(COMMON_SOURCES_PATH) $(CONTROLLER_SOURCES_PATH) $(FACTORY_SOURCES_PATH) $(MODEL_SOURCES_PATH) $(PLANNING_SOURCES_PATH)
-OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(SOURCES:.cpp=.o) $(STUDENT_SOURCES:.cxx=.o)) # also add on the student objects
-MAIN_OBJECTS = $(OBJECTS) $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(MAIN_SOURCES:.cpp=.o))
-# headers
-HEADERS = $(COMMON_HEADERS_PATH) $(CONTROLLER_HEADERS_PATH) $(FACTORY_HEADERS_PATH) $(MODEL_HEADERS_PATH) $(PLANNING_HEADERS_PATH)
-
+COMMON_SOURCES_PATH = $(addprefix $(COMMON_DIR)/, $(COMMON_SOURCES))
+CONTROLLER_SOURCES_PATH = $(addprefix $(CONTROLLER_DIR)/, $(CONTROLLER_SOURCES))
+FACTORY_SOURCES_PATH = $(addprefix $(FACTORY_DIR)/, $(FACTORY_SOURCES))
+MODEL_SOURCES_PATH = $(addprefix $(MODEL_DIR)/, $(MODEL_SOURCES))
+PLANNING_SOURCES_PATH = $(addprefix $(PLANNING_DIR)/, $(PLANNING_SOURCES))
+# the sources without tests
+SOURCES = $(COMMON_SOURCES_PATH) $(CONTROLLER_SOURCES_PATH) $(FACTORY_SOURCES_PATH) $(MODEL_SOURCES_PATH) $(PLANNING_SOURCES_PATH) $(STUDENT_SOURCES)
+OBJECTS = $(addprefix $(BUILD_DIR)/, $(SOURCES:.cpp=.o))
+MAIN_OBJECTS = $(OBJECTS) $(addprefix $(BUILD_DIR)/, $(MAIN_SOURCES:.cpp=.o))
 # tests
-TEST_SOURCES_PATH = $(addprefix $(SOURCE_DIR)/$(TEST_DIR)/, $(TEST_SOURCES))
+TEST_SOURCES_PATH = $(addprefix $(TEST_DIR)/, $(TEST_SOURCES))
 TEST_SOURCES_COMBINED = $(SOURCES) $(TEST_SOURCES_PATH)
-TEST_OBJECTS = $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(TEST_SOURCES_COMBINED:.cpp=.o) $(STUDENT_SOURCES:.cxx=.o)) # also add on the student objects
+TEST_OBJECTS = $(addprefix $(BUILD_DIR)/, $(TEST_SOURCES_COMBINED:.cpp=.o))
+# all sources
+SOURCES_ALL = $(SOURCES) $(MAIN_SOURCES) $(TEST_SOURCES_PATH)
+DEPS_ALL = $(addprefix $(BUILD_DIR)/,$(SOURCES_ALL:.cpp=.d))
 
 .PHONY: all run build test default clean fullclean
+
 
 default: build
 
@@ -87,31 +77,41 @@ run: $(MAIN_TARGET)
 
 build: $(MAIN_TARGET)
 
-$(MAIN_TARGET): $(MAIN_OBJECTS)
-	@echo "Linking $@"
-	@$(CC) $(FLAGS) $(MAIN_OBJECTS) $(LINK_FLAGS) -o $@
-
 test: $(TEST_TARGET)
 	$(TEST_TARGET)
 
-$(BUILD_DIR)/studentAgents/agents/%.o: $(SOURCE_DIR)/studentAgents/agents/%.cxx
-	@mkdir -p $(dir $@)
-	@echo "Compiling $< for $(ARCH)"
-	@$(CC) $(STUDENT_FLAGS) -c $< -o $@
-
-$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(HEADERS)
-	@mkdir -p $(dir $@)
-	@echo "Compiling $< for $(ARCH)"
-	@$(CC) $(FLAGS) -c $< -o $@
-
-$(TEST_TARGET): $(TEST_OBJECTS) $(HEADERS)
-	@echo "Linking $@"
-	@$(CC) $(FLAGS) $(TEST_OBJECTS) $(TEST_LINK_FLAGS) -o $@
-
 clean:
-	$(RM) $(TEST_OBJECTS) $(MAIN_OBJECTS)
+	$(RM) $(TEST_OBJECTS) $(MAIN_OBJECTS) $(DEPS_ALL)
 
 fullclean: clean
 	$(RM) $(TEST_TARGET) $(MAIN_TARGET)
 
 fclean: fullclean
+
+$(MAIN_TARGET): $(MAIN_OBJECTS)
+	@echo "Linking $@"
+	@$(CC) $(FLAGS) $(MAIN_OBJECTS) $(LINK_FLAGS) -o $@
+
+$(TEST_TARGET): $(TEST_OBJECTS)
+	@echo "Linking $@"
+	@$(CC) $(FLAGS) $(TEST_OBJECTS) $(TEST_LINK_FLAGS) -o $@
+
+# include dependencies for creating dependencies and objects
+-include $(DEPS_ALL)
+
+# change the flags for the students
+$(BUILD_DIR)/$(STUDENT_DIR)/%.o : FLAGS = $(STUDENT_FLAGS)
+# compile the objects
+$(BUILD_DIR)/%.o: 
+	@mkdir -p $(dir $@)
+	@echo "Compiling $< for $(ARCH)"
+	@$(CC) $(FLAGS) -c $< -o $@
+
+# calculate the dependencies, note that I hacked the sed line to make it correctly set the targets
+$(BUILD_DIR)/%.d: $(SOURCE_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	@echo "Calculating the dependencies for $<"
+	@set -e; rm -f $@; \
+	$(CC) -MM $(FLAGS) $< > $@.$$$$;                  \
+	sed 's,\(.*\).o:,$(@:.d=.o) $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
