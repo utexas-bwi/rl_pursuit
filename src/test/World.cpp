@@ -33,7 +33,6 @@ public:
   }
 
   double getOutcomeProbApprox(int startPositions[5][2], int endPositions[5][2], ActionProbs actions[5]) {
-    std::cout << "------------------------" << std::endl;
     Observation prevObs;
     Observation currentObs;
     for (unsigned int i = 0; i < 5; i++) {
@@ -151,7 +150,55 @@ TEST_F(WorldTest,OutcomeProbApprox) {
   outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
   EXPECT_NEAR(0.5,outcomeProb,0.001);
   
-  endPositions[0][0] = 3;
+  endPositions[1][1] = 0;
   outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
   EXPECT_NEAR(0.0,outcomeProb,0.001);
+}
+
+TEST_F(WorldTest,OutcomeProbApproxComplex) {
+  ActionProbs a;
+  a[Action::NOOP] = 0.8;
+  a[Action::UP] = 0.15;
+  a[Action::DOWN] = 0.05;
+  double outcomeProb;
+  double total = 0;
+  double prob;
+  
+  
+  Action::Type lastActions[3] = {Action::NOOP,Action::UP,Action::DOWN};
+  int lastDests[3][2] = {{4,0},{4,1},{4,4}};
+
+  for (int actionInd = 0; actionInd < 3; actionInd++) {
+    int startPositions[5][2] = {{0,0},{1,0},{1,1},{3,0},{4,0}};
+    int endPositions[5][2]   = {{0,0},{1,0},{1,1},{3,0},{4,0}};
+    ActionProbs actions[5] = {ActionProbs(Action::RIGHT),ActionProbs(Action::UP),ActionProbs(Action::UP),ActionProbs(Action::NOOP),a};
+
+    double lastActionProb = a[lastActions[actionInd]];
+    endPositions[4][0] = lastDests[actionInd][0];
+    endPositions[4][1] = lastDests[actionInd][1];
+  
+    outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+    EXPECT_NEAR(0.0,outcomeProb,0.001);
+  
+    endPositions[2][1] = 2;
+    outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+    prob = lastActionProb * 0.5;
+    EXPECT_NEAR(prob,outcomeProb,0.001);
+    total += prob;
+    
+    endPositions[1][1] = 1;
+    outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+    prob = lastActionProb * 0.5 * 0.5;
+    EXPECT_NEAR(prob,outcomeProb,0.001);
+    total += prob;
+    
+    endPositions[0][0] = 1;
+    outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+    prob = lastActionProb * 0.5 * 0.5;
+    EXPECT_NEAR(prob,outcomeProb,0.001);
+    total += prob;
+  }
+  
+  // make sure we've tested every viable outcome
+  EXPECT_NEAR(1.0,total,0.001);
 }
