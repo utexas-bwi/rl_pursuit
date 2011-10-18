@@ -43,54 +43,76 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
   Point2D requestedPosition;
   for (unsigned int agentInd = 0; agentInd < agents.size(); agentInd++) {
     //std::cout << "    agent: " << agentInd << std::endl;
-    double probOfNoCollision = 1.0;
 
     actionProbs = getAgentAction(agentInd,agents[agentInd],prevObs);
     assert(actionProbs.checkTotal());
     double agentProb = 0.0;
     for (unsigned int action = 0; action < Action::NUM_ACTIONS; action++) {
       double prob = actionProbs[(Action::Type)action];
-      //std::cout << "      " << action << " " << prob << std::endl;
       if (prob == 0)
         continue;
+      //std::cout << "      " << Action::MOVES[action] << " " << prob << std::endl;
       // get the requestedPosition
       requestedPosition = movePosition(world->getDims(),prevObs.positions[agentInd],(Action::Type)action);
-
-      if (currentObs.positions[agentInd] != prevObs.positions[agentInd]) {
-        //std::cout << "    agent moved: " << prevObs.positions[agentInd] << " -> " << currentObs.positions[agentInd] << std::endl;
-        // the agent moved, so life is simple
-        // if the requestedPosition matches what happened, then it works with full prob
-        // otherwise, zero prob
-        if (requestedPosition == currentObs.positions[agentInd])
+      //std::cout << "      req: " << prevObs.positions[agentInd] << "->" << requestedPosition << std::endl;
+      
+      // did the agent decide to stay still?
+      if (requestedPosition == prevObs.positions[agentInd]) {
+        if (prevObs.positions[agentInd] == currentObs.positions[agentInd])
           agentProb += prob;
         continue;
       }
-      // the agent didn't move
+      // get the probability it collided with another agent
+      double probOfNoCollision = getProbOfNoCollisionApprox(prevObs,currentObs,requestedPosition,agentInd);
       
-      // did the agent decide to stay still?
-      if (requestedPosition == currentObs.positions[agentInd]) {
-        agentProb += prob;
+      if (currentObs.positions[agentInd] != prevObs.positions[agentInd]) {
+        // if the agent moved, increment by the probability it decided to move * probability it didn't collide
+        if (requestedPosition == currentObs.positions[agentInd])
+          agentProb += prob * probOfNoCollision;
         continue;
       }
-  
-      // did it collide?
-      // collisions with starting positions
-      for (unsigned int i = 0; i < prevObs.positions.size(); i++) {
-        if (prevObs.positions[i] == requestedPosition)
-          probOfNoCollision *= 0.5;
-      }
-
-      // collisions with end positions
-      for (unsigned int i = 0; i < currentObs.positions.size(); i++) {
-        if (currentObs.positions[i] == requestedPosition)
-          probOfNoCollision *= 0.5;
-      }
-
+      // the agent stayed still, but tried to move, so what's the probability it collided
       agentProb += prob * (1 - probOfNoCollision);
     } // end for action
+    //std::cout << "agentProb: " << agentProb << std::endl;
     modelProb *= agentProb;
+    if (modelProb < 1e-90)
+      break;
   } // end for agent
   return modelProb;
+}
+
+double World::getProbOfNoCollisionApprox(const Observation &prevObs, const Observation &currentObs, const Point2D &requestedPosition, unsigned int agentInd) {
+  double probOfNoCollision = 1.0;
+  // did it collide?
+  int startCollisionInd = -1;
+  // collisions with starting positions
+  for (unsigned int i = 0; i < prevObs.positions.size(); i++) {
+    if (i == agentInd)
+      continue;
+    //std::cout << requestedPosition << " " << prevObs.positions[i] << std::endl;
+    if (prevObs.positions[i] == requestedPosition) {
+      probOfNoCollision *= 0.5;
+      startCollisionInd = i;
+      break;
+    }
+  }
+  
+  //std::cout << "---" << std::endl;
+  // collisions with end positions
+  for (unsigned int i = 0; i < currentObs.positions.size(); i++) {
+    if (i == agentInd)
+      continue;
+    //std::cout << requestedPosition << " " << currentObs.positions[i] << std::endl;
+    if (currentObs.positions[i] == requestedPosition) {
+      if (startCollisionInd == (int)i)
+        probOfNoCollision = 0; // the other agent stayed in place
+      else
+        probOfNoCollision *= 0.5;
+      break;
+    }
+  }
+  return probOfNoCollision;
 }
 
 double World::getOutcomeProb(Observation prevObs,const Observation &currentObs) {

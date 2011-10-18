@@ -55,6 +55,7 @@ protected:
   bool incrementActionIndices(std::vector<unsigned int> &actionInds);
   bool getRequestedPositionsForActionIndices(const std::vector<unsigned int> &actionInds, const std::vector<ActionProbs> &actionProbs, std::vector<Point2D> &requestedPositions);
   ActionProbs getAgentAction(unsigned int ind, boost::shared_ptr<Agent> agent, Observation &obs);
+  double getProbOfNoCollisionApprox(const Observation &prevObs, const Observation &currentObs, const Point2D &requestedPosition, unsigned int agentInd);
 
   FRIEND_TEST(WorldTest,Collisions);
 };

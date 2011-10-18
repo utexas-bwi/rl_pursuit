@@ -22,18 +22,34 @@ public:
     world(rng,model,0.0)
   {
     for (int i = 0; i < 5; i++) {
-      agents.push_back(boost::shared_ptr<AgentDummyTest>(new AgentDummyTest(rng,Point2D(5,5))));
+      boost::shared_ptr<AgentDummyTest> agent(new AgentDummyTest(rng,Point2D(5,5)));
+      agents.push_back(agent);
+      abstractAgents.push_back(agent);
       if (i == 0)
         world.addAgent(AgentModel(i,i,PREY),agents[i]);
       else
         world.addAgent(AgentModel(i,i,PREDATOR),agents[i]);
     }
   }
+
+  double getOutcomeProbApprox(int startPositions[5][2], int endPositions[5][2], ActionProbs actions[5]) {
+    std::cout << "------------------------" << std::endl;
+    Observation prevObs;
+    Observation currentObs;
+    for (unsigned int i = 0; i < 5; i++) {
+      prevObs.positions.push_back(Point2D(startPositions[i][0],startPositions[i][1]));
+      currentObs.positions.push_back(Point2D(endPositions[i][0],endPositions[i][1]));
+      agents[i]->setAction(actions[i]);
+    }
+    return world.getOutcomeProbApprox(prevObs,currentObs,abstractAgents);
+  }
+
 protected:
   boost::shared_ptr<RNG> rng;
   boost::shared_ptr<WorldModel> model;
   World world;
   std::vector<boost::shared_ptr<AgentDummyTest> > agents;
+  std::vector<boost::shared_ptr<Agent> > abstractAgents;
 };
 
 TEST_F(WorldTest,NumSteps) {
@@ -78,4 +94,64 @@ TEST_F(WorldTest,Collisions) {
   world.handleCollisions(requestedPositions);
   for (unsigned int i = 0; i < agents.size(); i++)
     EXPECT_EQ(Point2D(i,0),model->getAgentPosition(i));
+}
+
+TEST_F(WorldTest,OutcomeProbApprox) {
+  double outcomeProb;
+  int startPositions[5][2];
+  int endPositions[5][2];
+  ActionProbs actions[5];
+  for (int i = 0; i < 5; i++) {
+    startPositions[i][0] = i;
+    startPositions[i][1] = 0;
+    endPositions[i][0] = i;
+    endPositions[i][1] = 0;
+    actions[i] = ActionProbs(Action::NOOP);
+  }
+  
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_DOUBLE_EQ(1.0,outcomeProb);
+
+  endPositions[0][1] = 1;
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_DOUBLE_EQ(0.0,outcomeProb);
+
+  actions[0] = ActionProbs(Action::RANDOM);
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(0.2,outcomeProb,0.001);
+
+  actions[0] = ActionProbs(Action::UP);
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(1.0,outcomeProb,0.001);
+  
+  actions[0] = ActionProbs(Action::DOWN);
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(0.0,outcomeProb,0.001);
+  
+  endPositions[0][1] = 0;
+  actions[0] = ActionProbs(Action::RIGHT);
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(1.0,outcomeProb,0.001);
+  
+  actions[0] = ActionProbs(Action::LEFT);
+  actions[1] = ActionProbs(Action::RIGHT);
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(1.0,outcomeProb,0.001);
+  
+  actions[0] = ActionProbs(Action::RIGHT);
+  actions[1] = ActionProbs(Action::UP);
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(0.0,outcomeProb,0.001);
+
+  endPositions[1][1] = 1;
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(0.5,outcomeProb,0.001);
+  
+  endPositions[0][0] = 1;
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(0.5,outcomeProb,0.001);
+  
+  endPositions[0][0] = 3;
+  outcomeProb = getOutcomeProbApprox(startPositions,endPositions,actions);
+  EXPECT_NEAR(0.0,outcomeProb,0.001);
 }
