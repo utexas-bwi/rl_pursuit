@@ -144,5 +144,44 @@ TEST_F(WorldMDPTest,TakeAction) {
   EXPECT_EQ(Point2D(3,2),positions[2]);
   EXPECT_EQ(Point2D(2,1),positions[3]);
   EXPECT_EQ(Point2D(2,3),positions[4]);
+}
 
+TEST_F(WorldMDPTest,SetAgents) {
+  std::vector<boost::shared_ptr<AgentDummyTest> > newAgents;
+  std::vector<boost::shared_ptr<Agent> > newAbstractAgents;
+  for (int i = 0; i < 5; i++) {
+    boost::shared_ptr<AgentDummyTest> agent(new AgentDummyTest(rng,Point2D(5,5)));
+    newAgents.push_back(agent);
+    newAbstractAgents.push_back(agent);
+  }
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(0u,agents[i]->numSteps);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(0u,newAgents[i]->numSteps);
+
+  Action::Type action = Action::NOOP;
+  float reward;
+  State_t state;
+  bool terminal;
+  mdp->takeAction(action,reward,state,terminal);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(1u,agents[i]->numSteps);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(0u,newAgents[i]->numSteps);
+  // set the agents
+  mdp->setAgents(newAbstractAgents);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(1u,agents[i]->numSteps);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(0u,newAgents[i]->numSteps);
+  mdp->takeAction(action,reward,state,terminal);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(1u,agents[i]->numSteps);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(1u,newAgents[i]->numSteps);
+  mdp->takeAction(action,reward,state,terminal);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(1u,agents[i]->numSteps);
+  for (int i = 0; i < 5; i++)
+    EXPECT_EQ(2u,newAgents[i]->numSteps);
 }
