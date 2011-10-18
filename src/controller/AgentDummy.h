@@ -22,14 +22,15 @@ public:
   void restart() {}
   std::string generateDescription() { return "AgentDummy: returns the last action that was set"; }
 
-  void setAction(Action::Type a) { action = a; }
+  void setAction(Action::Type a) { action = ActionProbs(a); }
+  void setAction(const ActionProbs &a) { action = a; }
   
   AgentDummy* clone() {
     return new AgentDummy(*this);
   }
 
 private:
-  Action::Type action;
+  ActionProbs action;
 };
 
 #endif /* end of include guard: AGENTDUMMY_G4R89AGK */
