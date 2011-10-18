@@ -11,8 +11,8 @@ Modified: 2011-09-29
 #include <model/Common.h>
 #include "PredatorGreedy.h"
 
-const float PredatorSurroundWithPenalties::penaltyAmount = 0.5;
-const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 100;
+const float PredatorSurroundWithPenalties::penaltyAmount = 0.7;
+const unsigned int PredatorSurroundWithPenalties::violationHistorySize = 5;
 const int PredatorSurroundWithPenalties::numViolationsToPenalize = 2;
 
 PredatorSurroundWithPenalties::PredatorSurroundWithPenalties(boost::shared_ptr<RNG> rng, const Point2D &dims, bool outputPenaltyMode):
