@@ -9,7 +9,7 @@ Modified: 2011-09-30
 #include "PreyAvoidNeighbor.h"
 #include <boost/lexical_cast.hpp>
 
-const float PreyAvoidNeighbor::noopWeight = 0.8;
+const float PreyAvoidNeighbor::noopWeight = 0.5;
 
 PreyAvoidNeighbor::PreyAvoidNeighbor(boost::shared_ptr<RNG> rng, const Point2D &dims):
   Agent(rng,dims)
