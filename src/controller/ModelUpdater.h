@@ -31,10 +31,10 @@ public:
   std::vector<double> getBeliefs();
   void updateControllerInformation(const Observation &obs);
   void copyModel(unsigned int ind, Model &model,boost::shared_ptr<Agent> adhocAgent = boost::shared_ptr<Agent>()) const;
+  void normalizeModelProbs(std::vector<double> &modelProbs);
 
 protected:
   virtual unsigned int selectModelInd(const State_t &state) = 0;
-  void normalizeModelProbs(std::vector<double> &modelProbs);
   void removeModel(unsigned int ind);
   virtual std::string generateSpecificDescription() = 0;
 

@@ -10,6 +10,7 @@ Modified: 2011-10-02
 */
 
 #include "ModelUpdater.h"
+#include <gtest/gtest_prod.h>
 
 enum ModelUpdateType {
   BAYESIAN_UPDATES,
@@ -34,6 +35,8 @@ protected:
 protected:
   ModelUpdateType modelUpdateType;
   static const float MIN_MODEL_PROB;
+
+  FRIEND_TEST(ModelUpdaterBayesTest,AdvancedTests);
 };
 
 #endif /* end of include guard: MODELUPDATERBAYES_S4U00VNJ */
