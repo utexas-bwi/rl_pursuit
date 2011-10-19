@@ -23,6 +23,10 @@ public:
     return AgentDummy::step(obs);
   }
   unsigned int numSteps;
+
+  AgentDummyTest* clone() {
+    return new AgentDummyTest(*this);
+  }
 };
 
 #endif /* end of include guard: AGENTDUMMYTEST_WTRLLKOB */

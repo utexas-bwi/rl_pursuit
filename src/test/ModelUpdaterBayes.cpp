@@ -275,3 +275,35 @@ TEST_F(ModelUpdaterBayesTest,AdvancedTests) {
   for (unsigned int i = 0; i < 3; i++)
     EXPECT_NEAR(modelPrior[i], sampleCounts[i] / (double)numSamples, 0.01);
 }
+
+TEST_F(ModelUpdaterBayesTest,CopyModel) {
+  std::vector<boost::shared_ptr<Agent> > copy;
+
+  updater->copyModel(1,copy);
+  std::vector<boost::shared_ptr<AgentDummyTest> > copyDummy;
+  for (unsigned int i = 0; i < copy.size(); i++)
+    copyDummy.push_back(boost::static_pointer_cast<AgentDummyTest>(copy[i]));
+
+  checkNumSteps(modelsDummy[1],0);
+  checkNumSteps(copyDummy,0);
+  EXPECT_EQ(0u,modelsDummy[1][adhocInd]->numSteps);
+  EXPECT_EQ(0u,copyDummy[adhocInd]->numSteps);
+
+  world->step(models[1]);
+  checkNumSteps(modelsDummy[1],1);
+  checkNumSteps(copyDummy,0);
+  EXPECT_EQ(1u,modelsDummy[1][adhocInd]->numSteps);
+  EXPECT_EQ(1u,copyDummy[adhocInd]->numSteps);
+  
+  world->step(copy);
+  checkNumSteps(modelsDummy[1],1);
+  checkNumSteps(copyDummy,1);
+  EXPECT_EQ(2u,modelsDummy[1][adhocInd]->numSteps);
+  EXPECT_EQ(2u,copyDummy[adhocInd]->numSteps);
+  
+  world->step(copy);
+  checkNumSteps(modelsDummy[1],1);
+  checkNumSteps(copyDummy,2);
+  EXPECT_EQ(3u,modelsDummy[1][adhocInd]->numSteps);
+  EXPECT_EQ(3u,copyDummy[adhocInd]->numSteps);
+}
