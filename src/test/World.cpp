@@ -12,23 +12,24 @@ Modified: 2011-08-29
 #include <common/RNG.h>
 #include <model/WorldModel.h>
 #include <controller/World.h>
+#include <factory/WorldFactory.h>
 #include "AgentDummyTest.h"
 
 class WorldTest: public ::testing::Test {
 public:
   WorldTest():
     rng(new RNG(0)),
-    model(new WorldModel(Point2D(5,5))),
-    world(rng,model,0.0)
+    model(createWorldModel(Point2D(5,5))),
+    world(createWorld(rng,model,0.0))
   {
     for (int i = 0; i < 5; i++) {
       boost::shared_ptr<AgentDummyTest> agent(new AgentDummyTest(rng,Point2D(5,5)));
       agents.push_back(agent);
       abstractAgents.push_back(agent);
       if (i == 0)
-        world.addAgent(AgentModel(i,i,PREY),agents[i]);
+        world->addAgent(AgentModel(i,i,PREY),agents[i]);
       else
-        world.addAgent(AgentModel(i,i,PREDATOR),agents[i]);
+        world->addAgent(AgentModel(i,i,PREDATOR),agents[i]);
     }
   }
 
@@ -40,13 +41,13 @@ public:
       currentObs.positions.push_back(Point2D(endPositions[i][0],endPositions[i][1]));
       agents[i]->setAction(actions[i]);
     }
-    return world.getOutcomeProbApprox(prevObs,currentObs,abstractAgents);
+    return world->getOutcomeProbApprox(prevObs,currentObs,abstractAgents);
   }
 
 protected:
   boost::shared_ptr<RNG> rng;
   boost::shared_ptr<WorldModel> model;
-  World world;
+  boost::shared_ptr<World> world;
   std::vector<boost::shared_ptr<AgentDummyTest> > agents;
   std::vector<boost::shared_ptr<Agent> > abstractAgents;
 };
@@ -54,10 +55,10 @@ protected:
 TEST_F(WorldTest,NumSteps) {
   for (unsigned int i = 0; i < agents.size(); i++)
     EXPECT_EQ((unsigned int)0,agents[i]->numSteps);
-  world.step();
+  world->step();
   for (unsigned int i = 0; i < agents.size(); i++)
     EXPECT_EQ((unsigned int)1,agents[i]->numSteps);
-  world.step();
+  world->step();
   for (unsigned int i = 0; i < agents.size(); i++)
     EXPECT_EQ((unsigned int)2,agents[i]->numSteps);
 }
@@ -65,7 +66,7 @@ TEST_F(WorldTest,NumSteps) {
 TEST_F(WorldTest,RandomizePositions) {
   for (unsigned int i = 0; i < agents.size(); i++)
     EXPECT_EQ(Point2D(i,i),model->getAgentPosition(i));
-  world.randomizePositions();
+  world->randomizePositions();
   for (unsigned int i = 0; i < agents.size(); i++)
     EXPECT_NE(Point2D(i,i),model->getAgentPosition(i)); // not a good test, but holds for this rng
 }
@@ -80,7 +81,7 @@ TEST_F(WorldTest,Collisions) {
     else
       requestedPositions.push_back(Point2D(i,0));
   }
-  world.handleCollisions(requestedPositions);
+  world->handleCollisions(requestedPositions);
   for (unsigned int i = 0; i < agents.size(); i++)
     EXPECT_EQ(Point2D(i,0),model->getAgentPosition(i));
 
@@ -90,7 +91,7 @@ TEST_F(WorldTest,Collisions) {
   requestedPositions[0] = Point2D(1,0);
   requestedPositions[1] = Point2D(2,0);
   
-  world.handleCollisions(requestedPositions);
+  world->handleCollisions(requestedPositions);
   for (unsigned int i = 0; i < agents.size(); i++)
     EXPECT_EQ(Point2D(i,0),model->getAgentPosition(i));
 }
