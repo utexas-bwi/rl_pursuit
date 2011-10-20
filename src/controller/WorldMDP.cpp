@@ -95,6 +95,12 @@ boost::shared_ptr<AgentDummy> WorldMDP::getAdhocAgent() {
   return adhocAgent;
 }
 
-void WorldMDP::addAgent(AgentType agentType, boost::shared_ptr<Agent> agent) {
-  controller->addAgent(AgentModel(0,0,agentType),agent,true);
+void WorldMDP::addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent) {
+  controller->addAgent(agentModel,agent,true);
+}
+
+void WorldMDP::addAgents(const std::vector<AgentModel> &agentModels, const std::vector<boost::shared_ptr<Agent> > agents) {
+  assert(agentModels.size() == agents.size());
+  for (unsigned int i = 0; i < agents.size(); i++)
+    addAgent(agentModels[i],agents[i]);
 }
