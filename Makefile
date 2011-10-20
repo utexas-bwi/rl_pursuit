@@ -45,7 +45,7 @@ STUDENT_SOURCES = $(patsubst $(SOURCE_DIR)/%, %, $(wildcard $(SOURCE_DIR)/$(STUD
 #TEST_SOURCES = pursuitTest.cpp
 #TEST_SOURCES = jsonTest.cpp
 #TEST_SOURCES = AStarTest.cpp
-TEST_SOURCES = main.cpp DefaultMap.cpp UCTEstimator.cpp World.cpp WorldModel.cpp WorldMDP.cpp
+TEST_SOURCES = main.cpp DefaultMap.cpp ModelUpdaterBayes.cpp UCTEstimator.cpp World.cpp WorldModel.cpp WorldBeliefMDP.cpp WorldMDP.cpp
 
 ##############################################################
 
