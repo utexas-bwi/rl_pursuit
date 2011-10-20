@@ -11,6 +11,8 @@ Modified: 2011-09-09
 #include <common/RNG.h>
 #include <model/WorldModel.h>
 #include <controller/World.h>
+#include <factory/WorldFactory.h>
+#include <factory/PlanningFactory.h>
 #include "AgentDummyTest.h"
 
 TEST(WorldMDP,GetSetPositions) {
@@ -46,30 +48,31 @@ class WorldMDPTest: public ::testing::Test {
 public:
   WorldMDPTest():
     rng(new RNG(0)),
-    worldRng(new RNG(1)),
     dims(5,5),
-    model(new WorldModel(dims)),
-    world(new World(worldRng,model,0.0))
+    mdp(createWorldMDP(rng,dims,false,NO_MODEL_UPDATES,StateConverter(5,5),0.0)),
+    model(mdp->model),
+    adhocPredInd(0)
   {
+    boost::shared_ptr<AgentDummyTest> agent;
     for (int i = 0; i < 5; i++) {
-      boost::shared_ptr<AgentDummyTest> agent(new AgentDummyTest(rng,Point2D(5,5)));
+      agent = boost::shared_ptr<AgentDummyTest>(new AgentDummyTest(rng,Point2D(5,5)));
       agents.push_back(agent);
-      if (i == 0)
-        world->addAgent(AgentModel(i,i,PREY),agents[i]);
-      else
-        world->addAgent(AgentModel(i,i,PREDATOR),agents[i]);
+      agentsAbstract.push_back(agent);
     }
-    mdp = boost::shared_ptr<WorldMDP>(new WorldMDP(rng,model,world,agents[1]));
+    std::vector<AgentModel> agentModels;
+    createAgentModels(adhocPredInd,agentModels);
+    mdp->addAgents(agentModels,agentsAbstract);
+    mdp->adhocAgent = agents[adhocPredInd+1];
   }
 
 protected:
   boost::shared_ptr<RNG> rng;
-  boost::shared_ptr<RNG> worldRng;
   Point2D dims;
-  boost::shared_ptr<WorldModel> model;
-  boost::shared_ptr<World> world;
   boost::shared_ptr<WorldMDP> mdp;
+  boost::shared_ptr<WorldModel> model;
   std::vector<boost::shared_ptr<AgentDummyTest> > agents;
+  std::vector<boost::shared_ptr<Agent> > agentsAbstract;
+  unsigned int adhocPredInd;
 };
 
 TEST_F(WorldMDPTest,TakeAction) {
