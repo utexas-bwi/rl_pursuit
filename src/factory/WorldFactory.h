@@ -26,6 +26,7 @@ boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, const Point2D &
 boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, double actionNoise);
 
 // just agents
+void createAgentModels(int replacementInd, std::vector<AgentModel> &agentModels);
 void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options, std::vector<boost::shared_ptr<Agent> > &agentControllers, std::vector<AgentModel> &agentModels);
 void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options, boost::shared_ptr<Agent> adhocAgent, std::vector<boost::shared_ptr<Agent> > &agentControllers, std::vector<AgentModel> &agentModels);
 

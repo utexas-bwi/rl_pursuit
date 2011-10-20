@@ -33,37 +33,50 @@ boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<
   return createWorld(rng,model,actionNoise);
 }
 
+void createAgentModels(int replacementInd, std::vector<AgentModel> &agentModels) {
+  int numPredators = 4; // can later change this to an option
+  agentModels.push_back(AgentModel(0,0,PREY));
+  for (int predatorInd = 0; predatorInd < numPredators; predatorInd++) {
+    if (predatorInd == replacementInd)
+      agentModels.push_back(AgentModel(0,0,ADHOC));
+    else
+      agentModels.push_back(AgentModel(0,0,PREDATOR));
+  }
+}
+
 void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options, std::vector<boost::shared_ptr<Agent> > &agentControllers, std::vector<AgentModel> &agentModels) {
   createAgentControllersAndModels(rng,dims,trialNum,replacementInd,options,boost::shared_ptr<Agent>(),agentControllers,agentModels);
 }
 
 void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options, boost::shared_ptr<Agent> adhocAgent, std::vector<boost::shared_ptr<Agent> > &agentControllers, std::vector<AgentModel> &agentModels) {
-  int numPredators = 4; // can later change this to an option
   std::string prey = options.get("prey","random").asString();
   std::string predator = options.get("predator","greedy").asString();
   std::string adhoc = options.get("adhoc","greedy").asString();
   const Json::Value preyOptions = options["preyOptions"];
   const Json::Value predatorOptions = options["predatorOptions"];
   const Json::Value adhocOptions = options["adhocOptions"];
+
+  createAgentModels(replacementInd,agentModels);
   
   boost::shared_ptr<Agent> agent;
-  agent = createAgent(rng->randomUInt(),dims,prey,trialNum,0,preyOptions,options);
-  agentControllers.push_back(agent);
-  agentModels.push_back(AgentModel(0,0,PREY));
-  for (int predatorInd = 0; predatorInd < numPredators; predatorInd++) {
-    if (predatorInd == replacementInd) {
-      if (adhocAgent.get() != NULL) {
-        agent = adhocAgent;
-      } else {
-        agent = createAgent(rng->randomUInt(),dims,adhoc,trialNum,predatorInd,adhocOptions,options);
-      }
-      agentControllers.push_back(agent);
-      agentModels.push_back(AgentModel(0,0,ADHOC));
-    } else {
+  unsigned int predatorInd = 0;
+  for (unsigned int agentInd = 0; agentInd < agentModels.size(); agentInd++) {
+    if (agentModels[agentInd].type == PREY) {
+      agent = createAgent(rng->randomUInt(),dims,prey,trialNum,0,preyOptions,options);
+    } else if (agentModels[agentInd].type == PREDATOR) {
       agent = createAgent(rng->randomUInt(),dims,predator,trialNum,predatorInd,predatorOptions,options);
-      agentControllers.push_back(agent);
-      agentModels.push_back(AgentModel(0,0,PREDATOR));
+      predatorInd++;
+    } else if (agentModels[agentInd].type == ADHOC) {
+      if (adhocAgent.get() != NULL)
+        agent = adhocAgent;
+      else
+        agent = createAgent(rng->randomUInt(),dims,adhoc,trialNum,predatorInd,adhocOptions,options);
+      predatorInd++;
+    } else {
+      std::cerr << "createAgentControllersAndModels: ERROR, unhandled agent type: " << agentModels[agentInd].type << std::endl;
+      exit(56);
     }
+    agentControllers.push_back(agent);
   }
 }
 

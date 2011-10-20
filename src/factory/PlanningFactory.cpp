@@ -54,10 +54,8 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     createAgentControllersAndModels(rng,dims,0,replacementInd,models[i],adhocAgent,modelList[i],agentModels);
     
     // add the first set of agents to the world
-    if (i == 0) {
-      for (unsigned int j = 0; j < modelList[i].size(); j++)
-        mdp->addAgent(agentModels[j].type,modelList[i][j]);
-    }
+    if (i == 0)
+      mdp->addAgents(agentModels,modelList[i]);
   }
 
   if (options.get("silver",false).asBool()) {
