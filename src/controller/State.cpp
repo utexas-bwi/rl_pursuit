@@ -113,6 +113,7 @@ State_t StateConverter::convertBeliefStateToGeneralState(const State_t &state) {
 
 void StateConverter::convertGeneralStateToBeliefState(State_t &state, const std::vector<double> &beliefs) {
   double val;
+  assert(numBeliefs == beliefs.size());
   for (unsigned int i = 0; i < numBeliefs; i++) {
     val = beliefs[i];
     //std::cout << val << "(" << discretizeProb(val) <<  ") ";
