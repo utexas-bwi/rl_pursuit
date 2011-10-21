@@ -51,7 +51,7 @@ public:
     dims(5,5),
     mdp(createWorldMDP(rng,dims,false,NO_MODEL_UPDATES,StateConverter(5,5),0.0)),
     model(mdp->model),
-    adhocPredInd(0)
+    adhocInd(1)
   {
     boost::shared_ptr<AgentDummyTest> agent;
     for (int i = 0; i < 5; i++) {
@@ -60,9 +60,11 @@ public:
       agentsAbstract.push_back(agent);
     }
     std::vector<AgentModel> agentModels;
-    createAgentModels(adhocPredInd,agentModels);
+    createAgentModels(adhocInd-1,agentModels);
+    for (int i = 0; i < 5; i++)
+      agentModels[i].pos = Point2D(i,i);
     mdp->addAgents(agentModels,agentsAbstract);
-    mdp->adhocAgent = agents[adhocPredInd+1];
+    mdp->adhocAgent = agents[adhocInd];
   }
 
 protected:
@@ -72,7 +74,7 @@ protected:
   boost::shared_ptr<WorldModel> model;
   std::vector<boost::shared_ptr<AgentDummyTest> > agents;
   std::vector<boost::shared_ptr<Agent> > agentsAbstract;
-  unsigned int adhocPredInd;
+  unsigned int adhocInd;
 };
 
 TEST_F(WorldMDPTest,TakeAction) {
