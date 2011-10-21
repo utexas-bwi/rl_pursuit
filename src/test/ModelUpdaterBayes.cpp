@@ -9,33 +9,33 @@ Modified: 2011-10-18
 #include <gtest/gtest.h>
 #include <controller/ModelUpdaterBayes.h>
 #include "AgentDummyTest.h"
+#include <factory/PlanningFactory.h>
+#include <factory/WorldFactory.h>
 
 class ModelUpdaterBayesTest: public ::testing::Test {
 public:
   ModelUpdaterBayesTest():
     rng(new RNG(0)),
-    mdpRng(new RNG(1)),
-    worldRng(new RNG(2)),
     dims(5,5),
-    model(new WorldModel(dims)),
-    world(new World(worldRng,model,0.0)),
+    mdp(createWorldMDP(rng,dims,false,NO_MODEL_UPDATES,StateConverter(5,5),0.0)),
     models(3,std::vector<boost::shared_ptr<Agent> >(5,boost::shared_ptr<Agent>())),
     modelsDummy(3,std::vector<boost::shared_ptr<AgentDummyTest> >(5,boost::shared_ptr<AgentDummyTest>())),
     adhocInd(1)
   {
+    model = mdp->model;
+    world = mdp->controller;
+    boost::shared_ptr<AgentDummyTest> agent;
     for (int i = 0; i < 5; i++) {
-      boost::shared_ptr<AgentDummyTest> agent(new AgentDummyTest(rng,Point2D(5,5)));
+      agent = boost::shared_ptr<AgentDummyTest>(new AgentDummyTest(rng,Point2D(5,5)));
       trueAgents.push_back(agent);
-      
-      if (i == 0)
-        world->addAgent(AgentModel(i,i,PREY),trueAgents[i]);
-      else
-        world->addAgent(AgentModel(i,i,PREDATOR),trueAgents[i]);
+      agentsAbstract.push_back(agent);
     }
-    mdp = boost::shared_ptr<WorldMDP>(new WorldMDP(mdpRng,model,world,trueAgents[adhocInd]));
+    std::vector<AgentModel> agentModels;
+    createAgentModels(adhocInd-1,agentModels);
+    mdp->addAgents(agentModels,agentsAbstract);
+    mdp->adhocAgent = trueAgents[adhocInd];
    
     // create the models
-    boost::shared_ptr<AgentDummyTest> agent;
     for (int i = 0; i < 3; i++) {
       for (unsigned int j = 0; j < 5; j++) {
         if (j == adhocInd)
@@ -51,11 +51,11 @@ public:
     modelDescriptions.push_back("Incorrect");
     modelDescriptions.push_back("Close");
 
-    updater = boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,mdp,models,modelPrior,modelDescriptions,BAYESIAN_UPDATES));
+    resetUpdater(BAYESIAN_UPDATES);
   }
 
   void resetUpdater(ModelUpdateType modelUpdateType) {
-    updater = boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,mdp,models,modelPrior,modelDescriptions,modelUpdateType));
+    updater = createModelUpdaterBayes(rng,mdp,models,modelPrior,modelDescriptions,modelUpdateType);
   }
 
   void checkNumSteps(const std::vector<boost::shared_ptr<AgentDummyTest> > &agents, unsigned int numSteps) {
@@ -73,13 +73,12 @@ public:
 
 protected:
   boost::shared_ptr<RNG> rng;
-  boost::shared_ptr<RNG> mdpRng;
-  boost::shared_ptr<RNG> worldRng;
   Point2D dims;
+  boost::shared_ptr<WorldMDP> mdp;
   boost::shared_ptr<WorldModel> model;
   boost::shared_ptr<World> world;
-  boost::shared_ptr<WorldMDP> mdp;
   std::vector<boost::shared_ptr<AgentDummyTest> > trueAgents;
+  std::vector<boost::shared_ptr<Agent> > agentsAbstract;
   boost::shared_ptr<ModelUpdaterBayes> updater;
   std::vector<std::vector<boost::shared_ptr<Agent> > > models;
   std::vector<std::vector<boost::shared_ptr<AgentDummyTest> > > modelsDummy;
