@@ -27,6 +27,8 @@ protected:
   boost::shared_ptr<ModelUpdater> savedModelUpdater;
   StateConverter stateConverter;
   //double time;
+  
+  friend class WorldBeliefMDPTest;
 };
 
 #endif /* end of include guard: WORLDBELIEFMDP_JF3NQXTY */

@@ -24,6 +24,7 @@ public:
   {
     model = mdp->model;
     world = mdp->controller;
+    // set up the agents
     boost::shared_ptr<AgentDummyTest> agent;
     for (int i = 0; i < 5; i++) {
       agent = boost::shared_ptr<AgentDummyTest>(new AgentDummyTest(rng,Point2D(5,5)));
