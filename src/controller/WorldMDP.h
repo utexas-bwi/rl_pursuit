@@ -57,6 +57,7 @@ protected:
   std::vector<boost::shared_ptr<Agent> > savedModel;
 
   friend class WorldMDPTest;
+  friend class ModelUpdaterBayesTest;
 };
 
 #endif /* end of include guard: WORLDMDP_CNHINAVX */
