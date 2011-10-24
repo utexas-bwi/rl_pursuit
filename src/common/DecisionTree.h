@@ -51,12 +51,13 @@ public:
     std::ostream& genDescription(std::ostream &out);
 
     Classification classification;
+    int data[5];
   };
 
   DecisionTree(boost::shared_ptr<Node> root);
   void classify(const Features &features, Classification &classification);
 
-private:
+//private:
   boost::shared_ptr<Node> root;
 };
 

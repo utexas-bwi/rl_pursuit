@@ -34,7 +34,8 @@ STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
 
 RM = rm -f
 # source files
-MAIN_SOURCES = main.cpp
+#MAIN_SOURCES = main.cpp
+MAIN_SOURCES = testWeka.cpp
 COMMON_SOURCES = DecisionTree.cpp Point2D.cpp tinymt32.cpp Util.cpp WekaParser.cpp
 CONTROLLER_SOURCES = AStar.cpp ModelUpdater.cpp ModelUpdaterBayes.cpp ModelUpdaterSilver.cpp PredatorDecisionTree.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentCpp.cpp PredatorStudentCpp_gen.cpp PredatorStudentPython.cpp PredatorSurround.cpp PredatorSurroundWithPenalties.cpp PredatorTeammateAware.cpp PreyAvoidNeighbor.cpp State.cpp World.cpp WorldBeliefMDP.cpp WorldMDP.cpp# WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp

@@ -62,13 +62,13 @@ unsigned int DecisionTree::InteriorNode::getInd(const Features &features) {
 }
 
 std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out) {
-  out << "<Interior " << splitKey << " " << cmp << std::endl;
+  out << "(Interior " << splitKey << " " << cmp << std::endl;
   out << "Children: " << std::endl;
   for (unsigned int i = 0; i < splitValues.size(); i++) {
     out << "test : " << splitValues[i] << std::endl;
     out << "child: " << children[i];
   }
-  out << ">" << std::endl;
+  out << ")" << std::endl;
   return out;
 }
 
@@ -79,15 +79,29 @@ std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out) {
 DecisionTree::LeafNode::LeafNode(const Classification &classification):
   classification(classification)
 {
+  for (int i = 0; i < 5; i++)
+    data[i] = 0;
 }
 
-void DecisionTree::LeafNode::classify(const Features &, Classification &classification) {
+void DecisionTree::LeafNode::classify(const Features &features, Classification &classification) {
   classification = this->classification;
+  Features::const_iterator it = features.find("Pred.act");
+  assert(it != features.end());
+  int real = (int)(it->second+0.5);
+  //std::cout << "real: " << real << std::endl << std::flush;
+  data[real]++;
 }
 
 
 std::ostream& DecisionTree::LeafNode::genDescription(std::ostream &out) {
-  out << "<Leaf " << classification << ">" << std::endl;
+  out << "(Leaf " << classification;
+  int total = 0;
+  for (int i = 0; i < 5; i++) {
+    out << " " << data[i];
+    total += data[i];
+  }
+  out << " " << total;
+  out << ")" << std::endl;
   return out;
 }
 
