@@ -3,8 +3,10 @@
 #include <cassert>
 #include <model/Common.h>
 
-WekaParser::WekaParser(const std::string &filename):
-  in(filename.c_str())
+WekaParser::WekaParser(const std::string &filename, unsigned int numClasses, bool useClassDistributions):
+  in(filename.c_str()),
+  numClasses(numClasses),
+  useClassDistributions(useClassDistributions)
 {
   assert(in.good());
   valueMap["U"] = Action::UP;
@@ -34,7 +36,8 @@ boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned 
   // handle leaves specially
   if (lines[lineInd].used && lines[lineInd].leaf && (currentDepth == lines[lineInd].depth + 1)) {
     // make a leaf for this line
-    boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode((int)(lines[lineInd].classification + 0.5)));
+    //boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode((int)(lines[lineInd].classification + 0.5)));
+    boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode(lines[lineInd].classDistribution));
     //std::cout << "Making leaf: " << node;
     return node;
   }
@@ -107,8 +110,21 @@ void WekaParser::tokenizeLine(Line &line) {
   if (str == ":") {
     // read the class
     line.leaf = true;
-    str = readWekaToken(false);
-    line.classification = stringToVal(str,"classification");
+    line.classDistribution = Classification(numClasses,0);
+    if (useClassDistributions) {
+      for (unsigned int i = 0; i < numClasses; i++) {
+        //std::cout << i << " ";
+        str = readWekaToken(false,true);
+        //std::cout << str << std::endl;
+        line.classDistribution[i] = stringToVal(str,"classification");
+      }
+    } else {
+      str = readWekaToken(false);
+      float val = stringToVal(str,"classification");
+      int ind = (int)(val + 0.5);
+      assert ((ind >= 0) && (ind < (int)numClasses));
+      line.classDistribution[ind] = 1;
+    }
   } else {
     line.leaf = false;
   }
@@ -121,7 +137,7 @@ void WekaParser::tokenizeLine(Line &line) {
   //std::cout << std::endl;
 }
 
-std::string WekaParser::readWekaToken(bool acceptNewline) {
+std::string WekaParser::readWekaToken(bool acceptNewline, bool breakOnSpace) {
   std::string token;
   std::string spaces;
   bool readingOperator = false;
@@ -131,6 +147,8 @@ std::string WekaParser::readWekaToken(bool acceptNewline) {
       return token;
     ch = in.get();
     if (ch == ' ') {
+      if ((breakOnSpace) && (token.size() > 0))
+        return token;
       spaces += ch;
       continue;
     }

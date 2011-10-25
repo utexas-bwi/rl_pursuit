@@ -29,11 +29,11 @@ void DecisionTree::InteriorNode::addChild(boost::shared_ptr<Node> child, float s
   splitValues.push_back(splitValue);
 }
 
-void DecisionTree::InteriorNode::classify(const Features &features, Classification &classification) {
+void DecisionTree::InteriorNode::classify(const Features &features, Classification &classification, bool adjustClassificationQ, unsigned int trueClass) {
   try {
     //std::cout << "SPLIT on " << splitKey << std::endl;
     unsigned int ind = getInd(features);
-    children[ind]->classify(features,classification);
+    children[ind]->classify(features,classification,adjustClassificationQ,trueClass);
   } catch(std::out_of_range) {
     std::cerr << "DecisionTree::InteriorNode::classify failed for feature: " << splitKey << std::endl;
     exit(5);
@@ -61,14 +61,40 @@ unsigned int DecisionTree::InteriorNode::getInd(const Features &features) {
   return splitValues.size()-1;
 }
 
-std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out) {
-  out << "(Interior " << splitKey << " " << cmp << std::endl;
-  out << "Children: " << std::endl;
-  for (unsigned int i = 0; i < splitValues.size(); i++) {
-    out << "test : " << splitValues[i] << std::endl;
-    out << "child: " << children[i];
+std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out, unsigned int depth) {
+
+  for (unsigned int i = 0; i < splitValues.size(); i++){
+    for (unsigned int j = 0; j < depth; j++)
+      out << "|  ";
+    out << splitKey << " ";
+    ComparisonOperator c = cmp;
+    if ((c == LESS) && (i == splitValues.size() - 1))
+      c = GEQ;
+    switch (c) {
+      case EQUALS:
+        out << "=";
+        break;
+      case LESS:
+        out << "<";
+        break;
+      case GEQ:
+        out << ">=";
+        break;
+    }
+    out << " " << splitValues[i];
+    if (!children[i]->isLeaf())
+      out << std::endl;
+    children[i]->genDescription(out,depth+1);
+    if (children[i]->isLeaf())
+      out << std::endl;
   }
-  out << ")" << std::endl;
+  //out << "(Interior " << splitKey << " " << cmp << std::endl;
+  //out << "Children: " << std::endl;
+  //for (unsigned int i = 0; i < splitValues.size(); i++) {
+    //out << "test : " << splitValues[i] << std::endl;
+    //out << "child: " << children[i];
+  //}
+  //out << ")" << std::endl;
   return out;
 }
 
@@ -77,31 +103,41 @@ std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out) {
 //////////////////////////////////////////////////////////////
 
 DecisionTree::LeafNode::LeafNode(const Classification &classification):
-  classification(classification)
+  classification(classification),
+  total(0)
 {
-  for (int i = 0; i < 5; i++)
-    data[i] = 0;
 }
 
-void DecisionTree::LeafNode::classify(const Features &features, Classification &classification) {
-  classification = this->classification;
-  Features::const_iterator it = features.find("Pred.act");
-  assert(it != features.end());
-  int real = (int)(it->second+0.5);
-  //std::cout << "real: " << real << std::endl << std::flush;
-  data[real]++;
+void DecisionTree::LeafNode::classify(const Features &, Classification &c, bool adjustClassificationQ, unsigned int trueClass) {
+  if (adjustClassificationQ)
+    adjustClassification(trueClass);
+  c = classification;
 }
 
-
-std::ostream& DecisionTree::LeafNode::genDescription(std::ostream &out) {
-  out << "(Leaf " << classification;
-  int total = 0;
-  for (int i = 0; i < 5; i++) {
-    out << " " << data[i];
-    total += data[i];
+void DecisionTree::LeafNode::adjustClassification(unsigned int trueClass) {
+  assert(trueClass < classification.size());
+  float frac = total / (total + 1);
+  for (unsigned int i = 0; i < classification.size(); i++) {
+    if (i == trueClass)
+      classification[i] = (classification[i] * total + 1) / (total + 1);
+    else
+      classification[i] *= frac;
   }
-  out << " " << total;
-  out << ")" << std::endl;
+  total += 1;
+}
+
+
+std::ostream& DecisionTree::LeafNode::genDescription(std::ostream &out, unsigned int ) {
+  //for (unsigned int i = 0; i < depth; i++)
+    //out << "  ";
+  //out << "(Leaf";
+  //for (unsigned int i = 0; i < classification.size(); i++)
+    //out << " " << (int)(classification[i] * total+0.5);
+  //out << " - " << total;
+  //out << ")" << std::endl;
+  out << ":";
+  for (unsigned int i = 0; i < classification.size(); i++)
+    out << " " << classification[i];
   return out;
 }
 
@@ -115,8 +151,8 @@ DecisionTree::DecisionTree(boost::shared_ptr<Node> root):
 {
 }
 
-void DecisionTree::classify(const Features &features, Classification &classification) {
-  root->classify(features,classification);
+void DecisionTree::classify(const Features &features, Classification &classification, bool adjustClassificationQ, unsigned int trueClass) {
+  root->classify(features,classification,adjustClassificationQ,trueClass);
 }
 
 

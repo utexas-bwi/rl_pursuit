@@ -27,10 +27,10 @@ public:
     ComparisonOperator op;
     float val;
     bool leaf;
-    float classification;
+    Classification classDistribution;
   };
 
-  WekaParser(const std::string &filename);
+  WekaParser(const std::string &filename, unsigned int numClasses, bool useClassDistributions=false);
   boost::shared_ptr<DecisionTree> makeDecisionTree();
   
 private:
@@ -38,7 +38,7 @@ private:
 
   void tokenizeFile();
   void tokenizeLine(Line &line);
-  std::string readWekaToken(bool acceptNewline);
+  std::string readWekaToken(bool acceptNewline, bool breakOnSpace = false);
   ComparisonOperator stringToOperator(const std::string &str);
   float stringToVal(const std::string &str, const std::string &name);
   
@@ -48,6 +48,8 @@ private:
   std::ifstream in;
   //boost::unordered_map<std::string,Features > valueMap;
   Features valueMap;
+  unsigned int numClasses;
+  bool useClassDistributions;
 };
 
 #endif /* end of include guard: WEKAPARSER_U3AZA2Y8 */

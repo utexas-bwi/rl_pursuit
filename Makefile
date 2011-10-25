@@ -10,6 +10,7 @@ ARCH=32
 endif
 LIBS_DIR = libs/$(ARCH)
 MAIN_TARGET = bin/main$(ARCH)
+WEKA_TARGET = bin/wekaAddWeights$(ARCH)
 BUILD_DIR = build/$(ARCH)
 # sub directories for source
 COMMON_DIR = common
@@ -34,8 +35,8 @@ STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
 
 RM = rm -f
 # source files
-#MAIN_SOURCES = main.cpp
-MAIN_SOURCES = testWeka.cpp
+MAIN_SOURCES = main.cpp
+WEKA_SOURCES = mainWekaAddWeights.cpp common/DecisionTree.cpp common/WekaParser.cpp common/Point2D.cpp
 COMMON_SOURCES = DecisionTree.cpp Point2D.cpp tinymt32.cpp Util.cpp WekaParser.cpp
 CONTROLLER_SOURCES = AStar.cpp ModelUpdater.cpp ModelUpdaterBayes.cpp ModelUpdaterSilver.cpp PredatorDecisionTree.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentCpp.cpp PredatorStudentCpp_gen.cpp PredatorStudentPython.cpp PredatorSurround.cpp PredatorSurroundWithPenalties.cpp PredatorTeammateAware.cpp PreyAvoidNeighbor.cpp State.cpp World.cpp WorldBeliefMDP.cpp WorldMDP.cpp# WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
@@ -60,12 +61,13 @@ PLANNING_SOURCES_PATH = $(addprefix $(PLANNING_DIR)/, $(PLANNING_SOURCES))
 SOURCES = $(COMMON_SOURCES_PATH) $(CONTROLLER_SOURCES_PATH) $(FACTORY_SOURCES_PATH) $(MODEL_SOURCES_PATH) $(PLANNING_SOURCES_PATH) $(STUDENT_SOURCES)
 OBJECTS = $(addprefix $(BUILD_DIR)/, $(SOURCES:.cpp=.o))
 MAIN_OBJECTS = $(OBJECTS) $(addprefix $(BUILD_DIR)/, $(MAIN_SOURCES:.cpp=.o))
+WEKA_OBJECTS = $(addprefix $(BUILD_DIR)/, $(WEKA_SOURCES:.cpp=.o))
 # tests
 TEST_SOURCES_PATH = $(addprefix $(TEST_DIR)/, $(TEST_SOURCES))
 TEST_SOURCES_COMBINED = $(SOURCES) $(TEST_SOURCES_PATH)
 TEST_OBJECTS = $(addprefix $(BUILD_DIR)/, $(TEST_SOURCES_COMBINED:.cpp=.o))
 # all sources
-SOURCES_ALL = $(SOURCES) $(MAIN_SOURCES) $(TEST_SOURCES_PATH)
+SOURCES_ALL = $(SOURCES) $(MAIN_SOURCES) $(WEKA_SOURCES) $(TEST_SOURCES_PATH)
 DEPS_ALL = $(addprefix $(BUILD_DIR)/,$(SOURCES_ALL:.cpp=.d))
 
 .PHONY: all run build test default clean fullclean
@@ -77,6 +79,8 @@ run: $(MAIN_TARGET)
 	$(MAIN_TARGET)
 
 build: $(MAIN_TARGET)
+
+weka: $(WEKA_TARGET)
 
 test: $(TEST_TARGET)
 	$(TEST_TARGET)
@@ -91,11 +95,15 @@ fclean: fullclean
 
 $(MAIN_TARGET): $(MAIN_OBJECTS)
 	@echo "Linking $@"
-	@$(CC) $(FLAGS) $(MAIN_OBJECTS) $(LINK_FLAGS) -o $@
+	@$(CC) $(FLAGS) $^ $(LINK_FLAGS) -o $@
+
+$(WEKA_TARGET): $(WEKA_OBJECTS)
+	@echo "Linking $@"
+	@$(CC) $(FLAGS) $^ $(LINK_FLAGS) -o $@
 
 $(TEST_TARGET): $(TEST_OBJECTS)
 	@echo "Linking $@"
-	@$(CC) $(FLAGS) $(TEST_OBJECTS) $(TEST_LINK_FLAGS) -o $@
+	@$(CC) $(FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
 # include dependencies for creating dependencies and objects
 -include $(DEPS_ALL)
