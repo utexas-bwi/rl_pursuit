@@ -26,7 +26,7 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
   for (unsigned int i = 0; i < modelNames.size(); i++)
     models.push_back(createAgent(0,dims,modelNames[i],0,1,Json::Value(),Json::Value()));
 
-  features.push_back(FeatureType("Step",0));
+  //features.push_back(FeatureType("Step",0));
   features.push_back(FeatureType("PredInd",numPredators));
   // relative positions of the agents
   features.push_back(FeatureType("Prey.dx",0));
@@ -59,8 +59,9 @@ void OutputDT::outputStep(unsigned int numSteps, const Observation &obs) {
   if (numSteps > 1) {
     for (unsigned int predInd = 0; predInd < numPredators; predInd++) {
       Point2D origin = prevObs.positions[predInd+1];
-      out << numSteps - 1;
-      out << "," << predInd;
+      //out << numSteps - 1;
+      //out << "," << predInd;
+      out << predInd;
       // agents' positions relative to the current predator
       for (unsigned int i = 0; i < obs.positions.size(); i++) {
         Point2D diff = getDifferenceToPoint(dims,origin,prevObs.positions[i]);
@@ -74,7 +75,7 @@ void OutputDT::outputStep(unsigned int numSteps, const Observation &obs) {
         for (unsigned int i = 0; i < obs.positions.size(); i++) {
           if (i == predInd + 1)
             continue;
-          if (obs.positions[i] == pos) {
+          if (prevObs.positions[i] == pos) {
             occupied = true;
             if (i == 0)
               next2prey = true;

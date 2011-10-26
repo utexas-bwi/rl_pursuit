@@ -32,6 +32,11 @@ int main(int argc, const char *argv[]) {
   valueMap["L"] = Action::LEFT;
   valueMap["R"] = Action::RIGHT;
   valueMap["S"] = Action::NOOP;
+  valueMap["0"] = 0;
+  valueMap["1"] = 1;
+  valueMap["2"] = 2;
+  valueMap["3"] = 3;
+  valueMap["4"] = 4;
 
   // read in the header
   readArffHeader(in,featureNames,numeric);
@@ -94,14 +99,14 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::v
       //std::cout << featureNames[i] << " " << val << " " << (featureNames[i] == "Pred.act") << std::endl;
     }
 
-    features["Next2Prey?"] = features["Next2Prey"];
-    features["Greedy"] = features["Greedy.des"];
-    features["Team Aware"] = features["TA.des"];
-    features["Greedy Prob"] = features["GP.des"];
-    features["Prob Dest"] = features["PD.des"];
-    features["DeltaXtoP"] = features["DeltaXToPrey"];
-    features["DeltaYtoP"] = features["DeltaYToPrey"];
-    features["sum"] = 0; // TODO
+    //features["Next2Prey?"] = features["Next2Prey"];
+    //features["Greedy"] = features["Greedy.des"];
+    //features["Team Aware"] = features["TA.des"];
+    //features["Greedy Prob"] = features["GP.des"];
+    //features["Prob Dest"] = features["PD.des"];
+    //features["DeltaXtoP"] = features["DeltaXToPrey"];
+    //features["DeltaYtoP"] = features["DeltaYToPrey"];
+    //features["sum"] = 0; // TODO
   
     unsigned int trueClass = (int)(features[featureNames.back()] + 0.5);
     dt->classify(features,c,true,trueClass);

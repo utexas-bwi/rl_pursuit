@@ -13,10 +13,14 @@ PredatorDecisionTree::PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Poi
   //addFeatureAgent("TA.des","ta");
   //addFeatureAgent("GP.des","gp");
   //addFeatureAgent("PD.des","pd");
-  addFeatureAgent("Greedy","greedy");
-  addFeatureAgent("Team Aware","ta");
-  addFeatureAgent("Greedy Prob","gp");
-  addFeatureAgent("Prob Dest","pd");
+  //addFeatureAgent("Greedy","greedy");
+  //addFeatureAgent("Team Aware","ta");
+  //addFeatureAgent("Greedy Prob","gp");
+  //addFeatureAgent("Prob Dest","pd");
+  addFeatureAgent("GR","GR");
+  addFeatureAgent("TA","TA");
+  addFeatureAgent("GP","GP");
+  addFeatureAgent("PD","PD");
 }
 
 ActionProbs PredatorDecisionTree::step(const Observation &obs) {
@@ -39,6 +43,46 @@ std::string PredatorDecisionTree::generateDescription() {
 }
 
 void PredatorDecisionTree::extractFeatures(const Observation &obs, Features &features) {
+  assert(obs.preyInd == 0);
+  unsigned int predInd = obs.myInd - 1;
+  features["PredInd"] = predInd;
+  // positions of agents
+  for (unsigned int i = 0; i < obs.positions.size(); i++) {
+    Point2D diff = getDifferenceToPoint(dims,obs.myPos(),obs.positions[i]);
+    std::string key;
+    if (i == 0)
+      key = "Prey";
+    else
+      key = "Pred" + boost::lexical_cast<std::string>(i-1);
+    features[key + ".dx"] = diff.x;
+    features[key + ".dy"] = diff.y;
+  }
+  // derived features
+  bool next2prey = false;
+  for (unsigned int a = 0; a < Action::NUM_NEIGHBORS; a++) {
+    Point2D pos = movePosition(dims,obs.myPos(),(Action::Type)a);
+    bool occupied = false;
+    for (unsigned int i = 0; i < obs.positions.size(); i++) {
+      if (i == obs.myInd + 1)
+        continue;
+      if (obs.positions[i] == pos) {
+        occupied = true;
+        if (i == 0)
+          next2prey = true;
+        break;
+      }
+    }
+    std::string key = "Occupied." + boost::lexical_cast<std::string>(a);
+    features[key] = occupied;
+  }
+  features["NextToPrey"] = next2prey;
+  // actions predicted by models
+  ActionProbs actionProbs;
+  for (boost::unordered_map<std::string,boost::shared_ptr<Agent> >::iterator it = featureAgents.begin(); it != featureAgents.end(); it++) {
+    actionProbs = it->second->step(obs);
+    features[it->first + ".des"] = actionProbs.maxAction();
+  }
+/*
   unsigned int distToPrey = getDistanceToPoint(dims,obs.myPos(),obs.preyPos());
   Point2D diffToPrey = getDifferenceToPoint(dims,obs.myPos(),obs.preyPos());
   features["Next2Prey?"] = (distToPrey == 1);
@@ -104,6 +148,7 @@ void PredatorDecisionTree::extractFeatures(const Observation &obs, Features &fea
     features[key + ".x"] = obs.positions[i].x;
     features[key + ".y"] = obs.positions[i].y;
   }
+*/
 }
 
 void PredatorDecisionTree::addFeatureAgent(const std::string &key, const std::string &name) {
