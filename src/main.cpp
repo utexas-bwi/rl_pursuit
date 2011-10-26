@@ -13,12 +13,12 @@ Modified: 2011-08-24
 #include <json/json.h>
 #include <factory/WorldFactory.h>
 #include <common/Util.h>
+#include <common/OutputDT.h>
 
 void displaySummary(double timePassed, const std::vector<std::vector<unsigned int> > &numSteps);
 void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial);
 void saveResults(const std::string &filename, int startTrial, const std::vector<std::vector<unsigned int> > &numSteps);
 void saveConfig(const Json::Value &options);
-void outputDTCSV(std::ofstream &dtCSV, const Observation &obs, int trial, unsigned int numSteps, const Point2D &dims);
 
 int main(int argc, const char *argv[])
 {
@@ -75,13 +75,10 @@ int main(int argc, const char *argv[])
     }
   }
 
-  // optionally open the output DT file
-  std::string outputDTCSVFilename = options["verbosity"].get("dtcsv","").asString();
-  bool outputDTCSVQ = (outputDTCSVFilename != "");
-  std::ofstream dtCSV;
-  if (outputDTCSVQ) {
-    dtCSV.open(outputDTCSVFilename.c_str());
-  }
+  // get the output DT file
+  std::string outputDTFilename = options["verbosity"].get("dtfile","").asString();
+  bool outputDTCSVQ = (outputDTFilename != "");
+  boost::shared_ptr<OutputDT> outputDT;
 
   Observation obs;
   double startTime = getTime();
@@ -113,6 +110,16 @@ int main(int argc, const char *argv[])
     randomSeed = trialNum;
     boost::shared_ptr<World> world = createWorldAgents(randomSeed,trialNum,options);
     boost::shared_ptr<const WorldModel> model = world->getModel();
+    // create models for the DT csv output if required
+    std::vector<std::string> modelNames;
+    if (outputDTCSVQ && (trial == 0)) {
+      modelNames.push_back("GR");
+      modelNames.push_back("TA");
+      modelNames.push_back("GP");
+      modelNames.push_back("PD");
+      outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true));
+    }
+
     if ((trial == 0) && (displayDescriptionQ))
       std::cout << world->generateDescription() << std::endl;
     
@@ -137,7 +144,7 @@ int main(int argc, const char *argv[])
         }
         if (outputDTCSVQ) {
           model->generateObservation(obs);
-          outputDTCSV(dtCSV,obs,trial,numSteps[trial][episode],model->getDims());
+          outputDT->outputStep(numSteps[trial][episode],obs);
         } // end output dt csv
       } // while the episode lasts
       if (displayStepsPerEpisodeQ)
@@ -153,35 +160,78 @@ int main(int argc, const char *argv[])
   // optionally save the results
   if (saveResultsQ)
     saveResults(saveFilename,startTrial,numSteps);
-  // close the dtCSV file
-  if (outputDTCSVQ)
-    dtCSV.close();
 
   return 0;
 }
 
-void outputDTCSV(std::ofstream &dtCSV, const Observation &obs, int trial, unsigned int numSteps, const Point2D &dims) {
+void outputDTCSV(std::ofstream &dtCSV, const Observation &obs, int trial, unsigned int numSteps, const Point2D &dims, std::vector<boost::shared_ptr<Agent> > &models, std::vector<std::string> &modelNames) {
   static Observation prevObs;
+  assert(models.size() == modelNames.size());
   assert(obs.preyInd == 0);
+  unsigned int numPredators = obs.positions.size() - 1;
   if ((trial == 0)  && (numSteps == 1)) {
-    dtCSV << "Step,Prey.x,Prey.y";
-    for (unsigned int i = 1; i < obs.positions.size(); i++)
-      dtCSV << ",Pred" << i-0 << ".x,Pred" << i-0 << ".y";
-    dtCSV << ",Prey.actDX,Prey.actDY";
-    for (unsigned int i = 1; i < obs.positions.size(); i++)
-      dtCSV << ",Pred" << i-0 << ".actDX,Pred" << i-0 << ".actDY";
+    // step and which predator we're currently doing
+    dtCSV << "Step,PredInd";
+    // NOTE: doing everything relative to current predator
+    dtCSV << ",Prey.dx,Prey.dy";
+    for (unsigned int i = 0; i < numPredators; i++)
+      dtCSV << ",Pred" << i << ".dx,Pred" << i << ".dy";
+    // some derived features
+    for (unsigned int a = 0; a < Action::NUM_NEIGHBORS; a++)
+      dtCSV << ",Occupied." << a;
+    dtCSV << ",Next2Prey";
+    // actions predicted by models
+    for (unsigned int i = 0; i < modelNames.size(); i++)
+      dtCSV << "," << modelNames[i] << ".des";
+    // the true action
+    dtCSV << ",Pred.act";
     dtCSV << std::endl;
+    //for (unsigned int i = 0; i < models.size(); i++)
+      //std::cout << models[i]->generateDescription() << std::endl;
   } // end if trial == 0
   
   if (numSteps > 1) {
-    dtCSV << numSteps - 1;
-    for (unsigned int i = 0; i < obs.positions.size(); i++)
-      dtCSV << "," << prevObs.positions[i].x << "," << prevObs.positions[i].y;
-    for (unsigned int i = 0; i < obs.positions.size(); i++) {
-      Point2D diff = getDifferenceToPoint(dims,prevObs.positions[i],obs.positions[i]);
-      dtCSV << "," << diff.x << "," << diff.y;
+    for (unsigned int predInd = 0; predInd < numPredators; predInd++) {
+      Point2D origin = prevObs.positions[predInd+1];
+      dtCSV << numSteps - 1;
+      dtCSV << "," << predInd;
+      // agents' positions relative to the current predator
+      for (unsigned int i = 0; i < obs.positions.size(); i++) {
+        Point2D diff = getDifferenceToPoint(dims,origin,prevObs.positions[i]);
+        dtCSV << "," << diff.x << "," << diff.y;
+      }
+      // some derived features
+      bool next2prey = false;
+      for (unsigned int a = 0; a < Action::NUM_NEIGHBORS; a++) {
+        Point2D pos = movePosition(dims,origin,(Action::Type)a);
+        bool occupied = false;
+        for (unsigned int i = 0; i < obs.positions.size(); i++) {
+          if (i == predInd + 1)
+            continue;
+          if (obs.positions[i] == pos) {
+            occupied = true;
+            if (i == 0)
+              next2prey = true;
+            break;
+          }
+        }
+        dtCSV << "," << occupied;
+      }
+      dtCSV << "," << next2prey;
+      // actions predicted by models
+      prevObs.myInd = predInd;
+      for (unsigned int i = 0; i < models.size(); i++) {
+        ActionProbs ap = models[i]->step(prevObs);
+        Action::Type action = ap.maxAction();
+        dtCSV << "," << action;
+      }
+      // the true action taken
+      Point2D diff = getDifferenceToPoint(dims,prevObs.positions[predInd],obs.positions[predInd]);
+      Action::Type action = getAction(diff);
+      dtCSV << "," << action;
+
+      dtCSV << std::endl;
     }
-    dtCSV << std::endl;
   }
 
 
