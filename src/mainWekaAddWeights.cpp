@@ -78,10 +78,10 @@ void readArffHeader(std::ifstream &in, std::vector<std::string> &featureNames, s
     std::getline(in,str);
 }
 
-void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::vector<std::string> &featureNames, std::vector<bool> &numeric, Features &valueMap) {
+void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::vector<std::string> &featureNames, std::vector<bool> &numeric, Features &) {
   Features features;
   float val;
-  std::string val2;
+  //std::string val2;
   Classification c;
   //int count = 10;
   while (!in.eof()) {
@@ -91,8 +91,10 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::v
         in.ignore(1,',');
       } else {
         //std::cout << ((char)in.get()) << std::endl;
-        std::getline(in,val2,',');
-        val = valueMap[val2];
+        //std::getline(in,val2,',');
+        //val = valueMap[val2];
+        in >> val;
+        in.ignore(1,',');
         //std::cout << val2 << std::endl;
       }
       features[featureNames[i]] = val;
