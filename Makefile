@@ -89,7 +89,7 @@ clean:
 	$(RM) $(TEST_OBJECTS) $(MAIN_OBJECTS) $(DEPS_ALL)
 
 fullclean: clean
-	$(RM) $(TEST_TARGET) $(MAIN_TARGET)
+	$(RM) $(TEST_TARGET) $(MAIN_TARGET) $(WEKA_TARGET)
 
 fclean: fullclean
 
@@ -106,7 +106,9 @@ $(TEST_TARGET): $(TEST_OBJECTS)
 	@$(CC) $(FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
 # include dependencies for creating dependencies and objects
--include $(DEPS_ALL)
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(DEPS_ALL)
+endif
 
 # change the flags for the students
 $(BUILD_DIR)/$(STUDENT_DIR)/%.o : FLAGS = $(STUDENT_FLAGS)
