@@ -28,7 +28,7 @@ PYTHON_VERSION=2.7
 endif
 #CC = condor_compile g++
 CC = g++
-FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -fPIC -std=c++0x
+FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -std=c++0x
 LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython$(PYTHON_VERSION) -lboost_python
 TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
 STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
@@ -90,7 +90,7 @@ clean:
 	$(RM) $(TEST_OBJECTS) $(MAIN_OBJECTS) $(DEPS_ALL)
 
 fullclean: clean
-	$(RM) $(TEST_TARGET) $(MAIN_TARGET)
+	$(RM) $(TEST_TARGET) $(MAIN_TARGET) $(WEKA_TARGET)
 
 fclean: fullclean
 
@@ -107,7 +107,9 @@ $(TEST_TARGET): $(TEST_OBJECTS)
 	@$(CC) $(FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
 # include dependencies for creating dependencies and objects
+ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPS_ALL)
+endif
 
 # change the flags for the students
 $(BUILD_DIR)/$(STUDENT_DIR)/%.o : FLAGS = $(STUDENT_FLAGS)

@@ -15,6 +15,7 @@ Modified: 2011-09-12
 
 class PredatorStudentPython: public Agent {
 public:
+  PredatorStudentPython(const PredatorStudentPython &other);
   PredatorStudentPython(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &name, unsigned int predatorInd);
   ~PredatorStudentPython();
   ActionProbs step(const Observation &obs);

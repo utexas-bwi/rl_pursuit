@@ -11,6 +11,20 @@ Modified: 2011-09-12
 const Point2D PredatorStudentPython::moves[5] = {Point2D(0,0),Point2D(1,0),Point2D(-1,0),Point2D(0,1),Point2D(0,-1)};
 int PredatorStudentPython::predatorCount = 0;
 boost::python::object PredatorStudentPython::dictionary = boost::python::object();
+  
+PredatorStudentPython::PredatorStudentPython(const PredatorStudentPython &other):
+  Agent(other.rng,other.dims)
+{
+  predatorCount++;
+
+  try {
+    boost::python::object deepcopy = dictionary["deepcopy"];
+    predator = boost::python::call<boost::python::object>(deepcopy.ptr(),other.predator);
+  } catch (boost::python::error_already_set) {
+    PyErr_Print();
+    throw;
+  }
+}
 
 PredatorStudentPython::PredatorStudentPython(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &name, unsigned int predatorInd):
   Agent(rng,dims),
@@ -96,6 +110,7 @@ void PredatorStudentPython::initClass() {
     PyRun_SimpleString("sys.stdout = open('/dev/null','w')\n"); // disable any output
     PyRun_SimpleString("sys.path.append('src/studentAgents')\n"); // add the studentAgents dir to the path
     PyRun_SimpleString("import random\n"); // import random so we can control the seed
+    PyRun_SimpleString("from copy import deepcopy\n"); // import deepcopy for the copy constructor
     boost::python::object module(boost::python::handle<>(boost::python::borrowed(PyImport_AddModule("__main__"))));
     dictionary = module.attr("__dict__");
     PyRun_SimpleString("class MyObs:\n  pass\n");
