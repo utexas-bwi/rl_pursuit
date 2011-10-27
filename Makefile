@@ -107,7 +107,7 @@ $(TEST_TARGET): $(TEST_OBJECTS)
 
 # include dependencies for creating dependencies and objects
 ifneq ($(MAKECMDGOALS),clean)
-	-include $(DEPS_ALL)
+-include $(DEPS_ALL)
 endif
 
 # change the flags for the students
