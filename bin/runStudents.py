@@ -2,11 +2,18 @@
 
 import subprocess
 
+numTrials = 100
+
 with open('data/aamas11students.txt','r') as f:
   students = set(f.read().split())
 
 with open('configs/student_output.json','r') as f:
   config = f.read()
+
+with open('configs/trials-test.json','w') as f:
+  f.write('{\n')
+  f.write('"trials": %i\n' % numTrials)
+  f.write('}\n')
 
 outputFilenames = []
 for student in students:
@@ -16,7 +23,7 @@ for student in students:
   contents = contents.replace('"dtfile":""','"dtfile":"%s"'%outputFilename)
   with open('configs/student-test.json','w') as f:
     f.write(contents)
-  subprocess.check_call(['bin/main','configs/student-test.json','configs/trials.json'])
+  subprocess.check_call(['bin/main','configs/student-test.json','configs/trials-test.json'])
 
 combinedFilename = 'results/dtfile/combined.arff'
 out = open(combinedFilename,'w')
