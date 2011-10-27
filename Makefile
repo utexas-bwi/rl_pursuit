@@ -72,8 +72,9 @@ DEPS_ALL = $(addprefix $(BUILD_DIR)/,$(SOURCES_ALL:.cpp=.d))
 
 .PHONY: all run build test default clean fullclean
 
-
 default: build
+
+all: build weka
 
 run: $(MAIN_TARGET)
 	$(MAIN_TARGET)
