@@ -86,7 +86,7 @@ void OutputDT::outputStep(unsigned int numSteps, const Observation &obs) {
       }
       out << "," << next2prey;
       // actions predicted by models
-      prevObs.myInd = predInd;
+      prevObs.myInd = predInd + 1;
       for (unsigned int i = 0; i < models.size(); i++) {
         ActionProbs ap = models[i]->step(prevObs);
         Action::Type action = ap.maxAction();
