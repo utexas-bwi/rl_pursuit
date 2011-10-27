@@ -9,7 +9,7 @@ File: World.h
 Author: Samuel Barrett
 Description: the controller for the world
 Created:  2011-08-22
-Modified: 2011-08-22
+Modified: 2011-10-27
 */
 
 #include <boost/shared_ptr.hpp>
@@ -28,7 +28,9 @@ public:
   World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise);
   
   void step();
+  void step(boost::shared_ptr<std::vector<Action::Type> > actions);
   void step(std::vector<boost::shared_ptr<Agent> > &agents);
+  void step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents);
   void generateObservation(Observation &obs);
   void randomizePositions();
   void restartAgents();

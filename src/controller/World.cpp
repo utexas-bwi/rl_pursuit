@@ -10,10 +10,18 @@ World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, do
 }
 
 void World::step() {
-  step(agents);
+  step(boost::shared_ptr<std::vector<Action::Type> >(),agents);
+}
+
+void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
+  step(actions,agents);
 }
 
 void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
+  step(boost::shared_ptr<std::vector<Action::Type> >(),agents);
+}
+
+void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents) {
   //std::cout << "START WORLD STEP" << std::endl;
   ActionProbs actionProbs;
   Action::Type action;
@@ -30,6 +38,8 @@ void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
     }
     assert(actionProbs.checkTotal());
     action = actionProbs.selectAction(rng);
+    if (actions.get() != NULL)
+      (*actions)[i] = action;
     requestedPositions[i] = world->getAgentPosition(i,action);
   }
 

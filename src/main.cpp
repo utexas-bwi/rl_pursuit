@@ -79,6 +79,7 @@ int main(int argc, const char *argv[])
   std::string outputDTFilename = options["verbosity"].get("dtfile","").asString();
   bool outputDTCSVQ = (outputDTFilename != "");
   boost::shared_ptr<OutputDT> outputDT;
+  boost::shared_ptr<std::vector<Action::Type> > actions;
 
   Observation obs;
   double startTime = getTime();
@@ -110,6 +111,7 @@ int main(int argc, const char *argv[])
     randomSeed = trialNum;
     boost::shared_ptr<World> world = createWorldAgents(randomSeed,trialNum,options);
     boost::shared_ptr<const WorldModel> model = world->getModel();
+
     // create models for the DT csv output if required
     std::vector<std::string> modelNames;
     if (outputDTCSVQ && (trial == 0)) {
@@ -117,7 +119,8 @@ int main(int argc, const char *argv[])
       modelNames.push_back("TA");
       modelNames.push_back("GP");
       modelNames.push_back("PD");
-      outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true));
+      outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true,true));
+      actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
     }
 
     if ((trial == 0) && (displayDescriptionQ))
@@ -136,7 +139,7 @@ int main(int argc, const char *argv[])
           break;
         }
         //double t = getTime();
-        world->step();
+        world->step(actions);
         if (displayObsQ) {
           model->generateObservation(obs);
           //std::cout << obs << " " << getTime() - t << std::endl;
@@ -144,7 +147,7 @@ int main(int argc, const char *argv[])
         }
         if (outputDTCSVQ) {
           model->generateObservation(obs);
-          outputDT->outputStep(numSteps[trial][episode],obs);
+          outputDT->outputStep(numSteps[trial][episode],obs,*actions);
         } // end output dt csv
       } // while the episode lasts
       if (displayStepsPerEpisodeQ)
@@ -152,6 +155,7 @@ int main(int argc, const char *argv[])
     }
     if (displayStepsPerTrialQ)
       displayStepsPerTrial(displayStepsPerEpisodeQ,numSteps[trial]);
+
   } // end for trial
   double endTime = getTime();
   // optionally display the summary

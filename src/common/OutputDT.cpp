@@ -16,12 +16,13 @@ OutputDT::FeatureType::FeatureType(const std::string &name, int numCategories):
 {
 }
 
-OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff):
+OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff, bool useDesiredActions):
   out(filename.c_str()),
   dims(dims),
   numPredators(numPredators),
   modelNames(modelNames),
-  outputArff(outputArff)
+  outputArff(outputArff),
+  useDesiredActions(useDesiredActions)
 {
   for (unsigned int i = 0; i < modelNames.size(); i++)
     models.push_back(createAgent(0,dims,modelNames[i],0,1,Json::Value(),Json::Value()));
@@ -46,7 +47,10 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
   for (unsigned int i = 0; i < modelNames.size(); i++)
     features.push_back(FeatureType(modelNames[i]+".des",Action::NUM_ACTIONS));
   // the true action
-  features.push_back(FeatureType("Pred.act",Action::NUM_ACTIONS));
+  if (useDesiredActions)
+    features.push_back(FeatureType("Pred.des",Action::NUM_ACTIONS));
+  else
+    features.push_back(FeatureType("Pred.act",Action::NUM_ACTIONS));
 
   if (outputArff)
     outputArffHeader();
@@ -54,11 +58,14 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
     outputCSVHeader();
 }
 
-void OutputDT::outputStep(unsigned int numSteps, const Observation &obs) {
+void OutputDT::outputStep(unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions) {
   assert(obs.preyInd == 0);
+  if (useDesiredActions)
+    assert(desiredActions.size() == obs.positions.size());
   if (numSteps > 1) {
     for (unsigned int predInd = 0; predInd < numPredators; predInd++) {
-      Point2D origin = prevObs.positions[predInd+1];
+      unsigned int agentInd = predInd + 1;
+      Point2D origin = prevObs.positions[agentInd];
       //out << numSteps - 1;
       //out << "," << predInd;
       out << predInd;
@@ -73,7 +80,7 @@ void OutputDT::outputStep(unsigned int numSteps, const Observation &obs) {
         Point2D pos = movePosition(dims,origin,(Action::Type)a);
         bool occupied = false;
         for (unsigned int i = 0; i < obs.positions.size(); i++) {
-          if (i == predInd + 1)
+          if (i == agentInd)
             continue;
           if (prevObs.positions[i] == pos) {
             occupied = true;
@@ -86,16 +93,20 @@ void OutputDT::outputStep(unsigned int numSteps, const Observation &obs) {
       }
       out << "," << next2prey;
       // actions predicted by models
-      prevObs.myInd = predInd + 1;
+      prevObs.myInd = agentInd;
       for (unsigned int i = 0; i < models.size(); i++) {
         ActionProbs ap = models[i]->step(prevObs);
         Action::Type action = ap.maxAction();
         out << "," << action;
       }
-      // the true action taken
-      Point2D diff = getDifferenceToPoint(dims,prevObs.positions[predInd],obs.positions[predInd]);
-      Action::Type action = getAction(diff);
-      out << "," << action;
+      if (useDesiredActions) {
+        out << "," << desiredActions[agentInd];
+      } else {
+        // the true action taken
+        Point2D diff = getDifferenceToPoint(dims,prevObs.positions[agentInd],obs.positions[agentInd]);
+        Action::Type action = getAction(diff);
+        out << "," << action;
+      }
 
       out << std::endl;
     }

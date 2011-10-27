@@ -24,9 +24,9 @@ public:
     std::string name;
     int numCategories;
   };
-  OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff);
+  OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff, bool useDesiredActions);
 
-  void outputStep(unsigned int numSteps, const Observation &obs);
+  void outputStep(unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions);
 
 protected:
   void outputArffHeader();
@@ -39,6 +39,7 @@ protected:
   std::vector<std::string> modelNames;
   std::vector<boost::shared_ptr<Agent> > models;
   bool outputArff;
+  bool useDesiredActions;
   std::vector<FeatureType> features;
   Observation prevObs;
 };
