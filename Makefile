@@ -28,7 +28,7 @@ PYTHON_VERSION=2.7
 endif
 #CC = condor_compile g++
 CC = g++
-FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -fPIC -std=c++0x
+FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -std=c++0x
 LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython$(PYTHON_VERSION) -lboost_python
 TEST_LINK_FLAGS = $(LINK_FLAGS) -lgtest -lpthread
 STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
