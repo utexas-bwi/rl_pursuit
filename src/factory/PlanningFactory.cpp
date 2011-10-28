@@ -40,7 +40,7 @@ boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<R
     return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType));
 }
 
-boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, int replacementInd, const Json::Value &options) {
+boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options) {
   // create the agents
   const Json::Value models = options["models"];
   std::vector<std::vector<boost::shared_ptr<Agent> > > modelList(models.size());
@@ -51,7 +51,7 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     modelDescriptions.push_back(models[i].get("desc","NO DESCRIPTION").asString());
 
     std::vector<AgentModel> agentModels;
-    createAgentControllersAndModels(rng,dims,0,replacementInd,models[i],adhocAgent,modelList[i],agentModels);
+    createAgentControllersAndModels(rng,dims,trialNum,replacementInd,models[i],adhocAgent,modelList[i],agentModels);
     
     // add the first set of agents to the world
     if (i == 0)
