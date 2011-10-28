@@ -20,6 +20,7 @@ int main(int argc, const char *argv[]) {
   // read in the original tree
   WekaParser parser(wekaFile,5,false);
   boost::shared_ptr<DecisionTree> dt = parser.makeDecisionTree();
+  std::cerr << "Parsed original tree" << std::endl;
 
   // open the arffFile and set up some variables
   std::ifstream in(arffFile.c_str());
@@ -40,8 +41,10 @@ int main(int argc, const char *argv[]) {
 
   // read in the header
   readArffHeader(in,featureNames,numeric);
+  std::cerr << "Parsed arff header" << std::endl;
   // add data to tree
   addDataToTree(dt,in,featureNames,numeric,valueMap);
+  std::cerr << "Added data to tree" << std::endl;
   
   in.close();
   std::cout << dt->root;
@@ -83,8 +86,11 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::v
   float val;
   //std::string val2;
   Classification c;
-  //int count = 10;
+  int count = 0;
   while (!in.eof()) {
+    count++;
+    if (count % 10000 == 0)
+      std::cerr << count << std::endl;
     for (unsigned int i = 0; i < featureNames.size(); i++) {
       if (numeric[i]) {
         in >> val;
@@ -98,6 +104,8 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::v
         //std::cout << val2 << std::endl;
       }
       features[featureNames[i]] = val;
+      //if (count > 247000)
+        //std::cerr << featureNames[i] << " " << val << std::endl;
       //std::cout << featureNames[i] << " " << val << " " << (featureNames[i] == "Pred.act") << std::endl;
     }
 
