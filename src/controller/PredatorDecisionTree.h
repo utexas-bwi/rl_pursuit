@@ -13,6 +13,7 @@ Modified: 2011-09-15
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 #include <common/DecisionTree.h>
+#include <common/FeatureExtractor.h>
 
 class PredatorDecisionTree: public Agent {
 public:
@@ -26,14 +27,11 @@ public:
     return new PredatorDecisionTree(*this);
   }
 
-private:
-  void extractFeatures(const Observation &obs, Features &features);
-  void addFeatureAgent(const std::string &key, const std::string &name);
 
-private:
+protected:
   const std::string filename;
   boost::shared_ptr<DecisionTree> decisionTree;
-  boost::unordered_map<std::string,boost::shared_ptr<Agent> > featureAgents;
+  FeatureExtractor featureExtractor;
 };
 
 #endif /* end of include guard: PREDATORDECISIONTREE_L0Z40SLR */

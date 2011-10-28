@@ -15,7 +15,7 @@ Modified: 2011-10-26
 #include <boost/shared_ptr.hpp>
 
 #include <common/Point2D.h>
-#include <controller/Agent.h>
+#include <common/FeatureExtractor.h>
 
 class OutputDT {
 public:
@@ -36,12 +36,11 @@ protected:
   std::ofstream out;
   Point2D dims;
   unsigned int numPredators;
-  std::vector<std::string> modelNames;
-  std::vector<boost::shared_ptr<Agent> > models;
   bool outputArff;
   bool useDesiredActions;
-  std::vector<FeatureType> features;
+  std::vector<FeatureType> featureTypes;
   Observation prevObs;
+  FeatureExtractor featureExtractor;
 };
 
 #endif /* end of include guard: OUTPUTDT_UWZJJH2T */
