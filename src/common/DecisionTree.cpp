@@ -98,6 +98,11 @@ std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out, unsi
   return out;
 }
 
+void DecisionTree::InteriorNode::randomizeUnseenLeaves() {
+  for (unsigned int i = 0; i < children.size(); i++)
+    children[i]->randomizeUnseenLeaves();
+}
+
 //////////////////////////////////////////////////////////////
 // LEAF NODE
 //////////////////////////////////////////////////////////////
@@ -141,6 +146,14 @@ std::ostream& DecisionTree::LeafNode::genDescription(std::ostream &out, unsigned
   return out;
 }
 
+void DecisionTree::LeafNode::randomizeUnseenLeaves() {
+  if (total != 0)
+    return;
+  float frac = 1.0 / classification.size();
+  for (unsigned int i = 0; i < classification.size(); i++)
+    classification[i] = frac;
+}
+
 
 //////////////////////////////////////////////////////////////
 // DECISION TREE
@@ -153,6 +166,10 @@ DecisionTree::DecisionTree(boost::shared_ptr<Node> root):
 
 void DecisionTree::classify(const Features &features, Classification &classification, bool adjustClassificationQ, unsigned int trueClass) {
   root->classify(features,classification,adjustClassificationQ,trueClass);
+}
+  
+void DecisionTree::randomizeUnseenLeaves() {
+  root->randomizeUnseenLeaves();
 }
 
 

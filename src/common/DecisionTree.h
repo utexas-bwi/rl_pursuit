@@ -31,6 +31,7 @@ public:
     virtual void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0) = 0;
     virtual std::ostream& genDescription(std::ostream &out, unsigned int depth = 0) = 0;
     virtual bool isLeaf()=0;
+    virtual void randomizeUnseenLeaves() = 0;
   };
   struct InteriorNode: public Node {
     InteriorNode(ComparisonOperator cmp, const std::string &splitKey);
@@ -39,6 +40,7 @@ public:
     unsigned int getInd(const Features &features);
     std::ostream& genDescription(std::ostream &out, unsigned int depth = 0);
     bool isLeaf(){return false;}
+    void randomizeUnseenLeaves();
 
     ComparisonOperator cmp;
     std::string splitKey;
@@ -53,6 +55,7 @@ public:
     std::ostream& genDescription(std::ostream &out, unsigned int depth = 0);
     void adjustClassification(unsigned int trueClass);
     bool isLeaf(){return true;}
+    void randomizeUnseenLeaves();
 
     Classification classification;
     float total;
@@ -60,6 +63,7 @@ public:
 
   DecisionTree(boost::shared_ptr<Node> root);
   void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0);
+  void randomizeUnseenLeaves();
 
 //private:
   boost::shared_ptr<Node> root;

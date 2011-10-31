@@ -45,6 +45,8 @@ int main(int argc, const char *argv[]) {
   // add data to tree
   addDataToTree(dt,in,featureNames,numeric,valueMap);
   std::cerr << "Added data to tree" << std::endl;
+  dt->randomizeUnseenLeaves();
+  std::cerr << "Randomized unseen leaves" << std::endl;
   
   in.close();
   std::cout << dt->root;
