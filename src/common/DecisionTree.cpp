@@ -103,6 +103,31 @@ void DecisionTree::InteriorNode::randomizeUnseenLeaves() {
     children[i]->randomizeUnseenLeaves();
 }
 
+void DecisionTree::InteriorNode::generalizeUnseenLeaves(Classification &general) {
+  //general.clear();
+  Classification general2;
+  for (unsigned int i = 0; i < children.size(); i++)
+    children[i]->generalizeUnseenLeaves(general2);
+  if (general2.empty())
+    general2 = general;
+  else {
+    if (general.empty())
+      general = general2;
+    else {
+      for (unsigned int i = 0; i < children.size(); i++)
+        general[i] += general2[i];
+    }
+  }
+
+  for (unsigned int i = 0; i < children.size(); i++)
+    children[i]->setGeneralization(general2);
+}
+
+void DecisionTree::InteriorNode::setGeneralization(const Classification &general) {
+  for (unsigned int i = 0; i < children.size(); i++)
+    children[i]->setGeneralization(general);
+}
+
 //////////////////////////////////////////////////////////////
 // LEAF NODE
 //////////////////////////////////////////////////////////////
@@ -147,11 +172,38 @@ std::ostream& DecisionTree::LeafNode::genDescription(std::ostream &out, unsigned
 }
 
 void DecisionTree::LeafNode::randomizeUnseenLeaves() {
-  if (total != 0)
+  if (!isUnseen()) // if not unseen, don't randomize
     return;
   float frac = 1.0 / classification.size();
   for (unsigned int i = 0; i < classification.size(); i++)
     classification[i] = frac;
+}
+
+void DecisionTree::LeafNode::generalizeUnseenLeaves(Classification &general) {
+  //std::cout << total << std::endl;
+  if (isUnseen()) // if unseen, have no data to add
+    return;
+  assert(fabs(total - 0.1) > 0.0001);
+  while (general.size() < classification.size())
+    general.push_back(0);
+  assert(general.size() == classification.size());
+  for (unsigned int i = 0; i < general.size(); i++)
+    general[i] += classification[i] * total;
+}
+
+void DecisionTree::LeafNode::setGeneralization(const Classification &general) {
+  if (!isUnseen()) // if not unseen, don't need the generalization
+    return;
+  float generalTotal = 0;
+  for (unsigned int i = 0; i < general.size(); i++)
+    generalTotal += general[i];
+  for (unsigned int i = 0; i < general.size(); i++)
+    classification[i] = general[i] / generalTotal;
+  total = 0.1;
+}
+
+bool DecisionTree::LeafNode::isUnseen() {
+  return total < 0.0001;
 }
 
 
@@ -172,6 +224,10 @@ void DecisionTree::randomizeUnseenLeaves() {
   root->randomizeUnseenLeaves();
 }
 
+void DecisionTree::generalizeUnseenLeaves() {
+  Classification general;
+  root->generalizeUnseenLeaves(general);
+}
 
 std::ostream& operator<<(std::ostream &out, boost::shared_ptr<DecisionTree::Node> node) {
   node->genDescription(out);
