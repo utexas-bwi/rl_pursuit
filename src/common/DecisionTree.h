@@ -28,7 +28,7 @@ typedef boost::unordered_map<std::string,float> Features;
 class DecisionTree {
 public:
   struct Node {
-    virtual void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0) = 0;
+    virtual void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0, float weight=1.0) = 0;
     virtual std::ostream& genDescription(std::ostream &out, unsigned int depth = 0) = 0;
     virtual bool isLeaf()=0;
     virtual void randomizeUnseenLeaves() = 0;
@@ -38,7 +38,7 @@ public:
   struct InteriorNode: public Node {
     InteriorNode(ComparisonOperator cmp, const std::string &splitKey);
     void addChild(boost::shared_ptr<Node> child, float splitValue);
-    void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0);
+    void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0, float weight=1.0);
     unsigned int getInd(const Features &features);
     std::ostream& genDescription(std::ostream &out, unsigned int depth = 0);
     bool isLeaf(){return false;}
@@ -55,9 +55,9 @@ public:
 
   struct LeafNode: public Node {
     LeafNode(const Classification &classification);
-    void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0);
+    void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0, float weight=1.0);
     std::ostream& genDescription(std::ostream &out, unsigned int depth = 0);
-    void adjustClassification(unsigned int trueClass);
+    void adjustClassification(unsigned int trueClass, float weight);
     bool isLeaf(){return true;}
     void randomizeUnseenLeaves();
     void generalizeUnseenLeaves(Classification &general);
@@ -69,7 +69,7 @@ public:
   };
 
   DecisionTree(boost::shared_ptr<Node> root);
-  void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0);
+  void classify(const Features &features, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0, float weight=1.0);
   void randomizeUnseenLeaves();
   void generalizeUnseenLeaves();
 

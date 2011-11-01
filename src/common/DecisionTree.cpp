@@ -29,11 +29,11 @@ void DecisionTree::InteriorNode::addChild(boost::shared_ptr<Node> child, float s
   splitValues.push_back(splitValue);
 }
 
-void DecisionTree::InteriorNode::classify(const Features &features, Classification &classification, bool adjustClassificationQ, unsigned int trueClass) {
+void DecisionTree::InteriorNode::classify(const Features &features, Classification &classification, bool adjustClassificationQ, unsigned int trueClass, float weight) {
   try {
     //std::cout << "SPLIT on " << splitKey << std::endl;
     unsigned int ind = getInd(features);
-    children[ind]->classify(features,classification,adjustClassificationQ,trueClass);
+    children[ind]->classify(features,classification,adjustClassificationQ,trueClass,weight);
   } catch(std::out_of_range) {
     std::cerr << "DecisionTree::InteriorNode::classify failed for feature: " << splitKey << std::endl;
     exit(5);
@@ -138,22 +138,22 @@ DecisionTree::LeafNode::LeafNode(const Classification &classification):
 {
 }
 
-void DecisionTree::LeafNode::classify(const Features &, Classification &c, bool adjustClassificationQ, unsigned int trueClass) {
+void DecisionTree::LeafNode::classify(const Features &, Classification &c, bool adjustClassificationQ, unsigned int trueClass, float weight) {
   if (adjustClassificationQ)
-    adjustClassification(trueClass);
+    adjustClassification(trueClass,weight);
   c = classification;
 }
 
-void DecisionTree::LeafNode::adjustClassification(unsigned int trueClass) {
+void DecisionTree::LeafNode::adjustClassification(unsigned int trueClass,float weight) {
   assert(trueClass < classification.size());
-  float frac = total / (total + 1);
+  float frac = total / (total + weight);
   for (unsigned int i = 0; i < classification.size(); i++) {
     if (i == trueClass)
-      classification[i] = (classification[i] * total + 1) / (total + 1);
+      classification[i] = (classification[i] * total + weight) / (total + weight);
     else
       classification[i] *= frac;
   }
-  total += 1;
+  total += weight;
 }
 
 
@@ -183,7 +183,6 @@ void DecisionTree::LeafNode::generalizeUnseenLeaves(Classification &general) {
   //std::cout << total << std::endl;
   if (isUnseen()) // if unseen, have no data to add
     return;
-  assert(fabs(total - 0.1) > 0.0001);
   while (general.size() < classification.size())
     general.push_back(0);
   assert(general.size() == classification.size());
@@ -194,12 +193,14 @@ void DecisionTree::LeafNode::generalizeUnseenLeaves(Classification &general) {
 void DecisionTree::LeafNode::setGeneralization(const Classification &general) {
   if (!isUnseen()) // if not unseen, don't need the generalization
     return;
+  if (fabs(total + 1) < 0.0001)
+    return; //already generalized
   float generalTotal = 0;
   for (unsigned int i = 0; i < general.size(); i++)
     generalTotal += general[i];
   for (unsigned int i = 0; i < general.size(); i++)
     classification[i] = general[i] / generalTotal;
-  total = 0.1;
+  total = -1;
 }
 
 bool DecisionTree::LeafNode::isUnseen() {
@@ -216,8 +217,8 @@ DecisionTree::DecisionTree(boost::shared_ptr<Node> root):
 {
 }
 
-void DecisionTree::classify(const Features &features, Classification &classification, bool adjustClassificationQ, unsigned int trueClass) {
-  root->classify(features,classification,adjustClassificationQ,trueClass);
+void DecisionTree::classify(const Features &features, Classification &classification, bool adjustClassificationQ, unsigned int trueClass, float weight) {
+  root->classify(features,classification,adjustClassificationQ,trueClass,weight);
 }
   
 void DecisionTree::randomizeUnseenLeaves() {

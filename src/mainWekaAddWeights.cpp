@@ -114,6 +114,14 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::v
         //std::cerr << featureNames[i] << " " << val << std::endl;
       //std::cout << featureNames[i] << " " << val << " " << (featureNames[i] == "Pred.act") << std::endl;
     }
+    
+    float weight = 1.0;
+    if (in.peek() == '{') {
+      // there's a weight for it
+      in.ignore(1,'{');
+      in >> weight;
+      in.ignore(1,'}');
+    }
 
     //features["Next2Prey?"] = features["Next2Prey"];
     //features["Greedy"] = features["Greedy.des"];
@@ -125,6 +133,6 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::v
     //features["sum"] = 0; // TODO
   
     unsigned int trueClass = (int)(features[featureNames.back()] + 0.5);
-    dt->classify(features,c,true,trueClass);
+    dt->classify(features,c,true,trueClass,weight);
   }
 }

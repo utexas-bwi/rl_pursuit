@@ -11,7 +11,7 @@ def waitForProcesses(processes,numToStop):
       return
     time.sleep(1)
 
-numTrials = 1000
+numTrials = 100
 
 with open('data/aamas11students.txt','r') as f:
   students = set(f.read().split())
