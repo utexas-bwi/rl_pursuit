@@ -10,7 +10,7 @@ ARCH=32
 endif
 LIBS_DIR = libs/$(ARCH)
 MAIN_TARGET = bin/main$(ARCH)
-WEKA_TARGET = bin/wekaAddWeights$(ARCH)
+WEKA_TARGET = bin/weka/addWeights$(ARCH)
 BUILD_DIR = build/$(ARCH)
 # sub directories for source
 COMMON_DIR = common
