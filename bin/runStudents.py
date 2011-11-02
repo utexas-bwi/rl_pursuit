@@ -11,6 +11,17 @@ def waitForProcesses(processes,numToStop):
       return
     time.sleep(1)
 
+def combineARFFs(inFiles,outFile):
+  out = open(outFile,'w')
+  for i,inFile in enumerate(inFiles):
+    with open(inFile,'r') as f:
+      lines = f.readlines()
+    startLine = 0
+    if i != 0:
+      startLine = lines.index('@data\n') + 1 # + 1 to skip the data line
+    out.writelines(lines[startLine:])
+  out.close()
+
 def main(numTrials):
   dtTrainDir = 'data/dt-train/%i' % numTrials
   if not(os.path.exists(dtTrainDir)):
@@ -44,16 +55,7 @@ def main(numTrials):
   waitForProcesses(processes,0)
 
   combinedFilename = os.path.join(dtTrainDir,'combined.arff')
-  out = open(combinedFilename,'w')
-  for i,outputFilename in enumerate(outputFilenames):
-    with open(outputFilename,'r') as f:
-      lines = f.readlines()
-    startLine = 0
-    if i != 0:
-      startLine = lines.index('@data\n') + 1 # + 1 to skip the data line
-    out.writelines(lines[startLine:])
-
-  out.close()
+  combineARFFs(outputFilenames,combinedFilename)
 
 if __name__ == '__main__':
   import sys
