@@ -26,7 +26,7 @@ public:
   };
   OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff, bool useDesiredActions);
 
-  void outputStep(unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions);
+  void outputStep(unsigned int trialNum, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions);
 
 protected:
   void outputArffHeader();

@@ -27,7 +27,8 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
   for (unsigned int i = 0; i < modelNames.size(); i++)
     featureExtractor.addFeatureAgent(modelNames[i],modelNames[i]);
 
-  //features.push_back(FeatureType("Step",0));
+  featureTypes.push_back(FeatureType("Trial",0));
+  featureTypes.push_back(FeatureType("Step",0));
   featureTypes.push_back(FeatureType("PredInd",numPredators));
   // relative positions of the agents
   featureTypes.push_back(FeatureType("Prey.dx",0));
@@ -58,7 +59,7 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
     outputCSVHeader();
 }
 
-void OutputDT::outputStep(unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions) {
+void OutputDT::outputStep(unsigned int trialNum, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions) {
   assert(obs.preyInd == 0);
   if (useDesiredActions)
     assert(desiredActions.size() == obs.positions.size());
@@ -68,6 +69,10 @@ void OutputDT::outputStep(unsigned int numSteps, const Observation &obs, const s
       prevObs.myInd = agentInd;
       Features features;
       featureExtractor.extract(prevObs,features);
+
+      // add the trial number and number of steps
+      features["trial"] = trialNum;
+      features["Step"] = numSteps;
       
       assert(features.size() == featureTypes.size() - 1); // 1 for the true class
       for (unsigned int i = 0; i < featureTypes.size() - 1; i++) {

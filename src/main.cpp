@@ -147,7 +147,7 @@ int main(int argc, const char *argv[])
         }
         if (outputDTCSVQ) {
           model->generateObservation(obs);
-          outputDT->outputStep(numSteps[trial][episode],obs,*actions);
+          outputDT->outputStep(trial,numSteps[trial][episode],obs,*actions);
         } // end output dt csv
       } // while the episode lasts
       if (displayStepsPerEpisodeQ)
