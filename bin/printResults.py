@@ -31,6 +31,7 @@ def loadResultsFromDirectory(directory):
   filenames = filter(validResultFile,tempFilenames)
   if len(filenames) == 0:
     return None
+  #filenames.sort(key=lambda x:int(os.path.basename(x).replace('.csv','')))
   return loadResultsFromFileSet(filenames)
 
 def loadResultsFromFileSet(filenames):

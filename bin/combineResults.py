@@ -13,7 +13,7 @@ def getFilenames(sourceDir):
     filenames.append(filename)
     i += 1
 
-def run(targetBase,sourceDir):
+def run(targetBase,sourceDir,expectedNumEpisodes):
   sourceJSON = os.path.join(sourceDir,'config.json')
   if not(os.path.isfile(sourceJSON)):
     print 'Source json not found:',sourceJSON
@@ -30,6 +30,9 @@ def run(targetBase,sourceDir):
     print 'Target json already exists:',targetJSON
     return 2
   filenames = getFilenames(sourceDir)
+  if len(filenames) != expectedNumEpisodes:
+    print 'Unexpected number of episode, expected %i but got %i' % (expectedNumEpisodes,len(filenames))
+    return 3
   contents = ''
   for filename in filenames:
     with open(filename,'r') as f:
@@ -51,9 +54,10 @@ def main(args):
   #target = args[0]
   target = 'results'
   sourceDirs = args[0:]
+  expectedNumEpisodes = 1000
   for sourceDir in sourceDirs:
     print 'Combining',sourceDir
-    res = run(target,sourceDir)
+    res = run(target,sourceDir,expectedNumEpisodes)
     if res != 0:
       return res
   return res
