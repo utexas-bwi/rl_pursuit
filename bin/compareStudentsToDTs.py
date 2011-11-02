@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import subprocess, os
 from setupCondor import run as setupCondor
 
 def main(numTestingTrials,numTrainingTrials):
@@ -24,14 +25,17 @@ def main(numTestingTrials,numTrainingTrials):
     plannerContents = plannerConfig.replace('$(PREDATOR)','student').replace('$(OPTIONS)','"student":"%s"' % student)
     with open(plannerConfigFile,'w') as f:
       f.write(plannerContents)
-    
-    setupCondor('20x20-%s-true' % student,numTestingTrials,1,[studentConfig,plannerConfigFile])
+    basename = '20x20-%s-true' % student
+    setupCondor(basename,numTestingTrials,1,[studentConfig,plannerConfigFile])
+    subprocess.check_call(['condor_submit',os.path.join('condor',basename,'job.condor')])
 
     # plan with the DT model
     plannerContents = plannerConfig.replace('$(PREDATOR)','dt').replace('$(OPTIONS)','"filename":"data/dt/weighted/%s-%i.weka"' % (student,numTrainingTrials))
     with open(plannerConfigFile,'w') as f:
       f.write(plannerContents)
-    setupCondor('20x20-%s-dt-%i' % (student,numTrainingTrials),numTestingTrials,1,[studentConfig,plannerConfigFile])
+    basename = '20x20-%s-dt-%i' % (student,numTrainingTrials)
+    setupCondor(basename,numTestingTrials,1,[studentConfig,plannerConfigFile])
+    subprocess.check_call(['condor_submit',os.path.join('condor',basename,'job.condor')])
 
 if __name__ == '__main__':
   import sys
