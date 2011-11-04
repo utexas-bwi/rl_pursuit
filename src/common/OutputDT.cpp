@@ -71,7 +71,7 @@ void OutputDT::outputStep(unsigned int trialNum, unsigned int numSteps, const Ob
       featureExtractor.extract(prevObs,features);
 
       // add the trial number and number of steps
-      features["trial"] = trialNum;
+      features["Trial"] = trialNum;
       features["Step"] = numSteps;
       
       assert(features.size() == featureTypes.size() - 1); // 1 for the true class

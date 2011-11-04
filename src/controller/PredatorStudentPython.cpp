@@ -133,7 +133,7 @@ void PredatorStudentPython::initClass() {
   Py_Initialize();
   try {
     PyRun_SimpleString("import sys\n");
-    //PyRun_SimpleString("sys.stdout = open('/dev/null','w')\n"); // disable any output
+    PyRun_SimpleString("sys.stdout = open('/dev/null','w')\n"); // disable any output
     PyRun_SimpleString("sys.path.append('src/studentAgents')\n"); // add the studentAgents dir to the path
     PyRun_SimpleString("import random\n"); // import random so we can control the seed
     PyRun_SimpleString("from copy import deepcopy\n"); // import deepcopy for the copy constructor
