@@ -15,7 +15,6 @@
 #include <controller/PredatorProbabilisticDestinations.h>
 #include <controller/PredatorStudentCpp.h>
 #include <controller/PredatorStudentPython.h>
-#include <controller/PredatorStudentPythonNew.h>
 #include <controller/PredatorSurround.h>
 #include <controller/PredatorSurroundWithPenalties.h>
 #include <controller/PredatorTeammateAware.h>
@@ -126,8 +125,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     if (PredatorStudentCpp::handlesStudent(student))
       return ptr(new PredatorStudentCpp(rng,dims,student,predatorInd));
     else
-      //return ptr(new PredatorStudentPython(rng,dims,student,predatorInd));
-      return ptr(new PredatorStudentPythonNew(rng,dims,student,predatorInd));
+      return ptr(new PredatorStudentPython(rng,dims,student,predatorInd));
   } else if (NAME_IN_SET("mcts","uct")) {
     Json::Value plannerOptions = rootOptions["planner"];
     // process the depth if necessary

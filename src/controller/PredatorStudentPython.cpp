@@ -1,19 +1,21 @@
 /*
 File: PredatorStudentPython.cpp
 Author: Samuel Barrett
-Description: a wrapper around a student's python predator for assignment 1
+Description: a wrapper around a student's python predator for assignment 1 or the 2011 assignment
 Created:  2011-09-12
 Modified: 2011-09-12
 */
 
 #include "PredatorStudentPython.h"
+#include "PredatorStudentCpp.h"
+#include <sys/stat.h>
 
-const Point2D PredatorStudentPython::moves[5] = {Point2D(0,0),Point2D(1,0),Point2D(-1,0),Point2D(0,1),Point2D(0,-1)};
 int PredatorStudentPython::predatorCount = 0;
 boost::python::object PredatorStudentPython::dictionary = boost::python::object();
   
 PredatorStudentPython::PredatorStudentPython(const PredatorStudentPython &other):
-  Agent(other.rng,other.dims)
+  Agent(other.rng,other.dims),
+  isNew(other.isNew)
 {
   predatorCount++;
 
@@ -28,32 +30,41 @@ PredatorStudentPython::PredatorStudentPython(const PredatorStudentPython &other)
 
 PredatorStudentPython::PredatorStudentPython(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &name, unsigned int predatorInd):
   Agent(rng,dims),
-  name(name)
+  name(name),
+  isNew(false)
 {
   // initialize the python interpreter if necessary
   if (predatorCount == 0)
     initClass();
   predatorCount++;
   
+  // check if we're dealing with a new or old predator
+  struct stat buffer;
+  isNew = stat(("src/studentAgents/agents/" + name).c_str(),&buffer);
+
   // load the students predators
   std::ostringstream cmd;
   try {
-    cmd << "student = __import__('agents." << name << "')" << std::endl; // import the right file
-    cmd << "predators = student." << name << ".getPredators()" << std::endl; // get the set of predators
-    cmd << "predator = predators[" << predatorInd << "]("; // start the constructor for the correct predator
-    cmd << dims << ","; // dims
-    cmd << "True,"; // toroidalWorld
-    // moves
-    cmd << "[";
-    for (int i = 0; i < 5; i++) {
-      cmd << moves[i];
-      if (i != 4)
-        cmd << ",";
+    if (isNew) {
+      cmd << "student = __import__('agentsNew." << name << ".pythonPredator')" << std::endl; // import the right file
+      cmd << "predators = student." << name << ".pythonPredator.generatePredators(" << dims << ")" << std::endl; // create the set of predators
+      cmd << "predator = predators[" << predatorInd << "]" << std::endl; // select the predator we want
+    } else {
+      cmd << "student = __import__('agents." << name << "')" << std::endl; // import the right file
+      cmd << "predators = student." << name << ".getPredators()" << std::endl; // get the set of predators
+      cmd << "predator = predators[" << predatorInd << "]("; // start the constructor for the correct predator
+      cmd << dims << ","; // dims
+      cmd << "True,"; // toroidalWorld
+      // moves
+      cmd << "[";
+      for (int i = 0; i < 5; i++) {
+        cmd << STUDENT_MOVES_OLD[i];
+        if (i != 4)
+          cmd << ",";
+      }
+      cmd << "]";
+      cmd << ")" << std::endl; // end the constructor
     }
-    cmd << "]";
-    cmd << ")" << std::endl; // end the constructor
-    //std::cout << cmd.str() << std::endl;
-    //std::cout << "-------------------" << std::endl;
     PyRun_SimpleString(cmd.str().c_str());
     predator = dictionary["predator"];
   } catch (boost::python::error_already_set) {
@@ -84,16 +95,31 @@ ActionProbs PredatorStudentPython::step(const Observation &obs) {
       cmd << ",";
   }
   cmd << "]" << std::endl;
-  int step;
+
   try {
     PyRun_SimpleString(cmd.str().c_str());
     boost::python::object pyObs = dictionary["obs"];
-    step = boost::python::call_method<int>(predator.ptr(),"step",pyObs);
+    if (isNew) {
+      boost::python::object action;
+      boost::python::object pos = pyObs.attr("pos");
+      boost::python::object prey = pyObs.attr("preyPositions")[0];
+      boost::python::object predPos = pyObs.attr("predatorPositions");
+      action = boost::python::call_method<boost::python::object>(predator.ptr(),"step",pos,prey,predPos);
+      MoveDistribution moveDist;
+      moveDist.probNoop = boost::python::extract<float>(action.attr("probNoop"));
+      moveDist.probLeft = boost::python::extract<float>(action.attr("probLeft"));
+      moveDist.probRight = boost::python::extract<float>(action.attr("probRight"));
+      moveDist.probUp = boost::python::extract<float>(action.attr("probUp"));
+      moveDist.probDown = boost::python::extract<float>(action.attr("probDown"));
+      return convertStudentActionNew(moveDist);
+    } else {
+      int action = boost::python::call_method<int>(predator.ptr(),"step",pyObs);
+      return convertStudentAction(action);
+    }
   } catch (boost::python::error_already_set) {
     PyErr_Print();
     throw;
   }
-  return ActionProbs(getAction(moves[step])); //convert the action number to a point, and then convert it to the number -- in case the moves for us and the world don't match up
 }
 
 void PredatorStudentPython::restart() {
@@ -107,7 +133,7 @@ void PredatorStudentPython::initClass() {
   Py_Initialize();
   try {
     PyRun_SimpleString("import sys\n");
-    PyRun_SimpleString("sys.stdout = open('/dev/null','w')\n"); // disable any output
+    //PyRun_SimpleString("sys.stdout = open('/dev/null','w')\n"); // disable any output
     PyRun_SimpleString("sys.path.append('src/studentAgents')\n"); // add the studentAgents dir to the path
     PyRun_SimpleString("import random\n"); // import random so we can control the seed
     PyRun_SimpleString("from copy import deepcopy\n"); // import deepcopy for the copy constructor

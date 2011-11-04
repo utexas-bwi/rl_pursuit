@@ -6,14 +6,26 @@ def getStudents():
   proc = subprocess.Popen('ls src/studentAgents/agents/*/Predator.h -1',shell=True,stdout = subprocess.PIPE)
   output = proc.communicate()[0].strip()
   files = output.split('\n')
-  students = [os.path.basename(os.path.dirname(f)) for f in files]
-  return students
+  studentsOld = [os.path.basename(os.path.dirname(f)) for f in files]
+  
+  proc = subprocess.Popen('ls src/studentAgents/agentsNew/*/cppPredator -1 -d',shell=True,stdout = subprocess.PIPE)
+  output = proc.communicate()[0].strip()
+  files = output.split('\n')
+  studentsNew = [os.path.basename(os.path.dirname(f)) for f in files]
+
+  students = studentsOld + studentsNew
+  isNew = [False for s in studentsOld] + [True for s in studentsNew]
+  return students,isNew
 
 def main(dest):
-  students = getStudents()
+  students,isNewList = getStudents()
   with open(dest,'w') as out:
-    for student in students:
-      out.write('#include <studentAgents/agents/%s/Predator.h>\n' % student)
+    out.write('#include <controller/PredatorStudentCppAbstract.h>\n')
+    for student,isNew in zip(students,isNewList):
+      if isNew:
+        out.write('#include <studentAgents/agentsNew/%s/cppPredator/MyPredator.h>\n' % student)
+      else:
+        out.write('#include <studentAgents/agents/%s/Predator.h>\n' % student)
     out.write('\n\n')
     out.write('bool PredatorStudentCpp::handlesStudent(const std::string &name) {\n')
     for student in students:
@@ -23,7 +35,7 @@ def main(dest):
     out.write('}\n')
 
     code = '''
-boost::shared_ptr<AbstractCppPredator> PredatorStudentCpp::createPredator(const std::string &name, unsigned int predatorInd) {
+void PredatorStudentCpp::createPredator(const std::string &name, unsigned int predatorInd) {
   int dims[2];
   bool toroidalWorld = true;
   int moves[Action::NUM_MOVES][2];
@@ -32,15 +44,22 @@ boost::shared_ptr<AbstractCppPredator> PredatorStudentCpp::createPredator(const 
   dims[1] = this->dims.y;
   
   for (int i = 0; i < 5; i++) {
-    moves[i][0] = this->moves[i].x;
-    moves[i][1] = this->moves[i].y;
+    moves[i][0] = STUDENT_MOVES_OLD[i].x;
+    moves[i][1] = STUDENT_MOVES_OLD[i].y;
   }
 '''
     out.write(code)
-    for i,student in enumerate(students):
-      with open('src/studentAgents/agents/%s/config.py'%student,'r') as f:
-        contents = f.read()
-      predators = re.findall('Predator\.([^,\]]*)',contents)
+    for i,(student,isNew) in enumerate(zip(students,isNewList)):
+      if isNew:
+        if student == 'EranTwili':
+          predators = ['AbovePredator','BelowPredator','RightPredator','LeftPredator']
+        else:
+          predators = ['MyPredator' for i in range(4)]
+      else:
+        with open('src/studentAgents/agents/%s/config.py'%student,'r') as f:
+          contents = f.read()
+        predators = re.findall('Predator\.([^,\]]*)',contents)
+
       out.write('  ')
       if i != 0:
         out.write('else ')
@@ -50,7 +69,11 @@ boost::shared_ptr<AbstractCppPredator> PredatorStudentCpp::createPredator(const 
         if predInd != 0:
           out.write('else ')
         out.write('if (predatorInd == %i) {\n' % predInd)
-        out.write('      return boost::shared_ptr<AbstractCppPredator>(new STUDENT_PREDATOR_%s::%s(dims,toroidalWorld,moves));\n' % (student,predator))
+        if isNew:
+          out.write('      predatorNew = boost::shared_ptr<PredatorStudentCppAbstract>(new STUDENT_PREDATOR_%s::%s(dims));\n' % (student,predator))
+        else:
+          out.write('      predator = boost::shared_ptr<AbstractCppPredator>(new STUDENT_PREDATOR_%s::%s(dims,toroidalWorld,moves));\n' % (student,predator))
+        out.write('      return;\n')
         out.write('    }\n')
       #out.write('    return new
       out.write('  }\n')

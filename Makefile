@@ -20,6 +20,7 @@ MODEL_DIR = model
 PLANNING_DIR = planning
 TEST_DIR = test
 STUDENT_DIR= studentAgents/agents
+STUDENT_DIR_NEW= studentAgents/agentsNew
 # specify compile and flags
 ifeq ($(shell bin/onLabMachine.sh),yes)
 PYTHON_VERSION=2.6
@@ -38,11 +39,11 @@ RM = rm -f
 MAIN_SOURCES = main.cpp
 WEKA_SOURCES = mainWekaAddWeights.cpp common/DecisionTree.cpp common/WekaParser.cpp common/Point2D.cpp
 COMMON_SOURCES = DecisionTree.cpp FeatureExtractor.cpp OutputDT.cpp Point2D.cpp tinymt32.cpp Util.cpp WekaParser.cpp
-CONTROLLER_SOURCES = AStar.cpp ModelUpdater.cpp ModelUpdaterBayes.cpp ModelUpdaterSilver.cpp PredatorDecisionTree.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentCpp.cpp PredatorStudentCpp_gen.cpp PredatorStudentPython.cpp PredatorStudentPythonNew.cpp PredatorSurround.cpp PredatorSurroundWithPenalties.cpp PredatorTeammateAware.cpp PreyAvoidNeighbor.cpp State.cpp World.cpp WorldBeliefMDP.cpp WorldMDP.cpp# WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
+CONTROLLER_SOURCES = AStar.cpp ModelUpdater.cpp ModelUpdaterBayes.cpp ModelUpdaterSilver.cpp PredatorDecisionTree.cpp PredatorGreedy.cpp PredatorGreedyProbabilistic.cpp PredatorMCTS.cpp PredatorProbabilisticDestinations.cpp PredatorStudentCpp.cpp PredatorStudentCpp_gen.cpp PredatorStudentCppAbstract.cpp PredatorStudentPython.cpp PredatorSurround.cpp PredatorSurroundWithPenalties.cpp PredatorTeammateAware.cpp PreyAvoidNeighbor.cpp State.cpp World.cpp WorldBeliefMDP.cpp WorldMDP.cpp# WorldMultiModelMDP.cpp WorldSilverMDP.cpp WorldSilverWeightedMDP.cpp
 FACTORY_SOURCES = AgentFactory.cpp PlanningFactory.cpp WorldFactory.cpp
 MODEL_SOURCES = AgentModel.cpp Common.cpp WorldModel.cpp
 PLANNING_SOURCES = 
-STUDENT_SOURCES = $(patsubst $(SOURCE_DIR)/%, %, $(wildcard $(SOURCE_DIR)/$(STUDENT_DIR)/*/Predator.cpp))
+STUDENT_SOURCES = $(patsubst $(SOURCE_DIR)/%, %, $(wildcard $(SOURCE_DIR)/$(STUDENT_DIR)/*/Predator.cpp) $(wildcard $(SOURCE_DIR)/$(STUDENT_DIR_NEW)/*/cppPredator/MyPredator.cpp))
 #TEST_SOURCES = planningSpeed.cpp
 #TEST_SOURCES = pursuitTest.cpp
 #TEST_SOURCES = jsonTest.cpp
@@ -113,6 +114,7 @@ endif
 
 # change the flags for the students
 $(BUILD_DIR)/$(STUDENT_DIR)/%.o : FLAGS = $(STUDENT_FLAGS)
+$(BUILD_DIR)/$(STUDENT_DIR_NEW)/%.o : FLAGS = $(STUDENT_FLAGS)
 # compile the objects
 $(BUILD_DIR)/%.o: 
 	@mkdir -p $(dir $@)

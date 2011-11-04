@@ -3,18 +3,31 @@ File: PredatorStudentCpp.cpp
 Author: Samuel Barrett
 Description: wrapper around the student's c++ predator for assignment 1
 Created:  2011-09-14
-Modified: 2011-09-14
+Modified: 2011-11-04
 */
 
 #include "PredatorStudentCpp.h"
 
-const Point2D PredatorStudentCpp::moves[5] = {Point2D(0,0),Point2D(1,0),Point2D(-1,0),Point2D(0,1),Point2D(0,-1)};
+ActionProbs convertStudentAction(int action) {
+  return ActionProbs(getAction(STUDENT_MOVES_OLD[action]));
+}
+
+ActionProbs convertStudentActionNew(const MoveDistribution &action) {
+  ActionProbs actionProbs;
+
+  actionProbs[getAction(Point2D( 0, 0))] = action.probNoop;
+  actionProbs[getAction(Point2D(-1, 0))] = action.probLeft;
+  actionProbs[getAction(Point2D( 1, 0))] = action.probRight;
+  actionProbs[getAction(Point2D( 0,-1))] = action.probUp;
+  actionProbs[getAction(Point2D( 0, 1))] = action.probDown;
+  return actionProbs;
+}
 
 PredatorStudentCpp::PredatorStudentCpp(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &name, unsigned int predatorInd):
   Agent(rng,dims),
   name(name)
 {
-  predator = createPredator(name,predatorInd);
+  createPredator(name,predatorInd);
 }
 
 PredatorStudentCpp::~PredatorStudentCpp() {
@@ -39,8 +52,13 @@ ActionProbs PredatorStudentCpp::step(const Observation &obs) {
   }
   // set the random seed for the agents
   srand(rng->randomUInt());
-  int action = predator->step(pos,preyPositions,predatorPositions);
-  return ActionProbs(getAction(moves[action]));
+  if (predator.get() != NULL) {
+    int action = predator->step(pos,preyPositions,predatorPositions);
+    return convertStudentAction(action);
+  } else {
+    MoveDistribution move = predatorNew->step(pos,preyPositions[0],predatorPositions);
+    return convertStudentActionNew(move);
+  }
 }
 
 void PredatorStudentCpp::restart() {

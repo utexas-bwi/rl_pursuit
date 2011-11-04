@@ -4,12 +4,17 @@
 /*
 File: PredatorStudentCpp.h
 Author: Samuel Barrett
-Description: wrapper around the student's c++ predator for assignment 1
+Description: wrapper around the student's c++ predator for assignment 1 and for the second class
 Created:  2011-09-14
-Modified: 2011-09-14
+Modified: 2011-11-04
 */
 
 #include "Agent.h"
+#include "PredatorStudentCppAbstract.h"
+
+const Point2D STUDENT_MOVES_OLD[5] = {Point2D(0,0),Point2D(1,0),Point2D(-1,0),Point2D(0,1),Point2D(0,-1)};
+ActionProbs convertStudentAction(int action);
+ActionProbs convertStudentActionNew(const MoveDistribution &action);
 
 class AbstractCppPredator {
 public:
@@ -31,11 +36,11 @@ public:
   }
 
 private:
-  boost::shared_ptr<AbstractCppPredator> createPredator(const std::string &name, unsigned int predatorInd);
+  void createPredator(const std::string &name, unsigned int predatorInd);
 
 private:
-  static const Point2D moves[5];
   boost::shared_ptr<AbstractCppPredator> predator;
+  boost::shared_ptr<PredatorStudentCppAbstract> predatorNew;
   const std::string name;
 };
 

@@ -4,9 +4,9 @@
 /*
 File: PredatorStudentPython.h
 Author: Samuel Barrett
-Description: a wrapper around a student's python predator for assignment 1
+Description: a wrapper around a student's python predator for assignment 1 or the 2011 assignment
 Created:  2011-09-12
-Modified: 2011-09-12
+Modified: 2011-11-04
 */
 
 #include <boost/python.hpp>
@@ -31,11 +31,11 @@ private:
   void cleanClass();
 
 private:
-  static const Point2D moves[5];
   static int predatorCount;
   static boost::python::object dictionary;
   boost::python::object predator;
   const std::string name;
+  bool isNew;
 };
 
 #endif /* end of include guard: PREDATORSTUDENTPYTHON_3BX3WYRK */
