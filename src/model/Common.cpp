@@ -62,7 +62,7 @@ bool ActionProbs::checkTotal() {
   float total = 0;
   for (unsigned int i = 0; i < Action::NUM_MOVES; i++)
     total += probs[i];
-  return fabs(1.0 - total) < 1e-5;
+  return fabs(1.0 - total) < 1e-3;
 }
 
 Action::Type ActionProbs::maxAction() {
