@@ -3,7 +3,7 @@
 import subprocess, os
 from setupCondor import run as setupCondor
 
-def main(numTestingTrials,numTrainingTrials):
+def main(numTestingTrials,numTrainingTrials,runTrueModel):
   with open('data/aamas11students.txt','r') as f:
     students = set(f.read().split())
 
@@ -20,14 +20,15 @@ def main(numTestingTrials,numTrainingTrials):
     contents = config.replace('$(STUDENT)',student)
     with open(studentConfig,'w') as f:
       f.write(contents)
-
-    # plan with the TRUE model
-    plannerContents = plannerConfig.replace('$(PREDATOR)','student').replace('$(OPTIONS)','"student":"%s"' % student)
-    with open(plannerConfigFile,'w') as f:
-      f.write(plannerContents)
-    basename = '20x20-%s-true' % student
-    setupCondor(basename,numTestingTrials,1,[studentConfig,plannerConfigFile])
-    subprocess.check_call(['condor_submit',os.path.join('condor',basename,'job.condor')])
+  
+    if runTrueModel:
+      # plan with the TRUE model
+      plannerContents = plannerConfig.replace('$(PREDATOR)','student').replace('$(OPTIONS)','"student":"%s"' % student)
+      with open(plannerConfigFile,'w') as f:
+        f.write(plannerContents)
+      basename = '20x20-%s-true' % student
+      setupCondor(basename,numTestingTrials,1,[studentConfig,plannerConfigFile])
+      subprocess.check_call(['condor_submit',os.path.join('condor',basename,'job.condor')])
 
     # plan with the DT model
     plannerContents = plannerConfig.replace('$(PREDATOR)','dt').replace('$(OPTIONS)','"filename":"data/dt/weighted/%s-%i.weka"' % (student,numTrainingTrials))
@@ -39,8 +40,14 @@ def main(numTestingTrials,numTrainingTrials):
 
 if __name__ == '__main__':
   import sys
-  usage = 'Usage: compareStudentsToDTs.py numTestingTrials numTrainingTrials'
+  usage = 'Usage: compareStudentsToDTs.py [options] numTestingTrials numTrainingTrials \nOptions:\n  -t do not run the true model'
   args = sys.argv[1:]
+
+  runTrueModel = True
+  if '-t' in args:
+    runTrueModel = False
+    args.remove('-t')
+  
   if len(args) != 2:
     print usage
     sys.exit(1)
@@ -50,4 +57,4 @@ if __name__ == '__main__':
 
   numTestingTrials = int(args[0])
   numTrainingTrials = int(args[1])
-  main(numTestingTrials,numTrainingTrials)
+  main(numTestingTrials,numTrainingTrials,runTrueModel)
