@@ -4,7 +4,7 @@ import subprocess, time, multiprocessing, os
 from createDT import main as createDT
 
 def main(numTrials,stayWeight,treeOptions):
-  with open('data/aamas11students.txt','r') as f:
+  with open('data/students.txt','r') as f:
     students = set(f.read().split())
 
   dataDir = os.path.join('data','dt-train',str(numTrials))

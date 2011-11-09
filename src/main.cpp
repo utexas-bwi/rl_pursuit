@@ -75,7 +75,8 @@ int main(int argc, const char *argv[])
     }
   }
 
-  // get the output DT file
+  // get the output DT information
+  unsigned int outputDTSteps = options["verbosity"].get("dtsteps",0).asUInt();
   std::string outputDTFilename = options["verbosity"].get("dtfile","").asString();
   bool outputDTCSVQ = (outputDTFilename != "");
   boost::shared_ptr<OutputDT> outputDT;
@@ -114,15 +115,23 @@ int main(int argc, const char *argv[])
 
     // create models for the DT csv output if required
     std::vector<std::string> modelNames;
-    if (outputDTCSVQ && (trial == 0)) {
-      modelNames.push_back("GR");
-      modelNames.push_back("TA");
-      modelNames.push_back("GP");
-      modelNames.push_back("PD");
-      outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true,true));
-      actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
-    }
+    if (outputDTCSVQ) {
+      if (trial == 0) {
+        modelNames.push_back("GR");
+        modelNames.push_back("TA");
+        modelNames.push_back("GP");
+        modelNames.push_back("PD");
+        outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true,true,outputDTSteps));
+        actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
+      }
 
+      if (outputDT->hasCollectedSufficientData()) {
+        std::cout << "WARNING: collected sufficient data, stopping with " << trial << " trials" << std::endl;
+        numSteps.resize(trial);
+        break;
+      }
+    }
+    
     if ((trial == 0) && (displayDescriptionQ))
       std::cout << world->generateDescription() << std::endl;
     
@@ -147,7 +156,7 @@ int main(int argc, const char *argv[])
         }
         if (outputDTCSVQ) {
           model->generateObservation(obs);
-          outputDT->outputStep(trial,numSteps[trial][episode],obs,*actions);
+          outputDT->saveStep(trial,numSteps[trial][episode],obs,*actions);
         } // end output dt csv
       } // while the episode lasts
       if (displayStepsPerEpisodeQ)
@@ -164,6 +173,9 @@ int main(int argc, const char *argv[])
   // optionally save the results
   if (saveResultsQ)
     saveResults(saveFilename,startTrial,numSteps);
+  // optionally finialize the saving of data for the DT
+  if (outputDTCSVQ)
+    outputDT->finalizeSave(randomSeed);
 
   return 0;
 }

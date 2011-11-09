@@ -9,6 +9,7 @@ Modified: 2011-10-26
 #include "OutputDT.h"
 #include <boost/lexical_cast.hpp>
 #include <factory/AgentFactory.h>
+#include <algorithm>
 
 OutputDT::FeatureType::FeatureType(const std::string &name, int numCategories):
   name(name),
@@ -16,13 +17,14 @@ OutputDT::FeatureType::FeatureType(const std::string &name, int numCategories):
 {
 }
 
-OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff, bool useDesiredActions):
+OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff, bool useDesiredActions, unsigned int numSamples):
   out(filename.c_str()),
   dims(dims),
   numPredators(numPredators),
   outputArff(outputArff),
   useDesiredActions(useDesiredActions),
-  featureExtractor(dims)
+  featureExtractor(dims),
+  numSamples(numSamples)
 {
   for (unsigned int i = 0; i < modelNames.size(); i++)
     featureExtractor.addFeatureAgent(modelNames[i],modelNames[i]);
@@ -59,11 +61,12 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
     outputCSVHeader();
 }
 
-void OutputDT::outputStep(unsigned int trialNum, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions) {
+void OutputDT::saveStep(unsigned int trialNum, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions) {
   assert(obs.preyInd == 0);
   if (useDesiredActions)
     assert(desiredActions.size() == obs.positions.size());
   if (numSteps > 1) {
+    std::vector<std::string> output;
     for (unsigned int predInd = 0; predInd < numPredators; predInd++) {
       unsigned int agentInd = predInd + 1;
       prevObs.myInd = agentInd;
@@ -72,22 +75,31 @@ void OutputDT::outputStep(unsigned int trialNum, unsigned int numSteps, const Ob
 
       // add the trial number and number of steps
       features["Trial"] = trialNum;
-      features["Step"] = numSteps;
+      features["Step"] = numSteps - 1;
       
       assert(features.size() == featureTypes.size() - 1); // 1 for the true class
       for (unsigned int i = 0; i < featureTypes.size() - 1; i++) {
-        out << features[featureTypes[i].name] << ",";
+        ss << features[featureTypes[i].name] << ",";
       }
       if (useDesiredActions) {
-        out << desiredActions[agentInd];
+        ss << desiredActions[agentInd];
       } else {
         // the true action taken
         Point2D diff = getDifferenceToPoint(dims,prevObs.positions[agentInd],obs.positions[agentInd]);
         Action::Type action = getAction(diff);
-        out << action;
+        ss << action;
       }
-      out << std::endl;
+      ss << std::endl;
+      std::string temp;
+      ss >> temp;
+      ss.str("");
+      //std::cout << "temp: " << temp << "." << std::endl;
+      //if (ss.str() != "")
+        //std::cout << "ss.str(): " << ss.str() << "." << std::endl;
+      assert(ss.str() == "");
+      output.push_back(temp);
     }
+    outputForSteps.push_back(output);
   }
   prevObs = obs;
 }
@@ -118,4 +130,33 @@ void OutputDT::outputCSVHeader() {
   for (unsigned int i = 0; i < featureTypes.size(); i++)
     out << featureTypes[i].name << ",";
   out << std::endl;
+}
+
+bool OutputDT::hasCollectedSufficientData() {
+  if (numSamples <= 0)
+    return false;
+  return outputForSteps.size() >= numSamples;
+}
+
+void OutputDT::finalizeSave(unsigned int randomSeed) {
+  std::vector<unsigned int> inds(outputForSteps.size());
+  selectInds(randomSeed,inds);
+  
+  if (inds.size() < numSamples)
+    std::cerr << "OutputDT::finalizeSave: WARNING: not enough data, wanted " << numSamples << " but only got " << inds.size() << std::endl;
+
+  for (unsigned int i = 0; i < inds.size(); i++) {
+    unsigned int ind = inds[i];
+    for (unsigned int j = 0; j < outputForSteps[ind].size(); j++) {
+      out << outputForSteps[ind][j] << std::endl;
+    }
+  }
+}
+
+void OutputDT::selectInds(unsigned int randomSeed, std::vector<unsigned int> &inds) {
+  RNG rng(randomSeed);
+  rng.randomOrdering(inds);
+  if ((numSamples > 0) && (inds.size() > numSamples))
+    inds.resize(numSamples);
+  std::sort(inds.begin(),inds.end());
 }

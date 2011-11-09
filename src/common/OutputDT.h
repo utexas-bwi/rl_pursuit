@@ -12,6 +12,7 @@ Modified: 2011-10-26
 #include <fstream>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <boost/shared_ptr.hpp>
 
 #include <common/Point2D.h>
@@ -24,23 +25,32 @@ public:
     std::string name;
     int numCategories;
   };
-  OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff, bool useDesiredActions);
+  OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff, bool useDesiredActions, unsigned int numSamples);
 
-  void outputStep(unsigned int trialNum, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions);
+  void saveStep(unsigned int trialNum, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions);
+
+  bool hasCollectedSufficientData();
+  void finalizeSave(unsigned int randomSeed);
 
 protected:
   void outputArffHeader();
   void outputCSVHeader();
 
+  void selectInds(unsigned int randomSeed, std::vector<unsigned int> &inds);
+
 protected:
   std::ofstream out;
+  std::stringstream ss;
   Point2D dims;
   unsigned int numPredators;
   bool outputArff;
   bool useDesiredActions;
   std::vector<FeatureType> featureTypes;
+  std::vector<std::vector<std::string> > outputForSteps;
+  std::vector<Features> featureList;
   Observation prevObs;
   FeatureExtractor featureExtractor;
+  unsigned int numSamples;
 };
 
 #endif /* end of include guard: OUTPUTDT_UWZJJH2T */

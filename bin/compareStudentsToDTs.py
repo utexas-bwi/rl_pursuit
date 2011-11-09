@@ -4,7 +4,7 @@ import subprocess, os
 from setupCondor import run as setupCondor
 
 def main(numTestingTrials,numTrainingTrials,runTrueModel):
-  with open('data/aamas11students.txt','r') as f:
+  with open('data/students.txt','r') as f:
     students = set(f.read().split())
 
   with open('configs/student_compare.json','r') as f:
