@@ -44,7 +44,7 @@ def setupPlanner(parser,values):
   group = OptionGroup(parser,'planner')
   addBoolOption(group,'silver',False)
   addBoolOption(group,'weighted',True)
-  addOption(group,'update','choice',None,choices=['bayesian','polynomial'])
+  addOption(group,'update','choice','polynomial',choices=['bayesian','polynomial'])
   addOption(group,'lambda','float',0.8)
   addOption(group,'gamma','float',0.95)
   addOption(group,'unseenValue','float',999999)
