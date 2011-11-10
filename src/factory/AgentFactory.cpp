@@ -61,6 +61,17 @@ bool getStudentFromFile(const std::string &filename, std::string &student, unsig
   return true;
 }
 
+std::string getStudentForTrial(unsigned int trialNum, const Json::Value &options) {
+  std::string student = options.get("student","").asString();
+  if (student == "") {
+    std::cerr << "createAgent: ERROR: no student type specified" << std::endl;
+    exit(3);
+  }
+
+  getStudentFromFile(student,student,trialNum);
+  return student;
+}
+
 boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions) {
   typedef boost::shared_ptr<Agent> ptr;
   
@@ -102,22 +113,26 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new PredatorSurroundWithPenalties(rng,dims,outputPenaltyMode));
   } else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {
     std::string filename = options.get("filename","").asString();
+    // fill out the size
     std::string sizeId = "$(SIZE)";
     size_t ind = filename.find(sizeId);
     if (ind != std::string::npos) {
       std::string size = boost::lexical_cast<std::string>(dims.x) + "x" + boost::lexical_cast<std::string>(dims.y);
       filename.replace(ind,sizeId.size(),size);
     }
+    // fill out the student
+    std::string studentId = "$(STUDENT)";
+    ind = filename.find(studentId);
+    if (ind != std::string::npos) {
+      std::string student = getStudentForTrial(trialNum,options);
+      filename.replace(ind,studentId.size(),student);
+    }
+    std::cout << filename << std::endl;
+    exit(0);
+
     return ptr(new PredatorDecisionTree(rng,dims,filename));
   } else if (NAME_IN_SET("student")) {
-    std::string student = options.get("student","").asString();
-    if (student == "") {
-      std::cerr << "createAgent: ERROR: no student type specified" << std::endl;
-      exit(3);
-    }
-
-    getStudentFromFile(student,student,trialNum);
-
+    std::string student = getStudentForTrial(trialNum,options);
     if ((predatorInd < 0) || (predatorInd >= 4)) {
       std::cerr << "createAgent: ERROR: bad predator ind specified for student: " << student << std::endl;
       exit(3);
