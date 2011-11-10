@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import subprocess, time, multiprocessing, os
+import os
 from createDT import main as createDT
 
 def main(numTrials,stayWeight,treeOptions):
