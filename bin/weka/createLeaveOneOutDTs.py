@@ -1,8 +1,23 @@
 #!/usr/bin/env python
 
-import os, sys, tempfile
+import os, sys, tempfile, multiprocessing
 from copy import copy
 from createDT import main as createDT
+
+def processStudent(student,i,header,lines):
+  fd,filename = tempfile.mkstemp('.arff')
+  f = os.fdopen(fd,'w')
+  try:
+    print '-------------------'
+    print student
+    print '-------------------'
+    contents = header + sum(lines[:i] + lines[i+1:],[])
+    f.writelines(contents)
+    f.close()
+    createDT(filename,'leaveOneOut-%s-%s'%(student,dataBasename),stayWeight,treeOptions)
+  finally:
+    f.close()
+    os.remove(filename)
 
 def main(dataBasename,stayWeight,treeOptions):
   with open('data/students.txt','r') as f:
@@ -26,21 +41,12 @@ def main(dataBasename,stayWeight,treeOptions):
         header = temp[:ind]
       lines.append(temp[ind:])
   # do it
+  pool = multiprocessing.Pool(processes = 2)
   for i,student in enumerate(students):
-    fd,filename = tempfile.mkstemp('.arff')
-    f = os.fdopen(fd,'w')
-    try:
-      print '-------------------'
-      print student
-      print '-------------------'
-      contents = header + sum(lines[:i] + lines[i+1:],[])
-      f.writelines(contents)
-      f.close()
-      createDT(filename,'leaveOneOut-%s-%s'%(student,dataBasename),stayWeight,treeOptions)
-    finally:
-      f.close()
-      os.remove(filename)
-
+    #processStudent(student,i,header,lines)
+    pool.apply_async(processStudent,(student,i,header,lines))
+  pool.close()
+  pool.join()
 
 if __name__ == '__main__':
   usage = 'Usage: createLeaveOneOutDTs.py dataBasename [treeOptions ...]'
