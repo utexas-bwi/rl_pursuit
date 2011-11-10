@@ -23,7 +23,7 @@ def combineARFFs(inFiles,outFile):
   out.close()
 
 def main(numTrials,numTrainingSamples):
-  dtTrainDir = 'data/dt-train/%i' % numTrials
+  dtTrainDir = 'data/dt-train/%i-%i' % (numTrainingSamples,numTrials)
   if not(os.path.exists(dtTrainDir)):
     os.mkdir(dtTrainDir)
 
