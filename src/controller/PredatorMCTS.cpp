@@ -9,7 +9,7 @@ PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boos
 {}
 
 ActionProbs PredatorMCTS::step(const Observation &obs) {
-  std::cout << "REAL WORLD STATE: " << obs << std::endl;
+  //std::cout << "REAL WORLD STATE: " << obs << std::endl;
   // update the probabilities of the models
   if (prevAction < Action::NUM_MOVES) {
     //std::cout << "start predmcts model update" << std::endl;

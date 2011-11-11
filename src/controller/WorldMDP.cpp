@@ -19,9 +19,9 @@ void WorldMDP::setState(const State_t &state) {
   getPositionsFromState(state,model->getDims(),positions,preyPos);
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,positions[i]);
-  Observation obs;
-  model->generateObservation(obs);
-  std::cout << "worldmdp setstate2: " << obs << std::endl;
+  //Observation obs;
+  //model->generateObservation(obs);
+  //std::cout << "worldmdp setstate2: " << obs << std::endl;
 }
 
 void WorldMDP::setState(const Observation &obs) {
