@@ -80,14 +80,21 @@ State_t getStateFromObs(const Point2D &dims, const Observation &obs) {
 }
 
 void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions) {
-  State_t origState(state);
   // first agent is in center
-  positions[0] = 0.5f * dims;
+  //positions[0] = 0.5f * dims;
+  getPositionsFromState(state,dims,positions,0.5f * dims);
+}
+
+void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions, const Point2D &preyPos) {
+  State_t origState(state);
+  Point2D offset = preyPos - 0.5f * dims;
+  positions[0] = preyPos;
   for (unsigned int i = 1; i < positions.size(); i++) {
     positions[i].x = state % dims.x;
     state /= dims.x;
     positions[i].y = state % dims.y;
     state /= dims.y;
+    positions[i] = movePosition(dims,positions[i],offset);
   }
   if (state != 0) {
     std::cerr << "NOT ZERO: " << state << std::endl;

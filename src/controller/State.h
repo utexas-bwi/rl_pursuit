@@ -16,6 +16,7 @@ const unsigned int STATE_SIZE = 5;
 typedef uint64_t State_t;
 State_t getStateFromObs(const Point2D &dims, const Observation &obs);
 void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions);
+void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions, const Point2D &preyPos);
 
 class StateConverter {
 public:

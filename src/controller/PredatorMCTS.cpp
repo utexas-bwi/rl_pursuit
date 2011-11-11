@@ -9,7 +9,7 @@ PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boos
 {}
 
 ActionProbs PredatorMCTS::step(const Observation &obs) {
-  //std::cout << "REAL WORLD STATE: " << obs << std::endl;
+  std::cout << "REAL WORLD STATE: " << obs << std::endl;
   // update the probabilities of the models
   if (prevAction < Action::NUM_MOVES) {
     //std::cout << "start predmcts model update" << std::endl;
@@ -18,6 +18,7 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
   }
   // set the beliefs of the model (applicable for the belief mdp)
   model->setBeliefs(modelUpdater);
+  model->setPreyPos(obs.preyPos());
   // do the searching
   State_t state = model->getState(obs);
   //std::cout << "----------START SEARCH---------" << std::endl;

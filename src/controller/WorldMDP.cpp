@@ -9,15 +9,19 @@ WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> mod
 {
 }
 
+void WorldMDP::setPreyPos(const Point2D &preyPos) {
+  this->preyPos = preyPos;
+}
+
 void WorldMDP::setState(const State_t &state) {
   //std::cout << "worldmdp setState: " << state << std::endl;
   std::vector<Point2D> positions(STATE_SIZE);
-  getPositionsFromState(state,model->getDims(),positions);
+  getPositionsFromState(state,model->getDims(),positions,preyPos);
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,positions[i]);
-  //Observation obs;
-  //model->generateObservation(obs);
-  //std::cout << "worldmdp setstate2: " << obs << std::endl;
+  Observation obs;
+  model->generateObservation(obs);
+  std::cout << "worldmdp setstate2: " << obs << std::endl;
 }
 
 void WorldMDP::setState(const Observation &obs) {
