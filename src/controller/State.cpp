@@ -62,13 +62,19 @@ std::size_t hash_value(const State &s) {
 }
 */
 
-State_t getStateFromObs(const Point2D &dims, const Observation &obs) {
+State_t getStateFromObs(const Point2D &dims, const Observation &obs, bool usePreySymmetry) {
   State_t state = 0;
-  // move the first agent to the center
-  Point2D offset((0.5f * dims) - obs.positions[0]);
   Point2D pos;
+  Point2D offset(0,0);
+  int endInd = 0;
 
-  for (int i = ((int)obs.positions.size())-1; i >= 1; i--) {
+  if (usePreySymmetry) {
+    // move the first agent to the center
+    offset = (0.5f * dims) - obs.positions[0];
+    endInd = 1;
+  }
+
+  for (int i = ((int)obs.positions.size())-1; i >= endInd; i--) {
     pos = obs.positions[i];
     pos = movePosition(dims,pos,offset);
     state *= dims.y;
@@ -79,17 +85,23 @@ State_t getStateFromObs(const Point2D &dims, const Observation &obs) {
   return state;
 }
 
-void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions) {
+void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions, bool usePreySymmetry) {
   // first agent is in center
   //positions[0] = 0.5f * dims;
-  getPositionsFromState(state,dims,positions,0.5f * dims);
+  getPositionsFromState(state,dims,positions,0.5f * dims, usePreySymmetry);
 }
 
-void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions, const Point2D &preyPos) {
+void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point2D> &positions, const Point2D &preyPos, bool usePreySymmetry) {
   State_t origState(state);
-  Point2D offset = preyPos - 0.5f * dims;
-  positions[0] = preyPos;
-  for (unsigned int i = 1; i < positions.size(); i++) {
+  Point2D offset(0,0);
+  int startInd = 0;
+  
+  if (usePreySymmetry) {
+    startInd = 1;
+    positions[0] = preyPos;
+    offset = preyPos - 0.5f * dims;
+  }
+  for (unsigned int i = startInd; i < positions.size(); i++) {
     positions[i].x = state % dims.x;
     state /= dims.x;
     positions[i].y = state % dims.y;
@@ -99,6 +111,10 @@ void getPositionsFromState(State_t state, const Point2D &dims, std::vector<Point
   if (state != 0) {
     std::cerr << "NOT ZERO: " << state << std::endl;
     std::cerr << "original state: " << origState << std::endl;
+    std::cerr << "What we got: ";
+    for (unsigned int i = 0; i < positions.size(); i++)
+      std::cerr << positions[i] << " ";
+    std::cerr << std::endl;
   }
   assert(state == 0);
 }

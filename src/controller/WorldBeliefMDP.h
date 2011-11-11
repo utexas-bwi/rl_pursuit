@@ -14,7 +14,7 @@ Modified: 2011-10-04
 
 class WorldBeliefMDP: public WorldMDP {
 public:
-  WorldBeliefMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, const StateConverter &stateConverter, boost::shared_ptr<ModelUpdaterBayes> modelUpdater);
+  WorldBeliefMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, bool usePreySymmetry, const StateConverter &stateConverter, boost::shared_ptr<ModelUpdaterBayes> modelUpdater);
   
   virtual void setState(const State_t &state);
   virtual State_t getState(const Observation &obs);

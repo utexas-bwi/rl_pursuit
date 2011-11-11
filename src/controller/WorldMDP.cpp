@@ -1,11 +1,13 @@
 #include "WorldMDP.h"
 #include <controller/ModelUpdater.h>
 
-WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent):
+WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, bool usePreySymmetry):
   rng(rng),
   model(model),
   controller(controller),
-  adhocAgent(adhocAgent)
+  adhocAgent(adhocAgent),
+  preyPos(0.5f * model->getDims()),
+  usePreySymmetry(usePreySymmetry)
 {
 }
 
@@ -16,7 +18,7 @@ void WorldMDP::setPreyPos(const Point2D &preyPos) {
 void WorldMDP::setState(const State_t &state) {
   //std::cout << "worldmdp setState: " << state << std::endl;
   std::vector<Point2D> positions(STATE_SIZE);
-  getPositionsFromState(state,model->getDims(),positions,preyPos);
+  getPositionsFromState(state,model->getDims(),positions,preyPos,usePreySymmetry);
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,positions[i]);
   //Observation obs;
@@ -30,7 +32,7 @@ void WorldMDP::setState(const Observation &obs) {
 }
 
 State_t WorldMDP::getState(const Observation &obs) {
-  State_t state = getStateFromObs(model->getDims(),obs);
+  State_t state = getStateFromObs(model->getDims(),obs,usePreySymmetry);
   //std::cout << "worldmdp getState: " << state << std::endl;
   return state;
 }

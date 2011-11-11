@@ -8,8 +8,8 @@ Modified: 2011-10-04
 
 #include "WorldBeliefMDP.h"
 
-WorldBeliefMDP::WorldBeliefMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, const StateConverter &stateConverter, boost::shared_ptr<ModelUpdaterBayes> modelUpdater):
-  WorldMDP(rng,model,controller,adhocAgent),
+WorldBeliefMDP::WorldBeliefMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, bool usePreySymmetry, const StateConverter &stateConverter, boost::shared_ptr<ModelUpdaterBayes> modelUpdater):
+  WorldMDP(rng,model,controller,adhocAgent,usePreySymmetry),
   modelUpdater(modelUpdater),
   stateConverter(stateConverter)
 {

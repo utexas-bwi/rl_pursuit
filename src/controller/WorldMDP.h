@@ -23,7 +23,7 @@ class ModelUpdater;
 
 class WorldMDP: public Model<State_t,Action::Type> {
 public:
-  WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent);
+  WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, bool usePreySymmetry);
   
   virtual void setPreyPos(const Point2D &preyPos);
   virtual void setState(const State_t &state);
@@ -58,6 +58,7 @@ protected:
   std::vector<boost::shared_ptr<Agent> > savedModel;
 
   Point2D preyPos;
+  bool usePreySymmetry;
 
   friend class WorldMDPTest;
   friend class ModelUpdaterBayesTest;
