@@ -88,8 +88,10 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     return ptr(new PredatorProbabilisticDestinations(rng,dims));
   else if (NAME_IN_SET("teammate-aware","ta"))
     return ptr(new PredatorTeammateAware(rng,dims));
-  else if (NAME_IN_SET("dummy"))
-    return ptr(new AgentDummy(rng,dims));
+  else if (NAME_IN_SET("dummy")) {
+    Action::Type action = (Action::Type)options.get("action",Action::NOOP).asInt();
+    return ptr(new AgentDummy(rng,dims,action));
+  }
   else if (NAME_IN_SET("mixed")) {
     Json::Value types = options["types"];
     std::string typeName;
