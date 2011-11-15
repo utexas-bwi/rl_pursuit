@@ -36,6 +36,8 @@ def setupWorldCond(parser,values):
       addOption(group,'%sOptions-student'%base,'str','data/students.txt')
     elif values[base] == 'dt':
       addOption(group,'%sOptions-filename'%base,'str')
+    elif values[base] == 'dummy':
+      addOption(group,'%sOptions-action'%base,'int')
     parser.add_option_group(group)
 
 def setupPlanner(parser,values):
