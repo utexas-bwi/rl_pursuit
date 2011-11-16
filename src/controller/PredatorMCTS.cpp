@@ -35,7 +35,7 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
 }
 
 void PredatorMCTS::restart() {
-  // TODO, only necessary for determining types
+  // only necessary for determining types
   //planner->restart();
   prevAction = Action::NUM_MOVES;
 }

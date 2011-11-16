@@ -90,7 +90,6 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
         newModelProbs[i] *= modelProb;
         break;
       case POLYNOMIAL_WEIGHTS:
-        // TODO Look at this again
         loss = 1.0 - modelProb;
         newModelProbs[i] *= (1 - eta * loss);
         break;

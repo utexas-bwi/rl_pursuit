@@ -130,7 +130,7 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::v
     //features["Prob Dest"] = features["PD.des"];
     //features["DeltaXtoP"] = features["DeltaXToPrey"];
     //features["DeltaYtoP"] = features["DeltaYToPrey"];
-    //features["sum"] = 0; // TODO
+    //features["sum"] = 0; 
   
     unsigned int trueClass = (int)(features[featureNames.back()] + 0.5);
     dt->classify(features,c,true,trueClass,weight);
