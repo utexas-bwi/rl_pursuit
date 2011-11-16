@@ -20,6 +20,7 @@ def setupVerbosity(parser):
   parser.add_option_group(group)
 
 def setupWorld(parser):
+  addBoolOption(parser,'centerPrey',True)
   addOption(parser,'width','int',20)
   addOption(parser,'height','int',20)
   addOption(parser,'prey','str','random')
