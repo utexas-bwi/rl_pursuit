@@ -21,9 +21,9 @@ int getReplacementInd(unsigned int trialNum);
 boost::shared_ptr<WorldModel> createWorldModel(const Point2D &dims);
 
 // world model + controller
-boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, double actionNoise);
-boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, const Point2D &dims, double actionNoise);
-boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, double actionNoise);
+boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, double actionNoise, bool centerPrey);
+boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, const Point2D &dims, double actionNoise, bool centerPrey);
+boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, double actionNoise, bool centerPrey);
 
 // just agents
 void createAgentModels(int replacementInd, std::vector<AgentModel> &agentModels);
@@ -32,14 +32,15 @@ void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &
 
 // world model + controller + agents
 boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<World> world, unsigned int trialNum, const Json::Value &options);
-boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, unsigned int trialNum, double actionNoise, const Json::Value &options);
-boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, double actionNoise, const Json::Value &options);
-boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, double actionNoise, const Json::Value &options);
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, unsigned int trialNum, double actionNoise, bool centerPrey, const Json::Value &options);
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, double actionNoise, bool centerPrey, const Json::Value &options);
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, double actionNoise, bool centerPrey, const Json::Value &options);
 boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, unsigned int trialNum, const Json::Value &options);
-boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, unsigned int trialNum, double actionNoise, const Json::Value &options);
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, unsigned int trialNum, double actionNoise, bool centerPrey, const Json::Value &options);
 
 // helpers
 Point2D getDims(const Json::Value &options);
 double getActionNoise(const Json::Value &options);
+bool getCenterPrey(const Json::Value &options);
 
 #endif /* end of include guard: WORLDFACTORY_NNNSUN1M */

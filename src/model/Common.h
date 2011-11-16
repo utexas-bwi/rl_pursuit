@@ -64,6 +64,7 @@ struct Observation {
   std::vector<Point2D> positions;
   int preyInd;
   unsigned int myInd;
+  Point2D absPrey;
 
   const Point2D& preyPos() const;
   const Point2D& myPos() const;

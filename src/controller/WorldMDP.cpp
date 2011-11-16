@@ -22,7 +22,7 @@ void WorldMDP::setState(const State_t &state) {
   for (unsigned int i = 0; i < STATE_SIZE; i++)
     model->setAgentPosition(i,positions[i]);
   //Observation obs;
-  //model->generateObservation(obs);
+  //controller->generateObservation(obs);
   //std::cout << "worldmdp setstate2: " << obs << std::endl;
 }
 
@@ -55,7 +55,7 @@ void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &st
   }
 
   Observation obs;
-  model->generateObservation(obs);
+  controller->generateObservation(obs);
   state = getState(obs);
   //std::cout << obs << std::endl;
   //for (unsigned int i = 0; i < STATE_SIZE; i++)

@@ -25,13 +25,13 @@ Modified: 2011-10-27
 
 class World {
 public:
-  World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise);
+  World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise, bool centerPrey);
   
+  void generateObservation(Observation &obs);
   void step();
   void step(boost::shared_ptr<std::vector<Action::Type> > actions);
   void step(std::vector<boost::shared_ptr<Agent> > &agents);
   void step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents);
-  void generateObservation(Observation &obs);
   void randomizePositions();
   void restartAgents();
   bool addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition=false);
@@ -49,6 +49,7 @@ protected:
   const Point2D dims;
   std::vector<boost::shared_ptr<Agent> > agents;
   double actionNoise;
+  bool centerPrey;
 
 protected:
   void handleCollisions(const std::vector<Point2D> &requestedPositions);

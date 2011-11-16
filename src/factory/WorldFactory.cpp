@@ -19,18 +19,18 @@ boost::shared_ptr<WorldModel> createWorldModel(const Point2D &dims) {
   return boost::shared_ptr<WorldModel>(new WorldModel(dims));
 }
 
-boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, double actionNoise) {
-  return boost::shared_ptr<World>(new World(rng,model,actionNoise));
+boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, double actionNoise, bool centerPrey) {
+  return boost::shared_ptr<World>(new World(rng,model,actionNoise,centerPrey));
 }
 
-boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, const Point2D &dims, double actionNoise) {
+boost::shared_ptr<World> createWorld(boost::shared_ptr<RNG> rng, const Point2D &dims, double actionNoise, bool centerPrey) {
   boost::shared_ptr<WorldModel> model = createWorldModel(dims);
-  return createWorld(rng,model,actionNoise);
+  return createWorld(rng,model,actionNoise,centerPrey);
 }
 
-boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, double actionNoise) {
+boost::shared_ptr<World> createWorld(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, double actionNoise, bool centerPrey) {
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
-  return createWorld(rng,model,actionNoise);
+  return createWorld(rng,model,actionNoise,centerPrey);
 }
 
 void createAgentModels(int replacementInd, std::vector<AgentModel> &agentModels) {
@@ -95,28 +95,28 @@ boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::sh
   return world;
 }
 
-boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, unsigned int trialNum, double actionNoise, const Json::Value &options) {
-  boost::shared_ptr<World> world = createWorld(rng,model,actionNoise);
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, unsigned int trialNum, double actionNoise, bool centerPrey, const Json::Value &options) {
+  boost::shared_ptr<World> world = createWorld(rng,model,actionNoise,centerPrey);
   return createWorldAgents(rng,world,trialNum,options);
 }
 
-boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, double actionNoise, const Json::Value &options) {
-  boost::shared_ptr<World> world = createWorld(rng,dims,actionNoise);
+boost::shared_ptr<World> createWorldAgents(boost::shared_ptr<RNG> rng, const Point2D &dims, unsigned int trialNum, double actionNoise, bool centerPrey, const Json::Value &options) {
+  boost::shared_ptr<World> world = createWorld(rng,dims,actionNoise,centerPrey);
   return createWorldAgents(rng,world,trialNum,options);
 }
 
-boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, double actionNoise, const Json::Value &options) {
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, double actionNoise, bool centerPrey, const Json::Value &options) {
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
-  return createWorldAgents(rng,dims,trialNum,actionNoise,options);
+  return createWorldAgents(rng,dims,trialNum,actionNoise,centerPrey,options);
 }
 
 boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, unsigned int trialNum, const Json::Value &options) {
-  return createWorldAgents(randomSeed,getDims(options),trialNum,getActionNoise(options),options);
+  return createWorldAgents(randomSeed,getDims(options),trialNum,getActionNoise(options),getCenterPrey(options),options);
 }
 
-boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, unsigned int trialNum, double actionNoise, const Json::Value &options) {
+boost::shared_ptr<World> createWorldAgents(unsigned int randomSeed, boost::shared_ptr<WorldModel> model, unsigned int trialNum, double actionNoise, bool centerPrey, const Json::Value &options) {
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
-  return createWorldAgents(rng,model,trialNum,actionNoise,options);
+  return createWorldAgents(rng,model,trialNum,actionNoise,centerPrey, options);
 }
 
 Point2D getDims(const Json::Value &options) {
@@ -125,4 +125,8 @@ Point2D getDims(const Json::Value &options) {
 
 double getActionNoise(const Json::Value &options) {
   return options.get("actionNoise",0).asDouble();
+}
+
+bool getCenterPrey(const Json::Value &options) {
+  return options.get("centerPrey",true).asBool();
 }

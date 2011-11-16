@@ -153,9 +153,10 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     }
 
     double actionNoise = getActionNoise(rootOptions);
+    bool centerPrey = getCenterPrey(rootOptions);
     
     // create the mdp
-    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,actionNoise,plannerOptions);
+    boost::shared_ptr<WorldMDP> mdp = createWorldMDP(rng,dims,actionNoise,centerPrey,plannerOptions);
     // create the model updater
     boost::shared_ptr<ModelUpdater> modelUpdater = createModelUpdater(rng,mdp,mdp->getAdhocAgent(),dims,trialNum,predatorInd,plannerOptions); // predatorInd should be the replacement ind for the model
     // create the value estimator

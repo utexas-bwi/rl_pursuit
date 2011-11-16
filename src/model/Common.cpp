@@ -172,5 +172,7 @@ bool Observation::operator==(const Observation &other) const {
     return false;
   if (myInd != other.myInd)
     return false;
+  if (absPrey != other.absPrey)
+    return false;
   return true;
 }

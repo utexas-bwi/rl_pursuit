@@ -1,11 +1,12 @@
 #include "World.h"
 #include <boost/lexical_cast.hpp>
 
-World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise):
+World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise, bool centerPrey):
   rng(rng),
   world(world),
   dims(world->getDims()),
-  actionNoise(actionNoise)
+  actionNoise(actionNoise),
+  centerPrey(centerPrey)
 {
 }
 
@@ -21,6 +22,10 @@ void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
   step(boost::shared_ptr<std::vector<Action::Type> >(),agents);
 }
 
+void World::generateObservation(Observation &obs) {
+  world->generateObservation(obs,centerPrey);
+}
+
 void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents) {
   //std::cout << "START WORLD STEP" << std::endl;
   ActionProbs actionProbs;
@@ -28,7 +33,7 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vec
   Observation obs;
   std::vector<Point2D> requestedPositions(agents.size());
   
-  world->generateObservation(obs);
+  generateObservation(obs);
   for (unsigned int i = 0; i < agents.size(); i++) {
     actionProbs = getAgentAction(i,agents[i],obs);
     if (!actionProbs.checkTotal()) {
@@ -51,6 +56,22 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
   double modelProb = 1.0;
   ActionProbs actionProbs;
   Point2D requestedPosition;
+  
+  Observation absPrevObs(prevObs);
+  Observation absCurrentObs(currentObs);
+  // if the prey is centered, uncenter it for the absolute positions
+  if (centerPrey) {
+    Point2D offset;
+    offset = prevObs.absPrey - prevObs.preyPos();
+    for (unsigned int i = 0; i < absPrevObs.positions.size(); i++)
+      absPrevObs.positions[i] = movePosition(dims,absPrevObs.positions[i],offset);
+    
+    offset = currentObs.absPrey - currentObs.preyPos();
+    for (unsigned int i = 0; i < absCurrentObs.positions.size(); i++)
+      absCurrentObs.positions[i] = movePosition(dims,absCurrentObs.positions[i],offset);
+  }
+
+
   for (unsigned int agentInd = 0; agentInd < agents.size(); agentInd++) {
     //std::cout << "    agent: " << agentInd << std::endl;
 
@@ -63,21 +84,21 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
         continue;
       //std::cout << "      " << Action::MOVES[action] << " " << prob << std::endl;
       // get the requestedPosition
-      requestedPosition = movePosition(world->getDims(),prevObs.positions[agentInd],(Action::Type)action);
-      //std::cout << "      req: " << prevObs.positions[agentInd] << "->" << requestedPosition << std::endl;
+      requestedPosition = movePosition(world->getDims(),absPrevObs.positions[agentInd],(Action::Type)action);
+      //std::cout << "      req: " << absPrevObs.positions[agentInd] << "->" << requestedPosition << std::endl;
       
       // did the agent decide to stay still?
-      if (requestedPosition == prevObs.positions[agentInd]) {
-        if (prevObs.positions[agentInd] == currentObs.positions[agentInd])
+      if (requestedPosition == absPrevObs.positions[agentInd]) {
+        if (absPrevObs.positions[agentInd] == absCurrentObs.positions[agentInd])
           agentProb += prob;
         continue;
       }
       // get the probability it collided with another agent
-      double probOfNoCollision = getProbOfNoCollisionApprox(prevObs,currentObs,requestedPosition,agentInd);
+      double probOfNoCollision = getProbOfNoCollisionApprox(absPrevObs,absCurrentObs,requestedPosition,agentInd);
       
-      if (currentObs.positions[agentInd] != prevObs.positions[agentInd]) {
+      if (absCurrentObs.positions[agentInd] != absPrevObs.positions[agentInd]) {
         // if the agent moved, increment by the probability it decided to move * probability it didn't collide
-        if (requestedPosition == currentObs.positions[agentInd])
+        if (requestedPosition == absCurrentObs.positions[agentInd])
           agentProb += prob * probOfNoCollision;
         continue;
       }

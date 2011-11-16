@@ -150,12 +150,12 @@ int main(int argc, const char *argv[])
         //double t = getTime();
         world->step(actions);
         if (displayObsQ) {
-          model->generateObservation(obs);
+          world->generateObservation(obs);
           //std::cout << obs << " " << getTime() - t << std::endl;
           std::cout << obs << std::endl;
         }
         if (outputDTCSVQ) {
-          model->generateObservation(obs);
+          world->generateObservation(obs);
           outputDT->saveStep(trial,numSteps[trial][episode],obs,*actions);
         } // end output dt csv
       } // while the episode lasts

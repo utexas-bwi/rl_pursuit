@@ -6,7 +6,7 @@ File: WorldModel.h
 Author: Samuel Barrett
 Description: contains the necessary information for a pursuit simulation
 Created:  2011-08-22
-Modified: 2011-08-22
+Modified: 2011-11-16
 */
 
 #include <vector>
@@ -27,7 +27,7 @@ public:
 
   inline void setAgentPosition(unsigned int ind, const Point2D &pos) {agents[ind].pos = pos;}
   Point2D getAgentPosition(unsigned int ind, Action::Type action = Action::NOOP) const;
-  void generateObservation(Observation &obs) const;
+  void generateObservation(Observation &obs, bool centerPrey) const;
   void setPositionsFromObservation(const Observation &obs);
   std::string generateDescription(unsigned int indentation = 0);
 
@@ -35,6 +35,7 @@ protected:
   const Point2D dims;
   std::vector<AgentModel> agents;
   int preyInd;
+  Point2D lastCenterPreyOffset;
 };
 
 #endif /* end of include guard: WORLDMODEL_OIVQAWRT */

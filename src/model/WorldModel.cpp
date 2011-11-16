@@ -1,3 +1,11 @@
+/*
+File: WorldModel.cpp
+Author: Samuel Barrett
+Description: contains the necessary information for a pursuit simulation
+Created:  2011-08-22
+Modified: 2011-11-16
+*/
+
 #include "WorldModel.h"
 #include "Common.h"
 #include <common/Util.h>
@@ -70,12 +78,21 @@ Point2D WorldModel::getAgentPosition(unsigned int ind, Action::Type action) cons
   return movePosition(dims,agents[ind].pos,action);
 }
 
-void WorldModel::generateObservation(Observation &obs) const {
+void WorldModel::generateObservation(Observation &obs, bool centerPrey) const {
   obs.preyInd = preyInd;
   obs.myInd = 0;
   obs.positions.clear();
   for (unsigned int i = 0; i < agents.size(); i++)
     obs.positions.push_back(agents[i].pos);
+ 
+  if (centerPrey) {
+    assert(preyInd >= 0);
+    Point2D offset = 0.5f * dims - agents[preyInd].pos;
+    for (unsigned int i = 0; i < obs.positions.size(); i++)
+      obs.positions[i] = movePosition(dims,obs.positions[i],offset);
+  }
+  if (preyInd >= 0)
+    obs.absPrey = agents[preyInd].pos;
 }
 
 void WorldModel::setPositionsFromObservation(const Observation &obs) {

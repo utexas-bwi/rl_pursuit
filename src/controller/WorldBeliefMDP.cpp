@@ -40,9 +40,9 @@ void WorldBeliefMDP::takeAction(const Action::Type &action, float &reward, State
   Observation prevObs;
   Observation newObs;
 
-  model->generateObservation(prevObs);
+  controller->generateObservation(prevObs);
   WorldMDP::takeAction(action,reward,state,terminal);
-  model->generateObservation(newObs);
+  controller->generateObservation(newObs);
   if (!terminal) {
     // update the beliefs
     modelUpdater->updateRealWorldAction(prevObs,action,newObs);
