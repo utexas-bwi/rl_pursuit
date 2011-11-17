@@ -21,59 +21,58 @@ def getRunningJobs(cluster):
   res = map(int,re.findall('%i\.(\d+)' % cluster,out))
   return res
 
-def main(directory,numJobs,simulate, cluster):
+def main(directory,numJobs,cluster):
   recoveryDir = os.path.join(directory,'recovery')
   if cluster is not None:
     runningJobs = getRunningJobs(cluster)
+  else:
+    runningJobs = []
+
   if not(os.path.exists(recoveryDir)):
-    if simulate:
-      print 'Would make dir: %s' % recoveryDir
-    else:
-      os.mkdir(recoveryDir)
+    print 'Making dir: %s' % recoveryDir
+    os.mkdir(recoveryDir)
   with open(os.path.join(directory,'job.condor')) as f:
     contents = f.read()
-  if simulate:
-    print 'Would run jobs:',
+  jobsToRun = []
   for i in range(numJobs):
     if isJobComplete(directory,i):
       continue
     if i in runningJobs:
       continue
-    if simulate:
-      print i,
-    else:
-      runJob(directory,i,recoveryDir,contents)
+    jobsToRun.append(i)
+  
+  print 'Want to run jobs:',
+  for job in jobsToRun:
+    print job,
   print ''
+  cont = None
+  while cont is None:
+    val = raw_input('Continue (y/n): ')
+    if val == 'y':
+      cont = True
+    elif val == 'n':
+      cont = False
+  
+  if cont:
+    for job in jobsToRun:
+      runJob(directory,job,recoveryDir,contents)
 
 if __name__ == '__main__':
   import sys
   args = sys.argv[1:]
-  usage = 'recoverCondor.py [options] directory numJobs'
-  usage += '\nOptions:'
-  usage += '\n  -s --simulate - only simulate, don\'t start the jobs or create the files'
-  usage += '\n  -r CLUSTER - checks for currently running jobs'
-  simulate = False
+  usage = 'recoverCondor.py directory numJobs [cluster]'
   cluster = None
-  if '-s' in args:
-    args.remove('-s')
-    simulate = True
-  if '--simulate' in args:
-    args.remove('--simulate')
-    simulate = True
-  try:
-    ind = args.index('-r')
-    args.pop(ind)
-    cluster = int(args.pop(ind))
-  except:
-    pass
-
-  if args[0] in ['-h','--help']:
-    print usage
-    sys.exit(0)
-  if len(args) != 2:
+  helpStrings = ['-h','--help']
+  for helpString in helpStrings:
+    if helpString in args:
+      print usage
+      sys.exit(0)
+  if (len(args) < 2) or (len(args) > 3):
     print usage
     sys.exit(1)
-  print 'CLUSTER: %s' % cluster
   directory = args[0]
   numJobs = int(args[1])
-  main(directory,numJobs,simulate,cluster)
+  if len(args) >= 3:
+    cluster = int(args[2])
+  print 'CLUSTER: %s' % cluster
+  main(directory,numJobs,cluster)
