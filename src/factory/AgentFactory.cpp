@@ -129,8 +129,6 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       std::string student = getStudentForTrial(trialNum,options);
       filename.replace(ind,studentId.size(),student);
     }
-    std::cout << filename << std::endl;
-    exit(0);
 
     return ptr(new PredatorDecisionTree(rng,dims,filename));
   } else if (NAME_IN_SET("student")) {
