@@ -22,8 +22,8 @@ def combineARFFs(inFiles,outFile):
     out.writelines(lines[startLine:])
   out.close()
 
-def main(numTrials,numTrainingSamples):
-  dtTrainDir = 'data/dt-train/%i-%i' % (numTrainingSamples,numTrials)
+def main(desc,numTrials,numTrainingSamples):
+  dtTrainDir = 'data/dt-train/%s-%i' % (desc,numTrainingSamples)
   if not(os.path.exists(dtTrainDir)):
     os.mkdir(dtTrainDir)
 
@@ -61,8 +61,10 @@ def main(numTrials,numTrainingSamples):
 if __name__ == '__main__':
   import sys
   if (len(sys.argv) != 3) or (sys.argv[1] in ['-h','--help']):
-    print 'Usage: runStudents.py numTrialsPerStudent numTrainingSamplesPerAgent'
+    print 'Usage: runStudents.py desc numTrainingSamplesPerAgent'
     sys.exit(1)
-  numTrials = int(sys.argv[1])
+  #numTrials = int(sys.argv[1])
+  desc = sys.argv[1]
   numTrainingSamples = int(sys.argv[2])
-  main(numTrials,numTrainingSamples)
+  numTrials = numTrainingSamples
+  main(desc,numTrials,numTrainingSamples)
