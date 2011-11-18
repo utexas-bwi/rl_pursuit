@@ -1,5 +1,5 @@
-#include <common/WekaParser.h>
-#include <common/DecisionTree.h>
+#include <learning/WekaParser.h>
+#include <learning/DecisionTree.h>
 #include <fstream>
 #include <string>
 #include <iostream>

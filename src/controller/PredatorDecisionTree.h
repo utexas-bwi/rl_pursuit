@@ -12,8 +12,8 @@ Modified: 2011-09-15
 #include "Agent.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
-#include <common/DecisionTree.h>
-#include <common/FeatureExtractor.h>
+#include <learning/DecisionTree.h>
+#include <learning/FeatureExtractor.h>
 
 class PredatorDecisionTree: public Agent {
 public:

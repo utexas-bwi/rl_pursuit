@@ -16,7 +16,7 @@ Modified: 2011-10-26
 #include <boost/shared_ptr.hpp>
 
 #include <common/Point2D.h>
-#include <common/FeatureExtractor.h>
+#include "FeatureExtractor.h"
 
 class OutputDT {
 public:

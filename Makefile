@@ -23,7 +23,7 @@ TARGET_DIR := targets
 TARGET_MAKEFILES := $(wildcard $(TARGET_DIR)/*.mk)
 TARGETS := $(patsubst $(TARGET_DIR)/%.mk, %, $(TARGET_MAKEFILES))
 # sources
-MODULES := common controller factory model planning
+MODULES := common controller factory learning model planning
 SOURCES := $(wildcard $(patsubst %, $(SOURCE_DIR)/%/*.cpp, $(MODULES)))
 SOURCE_STUDENTS := $(wildcard $(SOURCE_DIR)/studentAgents/agents/*/Predator.cpp)
 SOURCE_STUDENTS += $(wildcard $(SOURCE_DIR)/studentAgents/agentsNew/*/cppPredator/MyPredator.cpp)
@@ -65,7 +65,7 @@ $$(BIN): $$(OBJS)
 $$(BIN): LINK_FLAGS:=$$(LINK_FLAGS_TEMP)
 DEPS := $$(DEPS) $$(OBJS:.o=.d)
 OBJECTS := $$(OBJECTS) $$(OBJS)
-BINS := $$(BINS) $$(BIN)
+override BINS := $$(BINS) $$(BIN)
 endef
 
 $(foreach target,$(TARGETS),$(eval $(call TARGET_template,$(target))))
@@ -75,7 +75,6 @@ OBJECTS_ALL = $(sort $(OBJECTS))
 clean:
 	$(RM) $(OBJECTS_ALL) $(DEPS)
 
-
 fullclean: clean
 	$(RM) $(BINS)
 
@@ -83,7 +82,11 @@ fclean: fullclean
 
 # include dependencies for creating dependencies and objects
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),fullclean)
+ifneq ($(MAKECMDGOALS),fclean)
 -include $(DEPS)
+endif
+endif
 endif
 
 # change the flags for the students

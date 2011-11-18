@@ -11,7 +11,7 @@ Modified: 2011-10-28
 
 #include <model/Common.h>
 #include <common/Point2D.h>
-#include <common/DecisionTree.h>
+#include "DecisionTree.h"
 #include <controller/Agent.h>
 
 class FeatureExtractor {

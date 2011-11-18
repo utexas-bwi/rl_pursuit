@@ -1,5 +1,5 @@
 #include "PredatorDecisionTree.h"
-#include <common/WekaParser.h>
+#include <learning/WekaParser.h>
 #include <factory/AgentFactory.h>
 
 PredatorDecisionTree::PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &filename):

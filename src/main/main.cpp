@@ -13,7 +13,7 @@ Modified: 2011-08-24
 #include <json/json.h>
 #include <factory/WorldFactory.h>
 #include <common/Util.h>
-#include <common/OutputDT.h>
+#include <learning/OutputDT.h>
 
 void displaySummary(double timePassed, const std::vector<std::vector<unsigned int> > &numSteps);
 void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial);
