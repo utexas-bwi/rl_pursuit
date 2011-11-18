@@ -42,11 +42,27 @@ default: main
 all: $(TARGETS)
 
 define TARGET_template
+# get the objects
 override OBJS := $$(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o,$$($1_SOURCES))
-override BIN := $$(patsubst %, bin/%$(ARCH), $$($1_BIN))
+
+# get the binary, defaulting to the name
+ifeq ($$(strip $$($1_BIN)),)
+	override BIN := $$(patsubst %, bin/%$(ARCH), $1)
+else
+	override BIN := $$(patsubst %, bin/%$(ARCH), $$($1_BIN))
+endif
+
+# get the link flags, defaulting to LINK_FLAGS
+ifeq ($$(strip $$($1_LINK_FLAGS)),)
+	override LINK_FLAGS_TEMP := $$(LINK_FLAGS)
+else
+	override LINK_FLAGS_TEMP := $$($1_LINK_FLAGS)
+endif
+
+# set up the rules
 $1: $$(BIN)
 $$(BIN): $$(OBJS)
-$$(BIN): LINK_FLAGS=$$($1_LINK_FLAGS)
+$$(BIN): LINK_FLAGS:=$$(LINK_FLAGS_TEMP)
 DEPS := $$(DEPS) $$(OBJS:.o=.d)
 OBJECTS := $$(OBJECTS) $$(OBJS)
 BINS := $$(BINS) $$(BIN)
