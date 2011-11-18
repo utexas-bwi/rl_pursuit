@@ -22,7 +22,7 @@ public:
     //worldRng2(new RNG(4)),
     dims(5,5),
     stateConverter(3,5),
-    beliefMDP(boost::static_pointer_cast<WorldBeliefMDP>(createWorldMDP(rng,dims,true,BAYESIAN_UPDATES,stateConverter,0.0))),
+    beliefMDP(boost::static_pointer_cast<WorldBeliefMDP>(createWorldMDP(rng,dims,true,true,BAYESIAN_UPDATES,stateConverter,0.0,true))),
     models(3,std::vector<boost::shared_ptr<Agent> >(5,boost::shared_ptr<Agent>())),
     modelsDummy(3,std::vector<boost::shared_ptr<AgentDummyTest> >(5,boost::shared_ptr<AgentDummyTest>())),
     adhocInd(1)
@@ -111,8 +111,8 @@ protected:
 
 TEST_F(WorldBeliefMDPTest,GetState) {
   Observation obs;
-  model->generateObservation(obs);
-  State_t worldState = getStateFromObs(dims,obs);
+  world->generateObservation(obs);
+  State_t worldState = getStateFromObs(dims,obs,true);
   State_t worldBeliefState = beliefMDP->getState(obs);
 
   State_t worldState2 = stateConverter.convertBeliefStateToGeneralState(worldBeliefState);
@@ -163,10 +163,10 @@ TEST_F(WorldBeliefMDPTest,SetBeliefs) {
     for (unsigned int j = 0; j < 3; j++)
       modelsDummy[j][i]->setAction(Action::LEFT);
   }
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   Action::Type lastAction = Action::LEFT;
   world->step();
-  model->generateObservation(currentObs);
+  world->generateObservation(currentObs);
   updater->updateRealWorldAction(prevObs,lastAction,currentObs);
   // in case this has somehow changed the beliefs of the setter
   b = updater2->getBeliefs();

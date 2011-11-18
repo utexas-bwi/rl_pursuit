@@ -23,7 +23,7 @@ TEST(WorldMDP,GetSetPositions) {
   unsigned int numTests = 5000;
   State_t state;
 
-  getPositionsFromState(0,dims,positions);
+  getPositionsFromState(0,dims,positions,false);
   // the first agent gets put in the center of the grid
   EXPECT_EQ(0.5f * dims,positions[0]);
   for (unsigned int j = 1; j < 5; j++) {
@@ -35,8 +35,8 @@ TEST(WorldMDP,GetSetPositions) {
     for (unsigned int j = 0; j < 5; j++) {
       obs.positions.push_back(Point2D(rng.randomInt(dims.x),rng.randomInt(dims.y)));
     }
-    state = getStateFromObs(dims,obs);
-    getPositionsFromState(state,dims,positions);
+    state = getStateFromObs(dims,obs,false);
+    getPositionsFromState(state,dims,positions,false);
     Point2D diff = 0.5f * dims - obs.positions[0];
     for (unsigned int j = 0; j < 5; j++) {
       ASSERT_EQ(movePosition(dims,obs.positions[j],diff),positions[j]);
@@ -49,7 +49,7 @@ public:
   WorldMDPTest():
     rng(new RNG(0)),
     dims(5,5),
-    mdp(createWorldMDP(rng,dims,false,NO_MODEL_UPDATES,StateConverter(5,5),0.0)),
+    mdp(createWorldMDP(rng,dims,true,false,NO_MODEL_UPDATES,StateConverter(5,5),0.0,true)),
     model(mdp->model),
     adhocInd(1)
   {
@@ -87,7 +87,7 @@ TEST_F(WorldMDPTest,TakeAction) {
   }
   agents[1]->setAction(Action::UP);
   
-  State_t startState = getStateFromObs(dims,obs);
+  State_t startState = getStateFromObs(dims,obs,true);
   EXPECT_EQ(startState,mdp->getState(obs));
   
   Action::Type action = Action::NOOP;
@@ -105,7 +105,7 @@ TEST_F(WorldMDPTest,TakeAction) {
   Point2D offset(2,2);
   Point2D start;
   std::vector<Point2D> positions(5);
-  getPositionsFromState(state,dims,positions);
+  getPositionsFromState(state,dims,positions,true);
   for (int i = 0; i < 5; i++) {
     start = Point2D(i,0);
     EXPECT_EQ(movePosition(dims,start,offset),positions[i]);
@@ -118,7 +118,7 @@ TEST_F(WorldMDPTest,TakeAction) {
   for (int i = 0; i < 5; i++)
     EXPECT_EQ(2u,agents[i]->numSteps);
   
-  getPositionsFromState(state,dims,positions);
+  getPositionsFromState(state,dims,positions,true);
   for (int i = 0; i < 5; i++) {
     if (i == 1)
       start = Point2D(1,1);
@@ -143,7 +143,7 @@ TEST_F(WorldMDPTest,TakeAction) {
   for (int i = 0; i < 5; i++)
     EXPECT_EQ(3u,agents[i]->numSteps);
   
-  getPositionsFromState(state,dims,positions);
+  getPositionsFromState(state,dims,positions,true);
   EXPECT_EQ(Point2D(2,2),positions[0]);
   EXPECT_EQ(Point2D(1,2),positions[1]);
   EXPECT_EQ(Point2D(3,2),positions[2]);

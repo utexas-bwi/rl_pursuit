@@ -17,7 +17,7 @@ public:
   ModelUpdaterBayesTest():
     rng(new RNG(0)),
     dims(5,5),
-    mdp(createWorldMDP(rng,dims,false,NO_MODEL_UPDATES,StateConverter(5,5),0.0)),
+    mdp(createWorldMDP(rng,dims,true,false,NO_MODEL_UPDATES,StateConverter(5,5),0.0,true)),
     models(3,std::vector<boost::shared_ptr<Agent> >(5,boost::shared_ptr<Agent>())),
     modelsDummy(3,std::vector<boost::shared_ptr<AgentDummyTest> >(5,boost::shared_ptr<AgentDummyTest>())),
     adhocInd(1)
@@ -97,7 +97,7 @@ TEST_F(ModelUpdaterBayesTest,UpdateControllerInformation) {
   checkNumSteps(trueAgents,0);
   checkModelsSteps(0);
   
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   world->step();
   checkNumSteps(trueAgents,1);
   checkModelsSteps(0);
@@ -105,7 +105,7 @@ TEST_F(ModelUpdaterBayesTest,UpdateControllerInformation) {
   checkNumSteps(trueAgents,1);
   checkModelsSteps(1);
   
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   world->step();
   checkNumSteps(trueAgents,2);
   checkModelsSteps(1);
@@ -135,12 +135,12 @@ TEST_F(ModelUpdaterBayesTest,BayesianActionUpdates) {
   Observation prevObs;
   Observation currentObs;
   Action::Type lastAction = Action::LEFT;
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   world->step();
   // change the ad hoc agent's action, to make sure the lastAction is being used
   trueAgents[adhocInd]->setAction(Action::UP);
 
-  model->generateObservation(currentObs);
+  world->generateObservation(currentObs);
   updater->updateRealWorldAction(prevObs,lastAction,currentObs);
   // check probs after 1 step
   probs = updater->getBeliefs();
@@ -151,13 +151,13 @@ TEST_F(ModelUpdaterBayesTest,BayesianActionUpdates) {
   EXPECT_NEAR(probClose,probs[2],0.00001); // close should be falling off
   
   trueAgents[adhocInd]->setAction(Action::DOWN);
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   world->step();
   // change the ad hoc agent's action, to make sure the lastAction is being used
   trueAgents[adhocInd]->setAction(Action::UP);
   lastAction = Action::DOWN;
 
-  model->generateObservation(currentObs);
+  world->generateObservation(currentObs);
   updater->updateRealWorldAction(prevObs,lastAction,currentObs);
   // check probs after 1 step
   probCorrect *= 1.0 / 1.75;
@@ -172,9 +172,9 @@ TEST_F(ModelUpdaterBayesTest,BayesianActionUpdates) {
 
   //check if all model probabilites are too low, there should be no update
   trueAgents[adhocInd]->setAction(Action::LEFT);
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   world->step();
-  model->generateObservation(currentObs);
+  world->generateObservation(currentObs);
   lastAction = Action::DOWN;
   updater->updateRealWorldAction(prevObs,lastAction,currentObs);
   // should be no change
@@ -214,7 +214,7 @@ TEST_F(ModelUpdaterBayesTest,PolynomialActionUpdates) {
   Observation prevObs;
   Observation currentObs;
   Action::Type lastAction = Action::LEFT;
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   world->step();
   // change the ad hoc agent's action, to make sure the lastAction is being used
   trueAgents[adhocInd]->setAction(Action::UP);
@@ -226,7 +226,7 @@ TEST_F(ModelUpdaterBayesTest,PolynomialActionUpdates) {
     //std::cout << std::endl;
   //}
 
-  model->generateObservation(currentObs);
+  world->generateObservation(currentObs);
   updater->updateRealWorldAction(prevObs,lastAction,currentObs);
   // check probs after 1 step
   probs = updater->getBeliefs();
@@ -240,13 +240,13 @@ TEST_F(ModelUpdaterBayesTest,PolynomialActionUpdates) {
   if (true)
     return;
   trueAgents[adhocInd]->setAction(Action::DOWN);
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   world->step();
   // change the ad hoc agent's action, to make sure the lastAction is being used
   trueAgents[adhocInd]->setAction(Action::UP);
   lastAction = Action::DOWN;
 
-  model->generateObservation(currentObs);
+  world->generateObservation(currentObs);
   updater->updateRealWorldAction(prevObs,lastAction,currentObs);
   // check probs after 1 step
   expectedProbs[0] *= 1.0;
@@ -259,9 +259,9 @@ TEST_F(ModelUpdaterBayesTest,PolynomialActionUpdates) {
 
   //check if all model probabilites are too low, there should be no update
   trueAgents[adhocInd]->setAction(Action::LEFT);
-  model->generateObservation(prevObs);
+  world->generateObservation(prevObs);
   world->step();
-  model->generateObservation(currentObs);
+  world->generateObservation(currentObs);
   lastAction = Action::DOWN;
   updater->updateRealWorldAction(prevObs,lastAction,currentObs);
   // should be no change

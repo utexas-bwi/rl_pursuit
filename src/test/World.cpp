@@ -20,7 +20,7 @@ public:
   WorldTest():
     rng(new RNG(0)),
     model(createWorldModel(Point2D(5,5))),
-    world(createWorld(rng,model,0.0))
+    world(createWorld(rng,model,0.0,true))
   {
     for (int i = 0; i < 5; i++) {
       boost::shared_ptr<AgentDummyTest> agent(new AgentDummyTest(rng,Point2D(5,5)));
