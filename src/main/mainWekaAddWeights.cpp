@@ -1,11 +1,12 @@
 #include <learning/WekaParser.h>
 #include <learning/DecisionTree.h>
+#include <learning/ArffReader.h>
 #include <fstream>
 #include <string>
 #include <iostream>
 
 void readArffHeader(std::ifstream &in, std::vector<std::string> &featureNames, std::vector<bool> &numeric);
-void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::vector<std::string> &featureNames, std::vector<bool> &numeric, Features &valueMap);
+void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff);
 
 int main(int argc, const char *argv[]) {
   // handle the command line arguments
@@ -23,27 +24,12 @@ int main(int argc, const char *argv[]) {
   std::cerr << "Parsed original tree" << std::endl;
 
   // open the arffFile and set up some variables
-  std::ifstream in(arffFile.c_str());
-  assert(in.good());
-  std::vector<std::string> featureNames;
-  std::vector<bool> numeric;
-  Features valueMap;
-  valueMap["U"] = Action::UP;
-  valueMap["D"] = Action::DOWN;
-  valueMap["L"] = Action::LEFT;
-  valueMap["R"] = Action::RIGHT;
-  valueMap["S"] = Action::NOOP;
-  valueMap["0"] = 0;
-  valueMap["1"] = 1;
-  valueMap["2"] = 2;
-  valueMap["3"] = 3;
-  valueMap["4"] = 4;
-
-  // read in the header
-  readArffHeader(in,featureNames,numeric);
+  ArffReader arff(arffFile);
   std::cerr << "Parsed arff header" << std::endl;
+  
+  // read in the header
   // add data to tree
-  addDataToTree(dt,in,featureNames,numeric,valueMap);
+  addDataToTree(dt,arff);
   std::cerr << "Added data to tree" << std::endl;
 
   //dt->randomizeUnseenLeaves();
@@ -52,7 +38,6 @@ int main(int argc, const char *argv[]) {
   dt->generalizeUnseenLeaves();
   std::cerr << "Generalized unseen leaves" << std::endl;
   
-  in.close();
   std::cout << dt->root;
   
   return 0;
@@ -87,52 +72,18 @@ void readArffHeader(std::ifstream &in, std::vector<std::string> &featureNames, s
     std::getline(in,str);
 }
 
-void addDataToTree(boost::shared_ptr<DecisionTree> dt, std::ifstream &in, std::vector<std::string> &featureNames, std::vector<bool> &numeric, Features &) {
+void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff) {
   Features features;
-  float val;
-  //std::string val2;
   Classification c;
   int count = 0;
-  while (!in.eof()) {
+  std::string classFeature = arff.classFeature();
+  while (!arff.isDone()) {
     count++;
     if (count % 10000 == 0)
       std::cerr << count << std::endl;
-    for (unsigned int i = 0; i < featureNames.size(); i++) {
-      if (numeric[i]) {
-        in >> val;
-        in.ignore(1,',');
-      } else {
-        //std::cout << ((char)in.get()) << std::endl;
-        //std::getline(in,val2,',');
-        //val = valueMap[val2];
-        in >> val;
-        in.ignore(1,',');
-        //std::cout << val2 << std::endl;
-      }
-      features[featureNames[i]] = val;
-      //if (count > 247000)
-        //std::cerr << featureNames[i] << " " << val << std::endl;
-      //std::cout << featureNames[i] << " " << val << " " << (featureNames[i] == "Pred.act") << std::endl;
-    }
     
-    float weight = 1.0;
-    if (in.peek() == '{') {
-      // there's a weight for it
-      in.ignore(1,'{');
-      in >> weight;
-      in.ignore(1,'}');
-    }
-
-    //features["Next2Prey?"] = features["Next2Prey"];
-    //features["Greedy"] = features["Greedy.des"];
-    //features["Team Aware"] = features["TA.des"];
-    //features["Greedy Prob"] = features["GP.des"];
-    //features["Prob Dest"] = features["PD.des"];
-    //features["DeltaXtoP"] = features["DeltaXToPrey"];
-    //features["DeltaYtoP"] = features["DeltaYToPrey"];
-    //features["sum"] = 0; 
-  
-    unsigned int trueClass = (int)(features[featureNames.back()] + 0.5);
-    dt->classify(features,c,true,trueClass,weight);
+    arff.next(features);
+    unsigned int trueClass = (int)(features[classFeature] + 0.5);
+    dt->classify(features,c,true,trueClass,features[WEIGHT_FEATURE]);
   }
 }

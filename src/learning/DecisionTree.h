@@ -24,6 +24,7 @@ enum ComparisonOperator{
 typedef std::vector<float> Classification;
 //typedef unsigned int Classification;
 typedef boost::unordered_map<std::string,float> Features;
+#define WEIGHT_FEATURE "__WEIGHT__"
 
 class DecisionTree {
 public:
