@@ -18,10 +18,10 @@ MAIN_DIR := $(SOURCE_DIR)/main
 INCLUDE_DIR := include
 LIBS_DIR := libs/$(ARCH)
 BUILD_DIR := build/$(ARCH)
-TARGET_DIR := $(SOURCE_DIR)/targets
+TARGET_DIR := targets
 # targets
 TARGET_MAKEFILES := $(wildcard $(TARGET_DIR)/*.mk)
-TARGETS :=
+TARGETS := $(patsubst $(TARGET_DIR)/%.mk, %, $(TARGET_MAKEFILES))
 # sources
 MODULES := common controller factory model planning
 SOURCES := $(wildcard $(patsubst %, $(SOURCE_DIR)/%/*.cpp, $(MODULES)))
@@ -43,11 +43,13 @@ all: $(TARGETS)
 
 define TARGET_template
 override OBJS := $$(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o,$$($1_SOURCES))
-$1: $(patsubst %, bin/%$(ARCH), $1)
-bin/$1$(ARCH): $$(OBJS)
-bin/$1$(ARCH): LINK_FLAGS=$$($1_LINK_FLAGS)
+override BIN := $$(patsubst %, bin/%$(ARCH), $$($1_BIN))
+$1: $$(BIN)
+$$(BIN): $$(OBJS)
+$$(BIN): LINK_FLAGS=$$($1_LINK_FLAGS)
 DEPS := $$(DEPS) $$(OBJS:.o=.d)
 OBJECTS := $$(OBJECTS) $$(OBJS)
+BINS := $$(BINS) $$(BIN)
 endef
 
 $(foreach target,$(TARGETS),$(eval $(call TARGET_template,$(target))))
@@ -56,6 +58,12 @@ OBJECTS_ALL = $(sort $(OBJECTS))
 
 clean:
 	$(RM) $(OBJECTS_ALL) $(DEPS)
+
+
+fullclean: clean
+	$(RM) $(BINS)
+
+fclean: fullclean
 
 # include dependencies for creating dependencies and objects
 ifneq ($(MAKECMDGOALS),clean)
