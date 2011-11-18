@@ -17,7 +17,7 @@ Modified: 2011-09-15
 
 class PredatorDecisionTree: public Agent {
 public:
-  PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &filename);
+  PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<DecisionTree> decisionTree, const std::string &filename);
 
   ActionProbs step(const Observation &obs);
   void restart();

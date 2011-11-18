@@ -1,14 +1,12 @@
 #include "PredatorDecisionTree.h"
-#include <learning/WekaParser.h>
 #include <factory/AgentFactory.h>
 
-PredatorDecisionTree::PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, const std::string &filename):
+PredatorDecisionTree::PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<DecisionTree> decisionTree, const std::string &filename):
   Agent(rng,dims),
   filename(filename),
+  decisionTree(decisionTree),
   featureExtractor(dims)
 {
-  WekaParser parser(filename,Action::NUM_ACTIONS,true);
-  decisionTree = parser.makeDecisionTree();
   // add the feature agents
   featureExtractor.addFeatureAgent("GR","GR");
   featureExtractor.addFeatureAgent("TA","TA");

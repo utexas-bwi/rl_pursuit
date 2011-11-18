@@ -23,6 +23,7 @@
 #include <planning/UCTEstimator.h>
 #include <factory/PlanningFactory.h>
 #include <factory/WorldFactory.h>
+#include <learning/WekaParser.h>
 
 #define NAME_IN_SET(...) nameInSet(name,__VA_ARGS__,NULL)
 
@@ -129,8 +130,9 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       std::string student = getStudentForTrial(trialNum,options);
       filename.replace(ind,studentId.size(),student);
     }
-
-    return ptr(new PredatorDecisionTree(rng,dims,filename));
+    WekaParser parser(filename,Action::NUM_ACTIONS,true);
+    boost::shared_ptr<DecisionTree> dt = parser.makeDecisionTree();
+    return ptr(new PredatorDecisionTree(rng,dims,dt,filename));
   } else if (NAME_IN_SET("student")) {
     std::string student = getStudentForTrial(trialNum,options);
     if ((predatorInd < 0) || (predatorInd >= 4)) {
