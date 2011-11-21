@@ -210,6 +210,10 @@ ComparisonOperator WekaParser::stringToOperator(const std::string &str) {
     return LESS;
   else if (str == ">=")
     return GEQ;
+  else if (str == "<=")
+    return LEQ;
+  else if (str == ">")
+    return GREATER;
   std::cerr << "WekaParser::stringToOperator: ERROR bad operator string: " << str << std::endl;
   exit(5);
 }

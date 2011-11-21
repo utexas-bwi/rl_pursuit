@@ -5,7 +5,6 @@
 #include <string>
 #include <iostream>
 
-void readArffHeader(std::ifstream &in, std::vector<std::string> &featureNames, std::vector<bool> &numeric);
 void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff);
 
 int main(int argc, const char *argv[]) {
@@ -26,7 +25,6 @@ int main(int argc, const char *argv[]) {
   // open the arffFile and set up some variables
   ArffReader arff(arffFile);
   std::cerr << "Parsed arff header" << std::endl;
-  
   // read in the header
   // add data to tree
   addDataToTree(dt,arff);
@@ -41,35 +39,6 @@ int main(int argc, const char *argv[]) {
   std::cout << dt->root;
   
   return 0;
-}
-
-void readArffHeader(std::ifstream &in, std::vector<std::string> &featureNames, std::vector<bool> &numeric) {
-  std::string str;
-  std::string start = "@attribute ";
-  int startInd;
-  int endInd;
-
-  // read until the attributes
-  while (true) {
-    std::getline(in,str);
-    if (str.compare(0,start.size(),start) != 0)
-      continue;
-    break;
-  }
-  // read in the attributes
-  while (true) {
-    if (str.compare(0,start.size(),start) != 0)
-      break;
-
-    startInd = str.find(" ",start.size()-1);
-    endInd = str.find(" ",startInd+1);
-    featureNames.push_back(str.substr(startInd+1,endInd-startInd-1));
-    numeric.push_back(str.substr(endInd+1) == "numeric");
-    std::getline(in,str);
-  }
-  // read until the data
-  while (str != "@data")
-    std::getline(in,str);
 }
 
 void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff) {

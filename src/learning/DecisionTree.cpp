@@ -51,6 +51,10 @@ unsigned int DecisionTree::InteriorNode::getInd(const Features &features) {
         if (val < splitValues[i])
           return i;
         break;
+      case LEQ:
+        if (val <= splitValues[i])
+          return i;
+        break;
       default:
         std::cerr << "DecisionTree::InteriorNode::classify: ERROR, bad comparison: " << cmp << std::endl;
         exit(5);
@@ -70,6 +74,8 @@ std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out, unsi
     ComparisonOperator c = cmp;
     if ((c == LESS) && (i == splitValues.size() - 1))
       c = GEQ;
+    if ((c == LEQ) && (i == splitValues.size() - 1))
+      c = GREATER;
     switch (c) {
       case EQUALS:
         out << "=";
@@ -79,6 +85,12 @@ std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out, unsi
         break;
       case GEQ:
         out << ">=";
+        break;
+      case LEQ:
+        out << "<=";
+        break;
+      case GREATER:
+        out << ">";
         break;
     }
     out << " " << splitValues[i];

@@ -18,17 +18,24 @@ Modified: 2011-08-23
 #endif
 
 template <class Key, class T>
-class DefaultMap{
+class DefaultMap {
 public:
+#ifdef DEFAULTMAP_USE_BOOST
+  typedef typename boost::unordered_map<Key,T>::const_iterator const_iterator;
+  typedef typename boost::unordered_map<Key,T>::iterator iterator;
+#else
+  typedef typename std::map<Key,T>::const_iterator const_iterator;
+  typedef typename std::map<Key,T>::iterator iterator;
+#endif
   DefaultMap(T defaultValue):
     defaultValue(defaultValue)
   {}
 
-  T get(const Key &key) {
+  T get(const Key &key) const {
 #ifdef DEFAULTMAP_USE_BOOST
     typename boost::unordered_map<Key,T>::iterator it = vals.find(key);
 #else
-    typename std::map<Key,T>::iterator it = vals.find(key);
+    typename std::map<Key,T>::const_iterator it = vals.find(key);
 #endif
     if (it == vals.end())
       return defaultValue;
@@ -52,6 +59,22 @@ public:
 
   unsigned int size() {
     return vals.size();
+  }
+
+  const_iterator begin() const {
+    return vals.begin();
+  }
+  
+  iterator begin() {
+    return vals.begin();
+  }
+  
+  const_iterator end() const {
+    return vals.end();
+  }
+  
+  iterator end() {
+    return vals.end();
   }
 
 private:

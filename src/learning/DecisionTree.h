@@ -18,7 +18,9 @@ Modified: 2011-09-13
 enum ComparisonOperator{
   EQUALS,
   LESS,
-  GEQ
+  GEQ,
+  LEQ,
+  GREATER
 };
 
 typedef std::vector<float> Classification;

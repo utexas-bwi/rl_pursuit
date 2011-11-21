@@ -3,11 +3,12 @@ File: ArffReader.cpp
 Author: Samuel Barrett
 Description: reads in an arff file
 Created:  2011-11-18
-Modified: 2011-11-18
+Modified: 2011-11-21
 */
 
 #include "ArffReader.h"
 #include <cassert>
+#include <boost/lexical_cast.hpp>
 
 ArffReader::ArffReader(const std::string &filename):
   in(filename.c_str())
@@ -20,14 +21,14 @@ ArffReader::ArffReader(const std::string &filename):
 ArffReader::~ArffReader() {
   in.close();
 }
-  
+
 void ArffReader::next(Features &features) {
   features.clear();
   float val;
-  for (unsigned int i = 0; i < featureNames.size(); i++) {
+  for (unsigned int i = 0; i < featureTypes.size(); i++) {
     in >> val;
     in.ignore(1,',');
-    features[featureNames[i]] = val;
+    features[featureTypes[i].name] = val;
     float weight = 1.0;
     if (in.peek() == '{') {
       // there's a weight for it
@@ -40,11 +41,11 @@ void ArffReader::next(Features &features) {
 }
 
 std::string ArffReader::getClassFeature() {
-  return featureNames.back();
+  return featureTypes.back().name;
 }
 
-std::vector<std::string> ArffReader::getFeatureNames() {
-  return featureNames;
+std::vector<ArffReader::Feature> ArffReader::getFeatureTypes() {
+  return featureTypes;
 }
 
 bool ArffReader::isDone() {
@@ -71,8 +72,21 @@ void ArffReader::readHeader() {
 
     startInd = str.find(" ",start.size()-1);
     endInd = str.find(" ",startInd+1);
-    featureNames.push_back(str.substr(startInd+1,endInd-startInd-1));
-    numeric.push_back(str.substr(endInd+1) == "numeric");
+    Feature feature;
+    feature.name = str.substr(startInd+1,endInd-startInd-1);
+    feature.numeric = str.substr(endInd + 1) == "numeric";
+    if (!feature.numeric) {
+      unsigned int start = endInd + 1;
+      for (unsigned int i = endInd + 1; i < str.size(); i++) {
+        if (str[i] == '{')
+          start = i + 1;
+        if ((str[i] == ',') || (str[i] == '}')) {
+          feature.values.push_back(boost::lexical_cast<int>(str.substr(start,i - start)));
+          start = i + 1;
+        }
+      }
+    }
+    featureTypes.push_back(feature);
     std::getline(in,str);
   }
   // read until the data
