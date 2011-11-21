@@ -76,7 +76,7 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff) {
   Features features;
   Classification c;
   int count = 0;
-  std::string classFeature = arff.classFeature();
+  std::string classFeature = arff.getClassFeature();
   while (!arff.isDone()) {
     count++;
     if (count % 10000 == 0)

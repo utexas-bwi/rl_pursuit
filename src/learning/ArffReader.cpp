@@ -39,8 +39,12 @@ void ArffReader::next(Features &features) {
   }
 }
 
-std::string ArffReader::classFeature() {
+std::string ArffReader::getClassFeature() {
   return featureNames.back();
+}
+
+std::vector<std::string> ArffReader::getFeatureNames() {
+  return featureNames;
 }
 
 bool ArffReader::isDone() {

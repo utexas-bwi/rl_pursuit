@@ -19,7 +19,8 @@ public:
   ArffReader(const std::string &filename);
   ~ArffReader();
   void next(Features &features); // gets the next set of features
-  std::string classFeature();
+  std::string getClassFeature();
+  std::vector<std::string> getFeatureNames();
   bool isDone();
 
 private:
