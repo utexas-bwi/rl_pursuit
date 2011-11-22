@@ -41,6 +41,8 @@ default: main
 
 all: $(TARGETS)
 
+.PHONY: clean fullcelan fclean $(TARGETS)
+
 define TARGET_template
 # get the objects
 override OBJS := $$(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o,$$($1_SOURCES))
