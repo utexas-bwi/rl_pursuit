@@ -17,6 +17,10 @@ Modified: 2011-08-23
 #include <map>
 #endif
 
+#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 4)
+#include <string.h>
+#endif
+
 template <class Key, class T>
 class DefaultMap {
 public:
@@ -33,14 +37,21 @@ public:
 
   T get(const Key &key) const {
 #ifdef DEFAULTMAP_USE_BOOST
-    typename boost::unordered_map<Key,T>::iterator it = vals.find(key);
+    typename boost::unordered_map<Key,T>::const_iterator it = vals.find(key);
 #else
     typename std::map<Key,T>::const_iterator it = vals.find(key);
 #endif
     if (it == vals.end())
       return defaultValue;
-    else
+    else {
+#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 4)
+      T res;
+      memcpy(&res,&(it->second),sizeof(T));
+      return res;
+#else
       return it->second;
+#endif
+    }
   }
 
   T& operator[](const Key &key) {
