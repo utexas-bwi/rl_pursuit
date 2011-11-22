@@ -19,7 +19,7 @@ int main(int argc, const char *argv[]) {
   std::string filename(argv[1]);
   DecisionTreeBuilder builder(filename,5,true);
   boost::shared_ptr<DecisionTree> dt = builder.getDecisionTree();
-  std::cout << dt->root << std::endl;
+  std::cout << dt->root;
 
   return 0;
 }

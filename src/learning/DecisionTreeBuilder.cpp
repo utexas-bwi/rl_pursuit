@@ -6,7 +6,7 @@ Created:  2011-11-18
 Modified: 2011-11-21
 */
 
-#define DEBUG_DT_SPLITS
+//#define DEBUG_DT_SPLITS
 
 #include "DecisionTreeBuilder.h"
 
@@ -45,7 +45,7 @@ void DecisionTreeBuilder::readInstances(std::vector<Features> &instances) {
     arff.next(features);
     instances.push_back(features);
   }
-  std::cout << "Instances: " << instances.size() << std::endl;
+  //std::cout << "Instances: " << instances.size() << std::endl;
   featureTypes = arff.getFeatureTypes();
   classFeature = arff.getClassFeature();
   // remove the class and weight features from the feature list
@@ -58,10 +58,10 @@ void DecisionTreeBuilder::readInstances(std::vector<Features> &instances) {
         featureTypes.erase(featureTypes.begin() + i);
     }
   }
-  std::cout << "FeatureTypes:" << std::endl;
-  for (unsigned int i = 0; i < featureTypes.size(); i++) {
-    std::cout << "  " << featureTypes[i].name << std::endl;
-  }
+  //std::cout << "FeatureTypes:" << std::endl;
+  //for (unsigned int i = 0; i < featureTypes.size(); i++) {
+    //std::cout << "  " << featureTypes[i].name << std::endl;
+  //}
 }
 
 boost::shared_ptr<DecisionTree::Node> DecisionTreeBuilder::createNode(const std::vector<Features> &instances) {
@@ -106,7 +106,7 @@ void DecisionTreeBuilder::getClassCounts(const std::vector<Features> &instances,
     Features const &instance = instances[i];
     float val = instance.find(classFeature)->second;
     int c = (int)(val + 0.5);
-    classCounts[c]++;
+    classCounts[c] += instance.find(WEIGHT_FEATURE)->second;
   }
 }
 
@@ -116,7 +116,6 @@ void DecisionTreeBuilder::getBestSplit(const std::vector<Features> &instances, S
   Split split;
   // consider splitting on all of the features
   for (unsigned int i = 0; i < featureTypes.size(); i++) {
-    std::cout << "considering: " << featureTypes[i].name << std::endl;
     split.featureInd = i;
     split.numeric = featureTypes[i].numeric;
     if (split.numeric) {
@@ -124,23 +123,30 @@ void DecisionTreeBuilder::getBestSplit(const std::vector<Features> &instances, S
       std::set<float> vals;
       for (unsigned int j = 0; j < instances.size(); j++)
         vals.insert(instances[j].find(featureTypes[i].name)->second);
+
       // consider splitting on all of the values for this feature
       std::set<float>::iterator it = vals.begin();
+      std::set<float>::iterator it2 = vals.begin();
       if (it != vals.end())
         it++; // drop the first value
-      for (; it != vals.end(); it++) {
-        split.val = *it;
+      for (; it != vals.end(); it++, it2++) {
+        split.val = (*it + *it2) * 0.5;
+        //split.val = *it;
         split.gain = calcGainRatio(instances,split,I);
+        if (split.gain > 0)
+          //std::cout << "considering: " << featureTypes[i].name << " " << split.val << " : " << split.gain <<std::endl;
         if (split.gain > bestSplit.gain)
           bestSplit = split;
       }
     } else {
       split.gain = calcGainRatio(instances,split,I);
+      if (split.gain > 0)
+        //std::cout << "considering: " << featureTypes[i].name  << " : " << split.gain << std::endl;
       if (split.gain > bestSplit.gain)
         bestSplit = split;
     }
   }
-  std::cout << "best split: " << bestSplit.featureInd << " " << bestSplit.val << " " << bestSplit.gain << std::endl << std::flush;
+  //std::cout << "best split: " << bestSplit.featureInd << " " << bestSplit.val << " " << bestSplit.gain << std::endl << std::flush;
 }
   
 double DecisionTreeBuilder::calcIofSet(const std::vector<Features> &instances) {
@@ -195,6 +201,7 @@ double DecisionTreeBuilder::calcGainRatio(const std::vector<Features> &instances
     info += ratios[i] * calcIofSet(splitInstances[i]);
     //std::cout << " ratios[" << i << "]:" << ratios[i];
   }
+  //std::cout << std::endl;
   //std::cout << " I:" << I << " info:" << info;
   double gain = I - info;
   //std::cout << " gain:" << gain;
