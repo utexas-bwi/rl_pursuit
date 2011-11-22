@@ -17,10 +17,6 @@ Modified: 2011-08-23
 #include <map>
 #endif
 
-#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 4)
-#include <string.h>
-#endif
-
 template <class Key, class T>
 class DefaultMap {
 public:
@@ -43,15 +39,8 @@ public:
 #endif
     if (it == vals.end())
       return defaultValue;
-    else {
-#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 4)
-      T res;
-      memcpy(&res,&(it->second),sizeof(T));
-      return res;
-#else
+    else
       return it->second;
-#endif
-    }
   }
 
   T& operator[](const Key &key) {

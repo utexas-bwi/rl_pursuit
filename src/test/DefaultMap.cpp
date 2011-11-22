@@ -9,6 +9,10 @@ Modified: 2011-08-29
 #include <gtest/gtest.h>
 #include <common/DefaultMap.h>
 
+#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 4)
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
 TEST(TestDefaultMap,DefaultValue) {
   DefaultMap<int,float> map(1.0);
 
