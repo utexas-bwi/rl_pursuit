@@ -24,7 +24,7 @@ public:
     bool used;
     unsigned int depth;
     std::string name;
-    ComparisonOperator op;
+    DecisionTree::ComparisonOperator op;
     float val;
     bool leaf;
     Classification classDistribution;
@@ -39,7 +39,7 @@ private:
   void tokenizeFile();
   void tokenizeLine(Line &line);
   std::string readWekaToken(bool acceptNewline, bool breakOnSpace = false);
-  ComparisonOperator stringToOperator(const std::string &str);
+  DecisionTree::ComparisonOperator stringToOperator(const std::string &str);
   float stringToVal(const std::string &str, const std::string &name);
   
 

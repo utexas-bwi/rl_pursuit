@@ -203,17 +203,17 @@ std::string WekaParser::readWekaToken(bool acceptNewline, bool breakOnSpace) {
   }
 }
 
-ComparisonOperator WekaParser::stringToOperator(const std::string &str) {
+DecisionTree::ComparisonOperator WekaParser::stringToOperator(const std::string &str) {
   if (str == "=")
-    return EQUALS;
+    return DecisionTree::EQUALS;
   else if (str == "<")
-    return LESS;
+    return DecisionTree::LESS;
   else if (str == ">=")
-    return GEQ;
+    return DecisionTree::GEQ;
   else if (str == "<=")
-    return LEQ;
+    return DecisionTree::LEQ;
   else if (str == ">")
-    return GREATER;
+    return DecisionTree::GREATER;
   std::cerr << "WekaParser::stringToOperator: ERROR bad operator string: " << str << std::endl;
   exit(5);
 }
