@@ -16,15 +16,9 @@ Modified: 2011-11-21
 
 class ArffReader {
 public:
-  struct Feature {
-    std::string name;
-    bool numeric;
-    std::vector<unsigned int> values;
-  };
-
-  ArffReader(const std::string &filename);
+  ArffReader(std::ifstream &in);
   ~ArffReader();
-  void next(Features &features); // gets the next set of features
+  void next(Instance &features); // gets the next set of features
   std::string getClassFeature();
   std::vector<Feature> getFeatureTypes();
   bool isDone();
@@ -33,7 +27,7 @@ private:
   void readHeader();
 
 private:
-  std::ifstream in;
+  std::ifstream &in;
   std::vector<Feature> featureTypes;
 };
 

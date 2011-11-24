@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include <model/Common.h>
+#include "ArffReader.h"
 
 WekaParser::WekaParser(const std::string &filename, unsigned int numClasses, bool useClassDistributions):
   in(filename.c_str()),
@@ -9,11 +10,14 @@ WekaParser::WekaParser(const std::string &filename, unsigned int numClasses, boo
   useClassDistributions(useClassDistributions)
 {
   assert(in.good());
-  valueMap["U"] = Action::UP;
-  valueMap["D"] = Action::DOWN;
-  valueMap["L"] = Action::LEFT;
-  valueMap["R"] = Action::RIGHT;
-  valueMap["S"] = Action::NOOP;
+  ArffReader arff(in);
+  featureTypes = arff.getFeatureTypes();
+  
+  //valueMap["U"] = Action::UP;
+  //valueMap["D"] = Action::DOWN;
+  //valueMap["L"] = Action::LEFT;
+  //valueMap["R"] = Action::RIGHT;
+  //valueMap["S"] = Action::NOOP;
 
   tokenizeFile();
 }
@@ -22,7 +26,7 @@ boost::shared_ptr<DecisionTree> WekaParser::makeDecisionTree() {
   for(unsigned int i = 0; i < lines.size(); i++)
     lines[i].used = false;
   boost::shared_ptr<DecisionTree::Node> root = readDecisionTreeNode(0,0);
-  return boost::shared_ptr<DecisionTree>(new DecisionTree(root));
+  return boost::shared_ptr<DecisionTree>(new DecisionTree(featureTypes,featureTypes.size()-2,featureTypes.size()-1,root)); // -2: -1 because of 0 indexing and -1 because weight is last # TODO brittle
 }
 
 boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned int lineInd, unsigned int currentDepth) {
@@ -51,7 +55,15 @@ boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned 
  
   lines[lineInd].used = true;
   //std::cout << "MAKING INTERIOR: " << lines[lineInd].name << std::endl;
-  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(lines[lineInd].op,lines[lineInd].name));
+  // TODO make more efficient with a map?
+  unsigned int splitInd = 0;
+  for (unsigned int i = 0; i < featureTypes.size(); i++) {
+    if (featureTypes[i].name == lines[lineInd].name) {
+      splitInd = i;
+      break;
+    }
+  }
+  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(lines[lineInd].op,splitInd));
   boost::shared_ptr<DecisionTree::Node> child;
   for (unsigned int i = lineInd; i < lines.size(); i++) {
     if (lines[i].depth == currentDepth) {
@@ -224,7 +236,8 @@ float WekaParser::stringToVal(const std::string &str, const std::string &) {
     val = boost::lexical_cast<float>(str);
   } catch (boost::bad_lexical_cast) {
     //val = valueMap[name][str];
-    val = valueMap[str];
+    //val = valueMap[str];
+    throw;
   }
   //std::cout << "stringToVal(" << str << "," << name << "): " << val << std::endl;
   return val;

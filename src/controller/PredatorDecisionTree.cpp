@@ -15,10 +15,10 @@ PredatorDecisionTree::PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Poi
 }
 
 ActionProbs PredatorDecisionTree::step(const Observation &obs) {
-  Features features;
+  Instance instance;
   Classification c;
-  featureExtractor.extract(obs,features);
-  decisionTree->classify(features,c);
+  featureExtractor.extract(obs,instance);
+  decisionTree->classify(instance,c);
   assert(c.size() == Action::NUM_ACTIONS);
   ActionProbs actionProbs;
   for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)

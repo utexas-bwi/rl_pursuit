@@ -13,6 +13,7 @@ Modified: 2011-11-22
 
 typedef std::vector<float> Classification;
 typedef std::vector<float> Instance;
+const std::string WEIGHT_FEATURE = "__WEIGHT_FEATURE__";
 
 struct Feature {
   std::string name;
@@ -30,7 +31,7 @@ public:
   {
   }
 
-  virtual ~Classifier();
+  virtual ~Classifier() {}
   virtual void addData(const Instance &instance) = 0;
   virtual void train() = 0;
   virtual void classify(const Instance &instance, Classification &classification) = 0;

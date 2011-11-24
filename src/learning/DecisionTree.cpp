@@ -12,6 +12,9 @@ Modified: 2011-09-13
 #include <fstream>
 #include <iostream>
 
+const double DecisionTree::MIN_GAIN_RATIO = 0.0001;
+const unsigned int DecisionTree::MIN_INSTANCES_PER_LEAF = 2;
+
 //////////////////////////////////////////////////////////////
 // INTERIOR NODE
 //////////////////////////////////////////////////////////////
@@ -224,11 +227,7 @@ bool DecisionTree::LeafNode::isUnseen() {
 // DECISION TREE
 //////////////////////////////////////////////////////////////
 
-DecisionTree::DecisionTree(const std::vector<Feature> &features, unsigned int classInd, unsigned int weightInd):
-  Classifier(features,classInd,weightInd)
-{
-}
-DecisionTree::DecisionTree(const std::vector<Feature> &features, boost::shared_ptr<Node> root, unsigned int classInd, unsigned int weightInd):
+DecisionTree::DecisionTree(const std::vector<Feature> &features, unsigned int classInd, unsigned int weightInd, boost::shared_ptr<Node> root):
   Classifier(features,classInd,weightInd),
   root(root)
 {

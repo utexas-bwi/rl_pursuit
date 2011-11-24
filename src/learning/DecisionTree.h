@@ -81,8 +81,7 @@ public:
 ////////////////////
 // MAIN FUNCTIONS
 ////////////////////
-  DecisionTree(const std::vector<Feature> &features, unsigned int classInd, unsigned int weightInd);
-  DecisionTree(const std::vector<Feature> &features, boost::shared_ptr<Node> root, unsigned int classInd, unsigned int weightInd);
+  DecisionTree(const std::vector<Feature> &features, unsigned int classInd, unsigned int weightInd, boost::shared_ptr<Node> root = boost::shared_ptr<Node>());
   virtual ~DecisionTree();
 
   void addData(const Instance &instance);

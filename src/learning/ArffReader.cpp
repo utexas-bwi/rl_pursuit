@@ -10,8 +10,8 @@ Modified: 2011-11-21
 #include <cassert>
 #include <boost/lexical_cast.hpp>
 
-ArffReader::ArffReader(const std::string &filename):
-  in(filename.c_str())
+ArffReader::ArffReader(std::ifstream &in):
+  in(in)
 {
   assert(in.good());
   readHeader();
@@ -19,16 +19,16 @@ ArffReader::ArffReader(const std::string &filename):
 }
   
 ArffReader::~ArffReader() {
-  in.close();
 }
 
-void ArffReader::next(Features &features) {
+void ArffReader::next(Instance &features) {
   features.clear();
   float val;
-  for (unsigned int i = 0; i < featureTypes.size(); i++) {
+  assert(featureTypes.back().name == WEIGHT_FEATURE); //brittle for now
+  for (unsigned int i = 0; i < featureTypes.size()-1; i++) {
     in >> val;
     in.ignore(1,',');
-    features[featureTypes[i].name] = val;
+    features[i] = val;
     float weight = 1.0;
     if (in.peek() == '{') {
       // there's a weight for it
@@ -36,7 +36,7 @@ void ArffReader::next(Features &features) {
       in >> weight;
       in.ignore(1,'}');
     }
-    features[WEIGHT_FEATURE] = weight;
+    features[featureTypes.size()-1] = weight;
   }
 }
 
@@ -44,7 +44,7 @@ std::string ArffReader::getClassFeature() {
   return featureTypes.back().name;
 }
 
-std::vector<ArffReader::Feature> ArffReader::getFeatureTypes() {
+std::vector<Feature> ArffReader::getFeatureTypes() {
   return featureTypes;
 }
 

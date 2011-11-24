@@ -47,9 +47,9 @@ private:
   std::vector<Line> lines;
   std::ifstream in;
   //boost::unordered_map<std::string,Features > valueMap;
-  Features valueMap;
   unsigned int numClasses;
   bool useClassDistributions;
+  std::vector<Feature> featureTypes;
 };
 
 #endif /* end of include guard: WEKAPARSER_U3AZA2Y8 */

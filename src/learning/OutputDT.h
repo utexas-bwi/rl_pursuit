@@ -47,7 +47,7 @@ protected:
   bool useDesiredActions;
   std::vector<FeatureType> featureTypes;
   std::vector<std::vector<std::string> > outputForSteps;
-  std::vector<Features> featureList;
+  std::vector<Instance> instances;
   Observation prevObs;
   FeatureExtractor featureExtractor;
   unsigned int numSamples;
