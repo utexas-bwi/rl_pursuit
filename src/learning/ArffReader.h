@@ -22,6 +22,7 @@ public:
   std::string getClassFeature();
   std::vector<Feature> getFeatureTypes();
   bool isDone();
+  std::string getHeader();
 
 private:
   void readHeader();
@@ -29,6 +30,7 @@ private:
 private:
   std::ifstream &in;
   std::vector<Feature> featureTypes;
+  std::string header;
 };
 
 #endif /* end of include guard: ARFFREADER_996VDU7E */

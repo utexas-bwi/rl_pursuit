@@ -51,6 +51,10 @@ bool ArffReader::isDone() {
   return in.eof();
 }
 
+std::string ArffReader::getHeader() {
+  return header;
+}
+
 void ArffReader::readHeader() {
   std::string str;
   std::string start = "@attribute ";
@@ -60,15 +64,17 @@ void ArffReader::readHeader() {
   // read until the attributes
   while (true) {
     std::getline(in,str);
-    if (str.compare(0,start.size(),start) != 0)
+    if (str.compare(0,start.size(),start) != 0) {
+      header += str + '\n';
       continue;
+    }
     break;
   }
   // read in the attributes
   while (true) {
     if (str.compare(0,start.size(),start) != 0)
       break;
-
+    header += str + '\n';
     startInd = str.find(" ",start.size()-1);
     endInd = str.find(" ",startInd+1);
     Feature feature;
@@ -88,7 +94,10 @@ void ArffReader::readHeader() {
     featureTypes.push_back(feature);
     std::getline(in,str);
   }
+  header += str + '\n';
   // read until the data
-  while (str != "@data")
+  while (str != "@data") {
     std::getline(in,str);
+    header += str + '\n';
+  }
 }

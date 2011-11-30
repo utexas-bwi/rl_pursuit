@@ -22,14 +22,18 @@ def createTree(inFile,outFile,options):
   cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
-def extractTree(inFile,outFile):
+def extractTree(arffFile,inFile,outFile):
+  with open(arffFile,'r') as f:
+    lines = f.readlines()
+  ind = lines.index('@data\n')
+  prefix = lines[:ind+1]
   with open(inFile,'r') as f:
     lines = f.readlines()
   ind = lines.index('REPTree\n')
   startInd = ind + 3 # 3 lines later, including REPTree
   endInd = startInd + lines[startInd:].index('\n')
   with open(outFile,'w') as f:
-    f.writelines(lines[startInd:endInd])
+    f.writelines(prefix+lines[startInd:endInd])
 
 def weightTree(inFile,dataFile,outFile):
   if os.uname()[4] == 'x86_64':
@@ -55,7 +59,7 @@ def main(inFile,basename,stayWeight=None,treeOptions=[]):
     print 'Running weka to create initial tree'
     createTree(tmpData,descFile,treeOptions)
     print 'Extracting tree from weka output'
-    extractTree(descFile,unweightedFile)
+    extractTree(tmpData,descFile,unweightedFile)
     print 'Adding class weights to tree'
     weightTree(unweightedFile,tmpData,weightedFile)
     print 'Done.'

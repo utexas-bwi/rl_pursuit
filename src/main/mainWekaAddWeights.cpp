@@ -25,12 +25,12 @@ int main(int argc, const char *argv[]) {
   // open the arffFile and set up some variables
   std::ifstream arffIn(arffFile);
   ArffReader arff(arffIn);
-  arffIn.close();
   std::cerr << "Parsed arff header" << std::endl;
   // read in the header
   // add data to tree
   addDataToTree(dt,arff);
   std::cerr << "Added data to tree" << std::endl;
+  arffIn.close();
 
   //dt->randomizeUnseenLeaves();
   //std::cerr << "Randomized unseen leaves" << std::endl;
@@ -38,7 +38,8 @@ int main(int argc, const char *argv[]) {
   dt->generalizeUnseenLeaves();
   std::cerr << "Generalized unseen leaves" << std::endl;
   
-  std::cout << dt;
+  std::cout << arff.getHeader();
+  std::cout << *dt;
   
   return 0;
 }
