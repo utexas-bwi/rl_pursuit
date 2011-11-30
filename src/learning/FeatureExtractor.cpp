@@ -6,8 +6,6 @@ Created:  2011-10-28
 Modified: 2011-10-28
 */
 
-#pragma message "TODO THINK ABOUT THE FEATURES AGAIN"
-
 #include "FeatureExtractor.h"
 #include <boost/lexical_cast.hpp>
 #include <factory/AgentFactory.h>
@@ -27,21 +25,17 @@ void FeatureExtractor::addFeatureAgent(const std::string &key, const std::string
 void FeatureExtractor::extract(const Observation &obs, Instance &instance) {
   assert(obs.preyInd == 0);
   
-  unsigned int predInd = obs.myInd - 1;
-  //instance["PredInd"] = predInd;
-  instance.push_back(predInd);
+  setFeature(instance,"PredInd",obs.myInd - 1);
   // positions of agents
   for (unsigned int i = 0; i < obs.positions.size(); i++) {
     Point2D diff = getDifferenceToPoint(dims,obs.myPos(),obs.positions[i]);
-    //std::string key;
-    //if (i == 0)
-      //key = "Prey";
-    //else
-      //key = "Pred" + boost::lexical_cast<std::string>(i-1);
-    //instance[key + ".dx"] = diff.x;
-    //instance[key + ".dy"] = diff.y;
-    instance.push_back(diff.x);
-    instance.push_back(diff.y);
+    std::string key;
+    if (i == 0)
+      key = "Prey";
+    else
+      key = "Pred" + boost::lexical_cast<std::string>(i-1);
+    setFeature(instance,key + ".dx",diff.x);
+    setFeature(instance,key + ".dy",diff.y);
   }
   // derived features
   bool next2prey = false;
@@ -58,17 +52,18 @@ void FeatureExtractor::extract(const Observation &obs, Instance &instance) {
         break;
       }
     }
-    //std::string key = "Occupied." + boost::lexical_cast<std::string>(a);
-    //instance[key] = occupied;
-    instance.push_back(occupied);
+    std::string key = "Occupied." + boost::lexical_cast<std::string>(a);
+    setFeature(instance,key,occupied);
   }
-  //instance["NextToPrey"] = next2prey;
-  instance.push_back(next2prey);
+  setFeature(instance,"NextToPrey",next2prey);
   // actions predicted by models
   ActionProbs actionProbs;
   for (std::vector<FeatureAgent>::iterator it = featureAgents.begin(); it != featureAgents.end(); it++) {
     actionProbs = it->agent->step(obs);
-    //instance[it->first + ".des"] = actionProbs.maxAction();
-    instance.push_back(actionProbs.maxAction());
+    setFeature(instance,it->name + ".des",actionProbs.maxAction());
   }
+}
+
+void FeatureExtractor::setFeature(Instance &instance, const std::string &key, float val) {
+  instance[key] = val;
 }

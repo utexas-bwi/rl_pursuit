@@ -50,6 +50,7 @@ private:
   unsigned int numClasses;
   bool useClassDistributions;
   std::vector<Feature> featureTypes;
+  std::string classFeature;
 };
 
 #endif /* end of include guard: WEKAPARSER_U3AZA2Y8 */

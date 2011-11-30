@@ -22,13 +22,12 @@ ArffReader::~ArffReader() {
 }
 
 void ArffReader::next(Instance &features) {
-  features.clear();
   float val;
-  assert(featureTypes.back().name == WEIGHT_FEATURE); //brittle for now
+  features.clear();
   for (unsigned int i = 0; i < featureTypes.size()-1; i++) {
     in >> val;
     in.ignore(1,',');
-    features[i] = val;
+    features[featureTypes[i].name] = val;
     float weight = 1.0;
     if (in.peek() == '{') {
       // there's a weight for it
@@ -36,7 +35,7 @@ void ArffReader::next(Instance &features) {
       in >> weight;
       in.ignore(1,'}');
     }
-    features[featureTypes.size()-1] = weight;
+    features.weight() = weight;
   }
 }
 

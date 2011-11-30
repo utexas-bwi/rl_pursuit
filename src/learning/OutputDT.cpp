@@ -61,7 +61,7 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
     outputCSVHeader();
 }
 
-void OutputDT::saveStep(unsigned int /*trialNum*/, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions) {
+void OutputDT::saveStep(unsigned int trialNum, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions) {
   assert(obs.preyInd == 0);
   if (useDesiredActions)
     assert(desiredActions.size() == obs.positions.size());
@@ -74,13 +74,12 @@ void OutputDT::saveStep(unsigned int /*trialNum*/, unsigned int numSteps, const 
       featureExtractor.extract(prevObs,instance);
 
       // add the trial number and number of steps
-      //features["Trial"] = trialNum;
-      //features["Step"] = numSteps - 1;
-#pragma message "TODO FIX THIS"
+      instance["Trial"] = trialNum;
+      instance["Step"] = numSteps - 1;
       
       assert(instance.size() == featureTypes.size() - 1); // 1 for the true class
       for (unsigned int i = 0; i < featureTypes.size() - 1; i++) {
-        ss << instance[i] << ",";
+        ss << instance[featureTypes[i].name] << ",";
       }
       if (useDesiredActions) {
         ss << desiredActions[agentInd];

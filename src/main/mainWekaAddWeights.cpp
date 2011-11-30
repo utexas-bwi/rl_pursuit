@@ -15,7 +15,7 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
   std::string wekaFile = argv[1];
-  std::string arffFile = argv[2];
+  const char *arffFile = argv[2];
   
   // read in the original tree
   WekaParser parser(wekaFile,5,false);
@@ -23,7 +23,9 @@ int main(int argc, const char *argv[]) {
   std::cerr << "Parsed original tree" << std::endl;
 
   // open the arffFile and set up some variables
-  ArffReader arff(arffFile);
+  std::ifstream arffIn(arffFile);
+  ArffReader arff(arffIn);
+  arffIn.close();
   std::cerr << "Parsed arff header" << std::endl;
   // read in the header
   // add data to tree
@@ -36,13 +38,13 @@ int main(int argc, const char *argv[]) {
   dt->generalizeUnseenLeaves();
   std::cerr << "Generalized unseen leaves" << std::endl;
   
-  std::cout << dt->root;
+  std::cout << dt;
   
   return 0;
 }
 
 void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff) {
-  Features features;
+  Instance instance;
   Classification c;
   int count = 0;
   std::string classFeature = arff.getClassFeature();
@@ -51,8 +53,8 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff) {
     if (count % 10000 == 0)
       std::cerr << count << std::endl;
     
-    arff.next(features);
-    unsigned int trueClass = (int)(features[classFeature] + 0.5);
-    dt->classify(features,c,true,trueClass,features[WEIGHT_FEATURE]);
+    arff.next(instance);
+    unsigned int trueClass = (int)(instance[classFeature] + 0.5);
+    dt->classify(instance,c,true,trueClass,instance.weight());
   }
 }

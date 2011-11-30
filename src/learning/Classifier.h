@@ -10,10 +10,41 @@ Modified: 2011-11-22
 */
 
 #include <string>
+#include <vector>
+#include <map>
 
 typedef std::vector<float> Classification;
-typedef std::vector<float> Instance;
+//typedef std::vector<float> Instance;
+//typedef std::map<std::string,float> Instance;
 const std::string WEIGHT_FEATURE = "__WEIGHT_FEATURE__";
+
+struct Instance {
+  std::map<std::string,float> data;
+
+  void clear() {
+    data.clear();
+  }
+
+  unsigned int size() {
+    return data.size();
+  }
+
+  float& weight() {
+    return data[WEIGHT_FEATURE];
+  }
+
+  float weight() const {
+    return data.find(WEIGHT_FEATURE)->second;
+  }
+
+  float& operator[](const std::string &key) {
+    return data[key];
+  }
+  
+  float operator[](const std::string &key) const{
+    return data.find(key)->second;
+  }
+};
 
 struct Feature {
   std::string name;
@@ -23,12 +54,16 @@ struct Feature {
 
 class Classifier {
 public:
-  Classifier(const std::vector<Feature> &features, unsigned int classInd, unsigned int weightInd):
+  Classifier(const std::vector<Feature> &features, const std::string &classFeature):
     features(features),
-    classInd(classInd),
-    weightInd(weightInd),
-    numClasses(features[classInd].values.size())
+    classFeature(classFeature)
   {
+    for (unsigned int i = 0; i < features.size(); i++) {
+      if (features[i].name == classFeature) {
+        numClasses = features[i].values.size();
+        break;
+      }
+    }
   }
 
   virtual ~Classifier() {}
@@ -38,8 +73,7 @@ public:
 
 protected:
   std::vector<Feature> features;
-  unsigned int classInd;
-  unsigned int weightInd;
+  const std::string classFeature;
   unsigned int numClasses;
 };
 

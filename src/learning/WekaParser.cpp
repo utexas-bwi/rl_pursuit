@@ -12,6 +12,7 @@ WekaParser::WekaParser(const std::string &filename, unsigned int numClasses, boo
   assert(in.good());
   ArffReader arff(in);
   featureTypes = arff.getFeatureTypes();
+  //classFeature = arff.getClassFeature();
   
   //valueMap["U"] = Action::UP;
   //valueMap["D"] = Action::DOWN;
@@ -26,7 +27,7 @@ boost::shared_ptr<DecisionTree> WekaParser::makeDecisionTree() {
   for(unsigned int i = 0; i < lines.size(); i++)
     lines[i].used = false;
   boost::shared_ptr<DecisionTree::Node> root = readDecisionTreeNode(0,0);
-  return boost::shared_ptr<DecisionTree>(new DecisionTree(featureTypes,featureTypes.size()-2,featureTypes.size()-1,root)); // -2: -1 because of 0 indexing and -1 because weight is last # TODO brittle
+  return boost::shared_ptr<DecisionTree>(new DecisionTree(featureTypes,classFeature,root));
 }
 
 boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned int lineInd, unsigned int currentDepth) {
@@ -55,15 +56,7 @@ boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned 
  
   lines[lineInd].used = true;
   //std::cout << "MAKING INTERIOR: " << lines[lineInd].name << std::endl;
-  // TODO make more efficient with a map?
-  unsigned int splitInd = 0;
-  for (unsigned int i = 0; i < featureTypes.size(); i++) {
-    if (featureTypes[i].name == lines[lineInd].name) {
-      splitInd = i;
-      break;
-    }
-  }
-  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(lines[lineInd].op,splitInd));
+  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(lines[lineInd].op,lines[lineInd].name));
   boost::shared_ptr<DecisionTree::Node> child;
   for (unsigned int i = lineInd; i < lines.size(); i++) {
     if (lines[i].depth == currentDepth) {

@@ -21,9 +21,9 @@ const unsigned int DecisionTree::MIN_INSTANCES_PER_LEAF = 2;
 
 const float DecisionTree::InteriorNode::EPS = 0.0001;
   
-DecisionTree::InteriorNode::InteriorNode(ComparisonOperator cmp, unsigned int splitInd):
+DecisionTree::InteriorNode::InteriorNode(ComparisonOperator cmp, const std::string &splitKey):
   cmp(cmp),
-  splitInd(splitInd)
+  splitKey(splitKey)
 {
 }
 
@@ -38,12 +38,12 @@ void DecisionTree::InteriorNode::classify(const Instance &instance, Classificati
     unsigned int ind = getInd(instance);
     children[ind]->classify(instance,classification,adjustClassificationQ,trueClass,weight);
   } catch(std::out_of_range) {
-    std::cerr << "DecisionTree::InteriorNode::classify failed for feature: " << splitInd << std::endl;
+    std::cerr << "DecisionTree::InteriorNode::classify failed for feature: " << splitKey << std::endl;
     exit(5);
   }
 }
 unsigned int DecisionTree::InteriorNode::getInd(const Instance &instance) {
-  float val = instance[splitInd];
+  float val = instance[splitKey];
   for (unsigned int i = 0; i < splitValues.size(); i++) {
     switch(cmp) {
       case EQUALS:
@@ -73,7 +73,7 @@ std::ostream& DecisionTree::InteriorNode::genDescription(std::ostream &out, unsi
   for (unsigned int i = 0; i < splitValues.size(); i++){
     for (unsigned int j = 0; j < depth; j++)
       out << "|  ";
-    out << splitInd << " ";
+    out << splitKey << " ";
     ComparisonOperator c = cmp;
     if ((c == LESS) && (i == splitValues.size() - 1))
       c = GEQ;
@@ -147,10 +147,14 @@ void DecisionTree::InteriorNode::setGeneralization(const Classification &general
 // LEAF NODE
 //////////////////////////////////////////////////////////////
 
-DecisionTree::LeafNode::LeafNode(const Classification &classification):
+DecisionTree::LeafNode::LeafNode(const Classification &classification, const std::vector<Instance> &instances):
   classification(classification),
-  total(0)
+  total(0),
+  instances(instances)
 {
+  for (unsigned int i = 0; i < instances.size(); i++) {
+    total += this->instances[i].weight();
+  }
 }
 
 void DecisionTree::LeafNode::classify(const Instance &, Classification &c, bool adjustClassificationQ, unsigned int trueClass, float weight) {
@@ -227,8 +231,8 @@ bool DecisionTree::LeafNode::isUnseen() {
 // DECISION TREE
 //////////////////////////////////////////////////////////////
 
-DecisionTree::DecisionTree(const std::vector<Feature> &features, unsigned int classInd, unsigned int weightInd, boost::shared_ptr<Node> root):
-  Classifier(features,classInd,weightInd),
+DecisionTree::DecisionTree(const std::vector<Feature> &features, const std::string &classFeature, boost::shared_ptr<Node> root):
+  Classifier(features,classFeature),
   root(root)
 {
 }
@@ -273,7 +277,7 @@ boost::shared_ptr<DecisionTree::Node> DecisionTree::createNode(const std::vector
 #endif
     for (unsigned int i = 0; i < numClasses; i++)
       classFracs[i] = 1.0 / numClasses;
-    return makeLeaf(classFracs);
+    return makeLeaf(classFracs,std::vector<Instance>());
   }
 
   // check if it only has one class
@@ -294,7 +298,7 @@ boost::shared_ptr<DecisionTree::Node> DecisionTree::createNode(const std::vector
 #ifdef DEBUG_DT_SPLITS
     std::cout << "No split necessary, one class already" << std::endl;
 #endif
-    return makeLeaf(classFracs);
+    return makeLeaf(classFracs,instances);
   } else {
     Split split;
     getBestSplit(instances,split);
@@ -319,7 +323,7 @@ boost::shared_ptr<DecisionTree::Node> DecisionTree::createNode(const std::vector
 #ifdef DEBUG_DT_SPLITS
       std::cout << "No useful splits found" << std::endl;
 #endif
-      return makeLeaf(classFracs);
+      return makeLeaf(classFracs,instances);
     }
   }
 }
@@ -327,8 +331,8 @@ boost::shared_ptr<DecisionTree::Node> DecisionTree::createNode(const std::vector
 bool DecisionTree::getClassFracs(const std::vector<Instance> &instances, Classification &classFracs) {
   for (unsigned int i = 0; i < instances.size(); i++) {
     Instance const &inst = instances[i];
-    int c = (int)(inst[classInd] + 0.5);
-    classFracs[c] += inst[weightInd];
+    int c = (int)(inst[classFeature] + 0.5);
+    classFracs[c] += inst.weight();
   }
   
   float total = 0;
@@ -345,14 +349,15 @@ void DecisionTree::getBestSplit(const std::vector<Instance> &instances, Split &b
   Split split;
   // consider splitting on all of the features
   for (unsigned int i = 0; i < features.size(); i++) {
-    if ((i == classInd) || (i == weightInd)) //skip the class and weight "features"
+    if ((features[i].name == classFeature) || (features[i].name == WEIGHT_FEATURE)) //skip the class and weight "features"
       continue;
+    split.feature = features[i].name;
     split.featureInd = i;
     if (features[i].numeric) {
       // get all of the values for this feature
       std::set<float> vals;
       for (unsigned int j = 0; j < instances.size(); j++)
-        vals.insert(instances[j][i]);
+        vals.insert(instances[j][split.feature]);
 
       // consider splitting on all of the values for this feature
       std::set<float>::iterator it = vals.begin();
@@ -445,7 +450,7 @@ void DecisionTree::splitData(const std::vector<Instance> &instances, const Split
   splitInstances.resize(splitVals.size());
 
   for (unsigned int i = 0; i < instances.size(); i++) {
-    float val = instances[i][split.featureInd];
+    float val = instances[i][split.feature];
     if (!feature.numeric)
       val -= 0.5;
     for (unsigned int j = 0; j < splitVals.size(); j++) {
@@ -459,7 +464,7 @@ void DecisionTree::splitData(const std::vector<Instance> &instances, const Split
     splitVals[1] = splitVals[0];
 }
   
-boost::shared_ptr<DecisionTree::LeafNode> DecisionTree::makeLeaf(const Classification &classFrac) {
+boost::shared_ptr<DecisionTree::LeafNode> DecisionTree::makeLeaf(const Classification &classFrac, const std::vector<Instance> &instances) {
   Classification classification(classFrac);
   if (!useClassDistributions) {
     float maxCount = 0;
@@ -473,7 +478,7 @@ boost::shared_ptr<DecisionTree::LeafNode> DecisionTree::makeLeaf(const Classific
     }
     classification[maxClass] = 1;
   }
-  return boost::shared_ptr<DecisionTree::LeafNode>(new DecisionTree::LeafNode(classification));
+  return boost::shared_ptr<DecisionTree::LeafNode>(new DecisionTree::LeafNode(classification,instances));
 }
 
 boost::shared_ptr<DecisionTree::InteriorNode> DecisionTree::makeInterior(const std::vector<Instance> &instances, const Split &split) {
@@ -482,7 +487,7 @@ boost::shared_ptr<DecisionTree::InteriorNode> DecisionTree::makeInterior(const s
   if (feature.numeric)
     op = LESS;
 
-  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(op,split.featureInd));
+  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(op,split.feature));
 
   std::vector<std::vector<Instance> > splitInstances;
   std::vector<float> splitVals;

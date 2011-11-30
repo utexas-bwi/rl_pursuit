@@ -7,7 +7,9 @@ Modified: 2011-11-21
 */
 
 #include <iostream>
-#include <learning/DecisionTreeBuilder.h>
+#include <fstream>
+#include <learning/ArffReader.h>
+#include <learning/DecisionTree.h>
 
 int main(int argc, const char *argv[]) {
   char usage[] = "Usage: buildDT arffFilename";
@@ -16,10 +18,19 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
   
-  std::string filename(argv[1]);
-  DecisionTreeBuilder builder(filename,5,true);
-  boost::shared_ptr<DecisionTree> dt = builder.getDecisionTree();
-  std::cout << dt->root;
+  std::ifstream in(argv[1]);
+  ArffReader arff(in);
+  Instance instance;
+  DecisionTree dt(arff.getFeatureTypes(),arff.getClassFeature());
+  while (!arff.isDone()) {
+    arff.next(instance);
+    dt.addData(instance);
+  }
+  dt.train();
+  in.close();
+  //DecisionTreeBuilder builder(filename,5,true);
+  //boost::shared_ptr<DecisionTree> dt = builder.getDecisionTree();
+  //std::cout << dt->root;
 
   return 0;
 }

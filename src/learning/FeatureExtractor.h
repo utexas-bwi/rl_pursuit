@@ -28,9 +28,12 @@ protected:
     boost::shared_ptr<Agent> agent;
   };
 
+  void setFeature(Instance &instance, const std::string &key, float val);
+
 protected:
   const Point2D dims;
   std::vector<FeatureAgent> featureAgents;
+  std::vector<Feature> featureTypes;
 };
 
 #endif /* end of include guard: FEATUREEXTRACTOR_XSHC1OD2 */
