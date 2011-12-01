@@ -12,6 +12,7 @@ Modified: 2011-11-22
 #include <string>
 #include <vector>
 #include <map>
+#include <stdexcept>
 
 typedef std::vector<float> Classification;
 //typedef std::vector<float> Instance;
