@@ -38,7 +38,6 @@ int main(int argc, const char *argv[]) {
   dt->generalizeUnseenLeaves();
   std::cerr << "Generalized unseen leaves" << std::endl;
   
-  std::cout << arff.getHeader();
   std::cout << *dt;
   
   return 0;
