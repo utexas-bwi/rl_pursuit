@@ -28,9 +28,9 @@ int main(int argc, const char *argv[]) {
   }
   dt.train();
   in.close();
-  //DecisionTreeBuilder builder(filename,5,true);
-  //boost::shared_ptr<DecisionTree> dt = builder.getDecisionTree();
-  //std::cout << dt->root;
+
+
+  std::cout << dt << std::endl;
 
   return 0;
 }

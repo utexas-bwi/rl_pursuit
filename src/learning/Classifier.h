@@ -42,7 +42,18 @@ struct Instance {
   }
   
   float operator[](const std::string &key) const{
-    return data.find(key)->second;
+    std::map<std::string,float>::const_iterator it = data.find(key);
+    if (it == data.end())
+      throw std::out_of_range("Unknown key: " + key);
+    return it->second;
+  }
+
+  friend std::ostream& operator<<(std::ostream &out, const Instance &inst) {
+    out << "<Instance ";
+    for (std::map<std::string,float>::const_iterator it = inst.data.begin(); it != inst.data.end(); it++)
+      out << it->first << ":" << it->second << ",";
+    out << ">";
+    return out;
   }
 };
 
@@ -50,6 +61,22 @@ struct Feature {
   std::string name;
   bool numeric;
   std::vector<unsigned int> values;
+  
+  friend std::ostream& operator<<(std::ostream &out, const Feature &feat) {
+    out << feat.name << " ";
+    if (feat.numeric)
+      out << "numeric";
+    else {
+      out << "{";
+      for (unsigned int i = 0; i < feat.values.size(); i++) {
+        if (i != 0)
+          out << ",";
+        out << feat.values[i];
+      }
+      out << "}";
+    }
+    return out;
+  }
 };
 
 class Classifier {
@@ -70,6 +97,16 @@ public:
   virtual void addData(const Instance &instance) = 0;
   virtual void train() = 0;
   virtual void classify(const Instance &instance, Classification &classification) = 0;
+
+  std::ostream& outputHeader(std::ostream &out) const {
+    out << "@relation 'Classifier as represented by learning/Classifier.h'" << std::endl;
+    out << std::endl;
+    for (unsigned int i = 0; i < features.size(); i++)
+      out << "@attribute " << features[i] << std::endl;
+    out << std::endl;
+    out << "@data" << std::endl;
+    return out;
+  }
 
 protected:
   std::vector<Feature> features;

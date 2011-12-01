@@ -12,6 +12,8 @@ Modified: 2011-09-13
 #include <fstream>
 #include <iostream>
 
+#undef DEBUG_DT_SPLITS
+
 const double DecisionTree::MIN_GAIN_RATIO = 0.0001;
 const unsigned int DecisionTree::MIN_INSTANCES_PER_LEAF = 2;
 
@@ -313,8 +315,8 @@ boost::shared_ptr<DecisionTree::Node> DecisionTree::createNode(const std::vector
     if ((numAcceptable >= 2) && (split.gain > MIN_GAIN_RATIO)) {
 
 #ifdef DEBUG_DT_SPLITS
-      std::cout << "best split = " << featureTypes[split.featureInd].name;
-      if (split.numeric)
+      std::cout << "best split = " << features[split.featureInd].name;
+      if (features[split.featureInd].numeric)
         std::cout << " < " << split.val;
       std::cout << std::endl;
       std::cout << "best split gain = " << split.gain << std::endl;
@@ -511,6 +513,7 @@ std::ostream& operator<<(std::ostream &out, boost::shared_ptr<DecisionTree::Node
 }
 
 std::ostream& operator<<(std::ostream &out, const DecisionTree &dt) {
+  dt.outputHeader(out);
   dt.root->genDescription(out);
   return out;
 }
