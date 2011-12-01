@@ -157,13 +157,13 @@ DecisionTree::LeafNode::LeafNode(const Classification &classification, const std
   }
 }
 
-void DecisionTree::LeafNode::classify(const Instance &, Classification &c, bool adjustClassificationQ, unsigned int trueClass, float weight) {
+void DecisionTree::LeafNode::classify(const Instance &instance, Classification &c, bool adjustClassificationQ, unsigned int trueClass, float weight) {
   if (adjustClassificationQ)
-    adjustClassification(trueClass,weight);
+    adjustClassification(instance,trueClass,weight);
   c = classification;
 }
 
-void DecisionTree::LeafNode::adjustClassification(unsigned int trueClass,float weight) {
+void DecisionTree::LeafNode::adjustClassification(const Instance &instance, unsigned int trueClass,float weight) {
   assert(trueClass < classification.size());
   float frac = total / (total + weight);
   for (unsigned int i = 0; i < classification.size(); i++) {
@@ -173,6 +173,7 @@ void DecisionTree::LeafNode::adjustClassification(unsigned int trueClass,float w
       classification[i] *= frac;
   }
   total += weight;
+  instances.push_back(instance);
 }
 
 

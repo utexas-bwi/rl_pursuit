@@ -68,7 +68,7 @@ public:
     LeafNode(const Classification &classification, const std::vector<Instance> &instances = std::vector<Instance>());
     void classify(const Instance &instance, Classification &classification, bool adjustClassificationQ=false, unsigned int trueClass=0, float weight=1.0);
     std::ostream& genDescription(std::ostream &out, unsigned int depth = 0);
-    void adjustClassification(unsigned int trueClass, float weight);
+    void adjustClassification(const Instance &instance, unsigned int trueClass, float weight);
     bool isLeaf(){return true;}
     void randomizeUnseenLeaves();
     void generalizeUnseenLeaves(Classification &general);
