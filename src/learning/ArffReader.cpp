@@ -24,7 +24,7 @@ ArffReader::~ArffReader() {
 void ArffReader::next(Instance &features) {
   float val;
   features.clear();
-  for (unsigned int i = 0; i < featureTypes.size()-1; i++) {
+  for (unsigned int i = 0; i < featureTypes.size(); i++) {
     in >> val;
     in.ignore(1,',');
     features[featureTypes[i].name] = val;
