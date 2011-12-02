@@ -6,7 +6,7 @@ File: Util.h
 Author: Samuel Barrett
 Description: a set of utility functions
 Created:  2011-08-23
-Modified: 2011-08-23
+Modified: 2011-12-02
 */
 
 #include <json/json.h>
@@ -52,5 +52,8 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &vect) {
   out << "]";
   return out;
 }
+
+void parseCommandLineArgs(int *argc, char ***argv, const std::string &usage, int minArgs=-1, int maxArgs=-1);
+void printCommandLineHelpAndExit();
 
 #endif /* end of include guard: UTIL_T1FR2WSR */

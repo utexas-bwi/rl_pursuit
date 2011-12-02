@@ -11,16 +11,18 @@ Modified: 2011-11-21
 #include <learning/ArffReader.h>
 #include <learning/DecisionTree.h>
 
-int main(int argc, const char *argv[]) {
-  char usage[] = "Usage: buildDT arffFilename";
-  if (argc != 2) {
-    std::cerr << usage << std::endl;
-    return 1;
-  }
-  
+#include <common/Util.h>
+#include <gflags/gflags.h>
+
+DEFINE_double(minGain,0.0001,"Minimum gain ratio for splitting nodes of the DT");
+DEFINE_int32(minInstances,2,"Minimum number of instances per leaf");
+
+int main(int argc, char *argv[]) {
+  parseCommandLineArgs(&argc,&argv,"[options] arffFilename",1,1);
+
   std::ifstream in(argv[1]);
   ArffReader arff(in);
-  DecisionTree dt(arff.getFeatureTypes());
+  DecisionTree dt(arff.getFeatureTypes(),DecisionTree::NodePtr(),FLAGS_minGain,FLAGS_minInstances);
   while (!arff.isDone()) {
     InstancePtr instance = arff.next();
     dt.addData(instance);

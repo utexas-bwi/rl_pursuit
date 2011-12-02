@@ -4,6 +4,8 @@
 #include <fstream>
 #include <cmath>
 #include <cassert>
+#include <gflags/gflags.h>
+#include <stdlib.h>
 
 double getTime() {
   struct timeval time;
@@ -60,4 +62,41 @@ bool readJson(const std::string &filename, Json::Value &value) {
 
 std::string indent(unsigned int indentation) {
   return std::string(indentation * 2,' ');
+}
+
+DEFINE_bool(h,false,"Print help");
+
+void parseCommandLineArgs(int *argc, char ***argv, const std::string &usage, int minArgs, int maxArgs) {
+  google::SetUsageMessage(usage);
+  google::ParseCommandLineNonHelpFlags(argc, argv, true);
+  
+  // check if help was set
+  std::string helpStr;
+  google::GetCommandLineOption("help",&helpStr);
+  if ((helpStr == "true") || FLAGS_h)
+    printCommandLineHelpAndExit();
+
+  google::HandleCommandLineHelpFlags();
+  // check the number of remaining arguments
+  if (((minArgs >= 0) && (*argc -1 < minArgs)) || ((maxArgs >= 0) && (*argc - 1 > maxArgs))) {
+    std::cerr << "WARNING: Incorrect number of arguments, got " << *argc - 1 << " expected ";
+    if (maxArgs == minArgs)
+      std::cerr << minArgs;
+    else
+      std::cerr << minArgs << "-" << maxArgs;
+    std::cerr << std::endl;
+    printCommandLineHelpAndExit();
+  }
+}
+
+void printCommandLineHelpAndExit() {
+  std::cout << google::GetArgv0() << ": " << google::ProgramUsage() << std::endl;
+  std::vector<google::CommandLineFlagInfo> flags;
+  google::GetAllFlags(&flags);
+  for (unsigned int i = 0; i < flags.size(); i++) {
+    if (((flags[i].filename == "src/gflags.cc") || (flags[i].filename == "src/gflags_completions.cc") || (flags[i].filename == "src/gflags_reporting.cc")) && (flags[i].name != "help") && (flags[i].name != "helpfull"))
+      continue;
+    std::cout << google::DescribeOneFlag(flags[i]);
+  }
+  exit(1);
 }
