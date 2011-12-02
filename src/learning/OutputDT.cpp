@@ -70,8 +70,8 @@ void OutputDT::saveStep(unsigned int trialNum, unsigned int numSteps, const Obse
     for (unsigned int predInd = 0; predInd < numPredators; predInd++) {
       unsigned int agentInd = predInd + 1;
       prevObs.myInd = agentInd;
-      Instance instance;
-      featureExtractor.extract(prevObs,instance);
+      InstancePtr instancePtr = featureExtractor.extract(prevObs);
+      Instance &instance = *instancePtr;
 
       // add the trial number and number of steps
       instance["Trial"] = trialNum;

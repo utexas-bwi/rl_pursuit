@@ -22,8 +22,9 @@ void FeatureExtractor::addFeatureAgent(const std::string &key, const std::string
   featureAgents.push_back(featureAgent);
 }
 
-void FeatureExtractor::extract(const Observation &obs, Instance &instance) {
+InstancePtr FeatureExtractor::extract(const Observation &obs) {
   assert(obs.preyInd == 0);
+  InstancePtr instance(new Instance);
   
   setFeature(instance,"PredInd",obs.myInd - 1);
   // positions of agents
@@ -62,8 +63,9 @@ void FeatureExtractor::extract(const Observation &obs, Instance &instance) {
     actionProbs = it->agent->step(obs);
     setFeature(instance,it->name + ".des",actionProbs.maxAction());
   }
+  return instance;
 }
 
-void FeatureExtractor::setFeature(Instance &instance, const std::string &key, float val) {
-  instance[key] = val;
+void FeatureExtractor::setFeature(InstancePtr &instance, const std::string &key, float val) {
+  (*instance)[key] = val;
 }

@@ -18,7 +18,7 @@ class ArffReader {
 public:
   ArffReader(std::ifstream &in);
   ~ArffReader();
-  void next(Instance &features); // gets the next set of features
+  InstancePtr next(); // gets the next set of features
   std::string getClassFeature();
   std::vector<Feature> getFeatureTypes();
   bool isDone();

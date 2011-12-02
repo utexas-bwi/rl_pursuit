@@ -27,7 +27,7 @@ boost::shared_ptr<DecisionTree> WekaParser::makeDecisionTree() {
   for(unsigned int i = 0; i < lines.size(); i++)
     lines[i].used = false;
   boost::shared_ptr<DecisionTree::Node> root = readDecisionTreeNode(0,0);
-  return boost::shared_ptr<DecisionTree>(new DecisionTree(featureTypes,classFeature,root));
+  return boost::shared_ptr<DecisionTree>(new DecisionTree(featureTypes,root));
 }
 
 boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned int lineInd, unsigned int currentDepth) {
@@ -42,7 +42,10 @@ boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned 
   if (lines[lineInd].used && lines[lineInd].leaf && (currentDepth == lines[lineInd].depth + 1)) {
     // make a leaf for this line
     //boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode((int)(lines[lineInd].classification + 0.5)));
-    boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode(lines[lineInd].classDistribution));
+    InstanceSetPtr instances(new InstanceSet(numClasses));
+    instances->classification = lines[lineInd].classDistribution;
+    DecisionTree::NodePtr node(new DecisionTree::LeafNode(instances));
+    //boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode(lines[lineInd].classDistribution));
     //std::cout << "Making leaf: " << node;
     return node;
   }

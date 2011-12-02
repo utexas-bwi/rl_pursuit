@@ -21,22 +21,25 @@ ArffReader::ArffReader(std::ifstream &in):
 ArffReader::~ArffReader() {
 }
 
-void ArffReader::next(Instance &features) {
+InstancePtr ArffReader::next() {
   float val;
-  features.clear();
-  for (unsigned int i = 0; i < featureTypes.size(); i++) {
+  InstancePtr instance(new Instance());
+  instance->weight = 1.0;
+  for (unsigned int i = 0; i < featureTypes.size() - 1; i++) {
     in >> val;
     in.ignore(1,',');
-    features[featureTypes[i].name] = val;
-    float weight = 1.0;
-    if (in.peek() == '{') {
-      // there's a weight for it
-      in.ignore(1,'{');
-      in >> weight;
-      in.ignore(1,'}');
-    }
-    features.weight() = weight;
+    (*instance)[featureTypes[i].name] = val;
   }
+  // TODO assuming class is last feature
+  in >> instance->label;
+  in.ignore(1,',');
+  // check if there's a weight
+  if (in.peek() == '{') {
+    in.ignore(1,'{');
+    in >> instance->weight;
+    in.ignore(1,'}');
+  }
+  return instance;
 }
 
 std::string ArffReader::getClassFeature() {

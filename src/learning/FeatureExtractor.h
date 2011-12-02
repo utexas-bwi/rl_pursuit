@@ -20,7 +20,7 @@ public:
   FeatureExtractor(const Point2D &dims);
   
   void addFeatureAgent(const std::string &key, const std::string &name);
-  void extract(const Observation &obs, Instance &instance);
+  InstancePtr extract(const Observation &obs);
 
 protected:
   struct FeatureAgent {
@@ -28,7 +28,7 @@ protected:
     boost::shared_ptr<Agent> agent;
   };
 
-  void setFeature(Instance &instance, const std::string &key, float val);
+  void setFeature(InstancePtr &instance, const std::string &key, float val);
 
 protected:
   const Point2D dims;

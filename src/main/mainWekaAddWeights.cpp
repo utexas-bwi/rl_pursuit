@@ -35,17 +35,15 @@ int main(int argc, const char *argv[]) {
   //dt->randomizeUnseenLeaves();
   //std::cerr << "Randomized unseen leaves" << std::endl;
   
-  dt->generalizeUnseenLeaves();
-  std::cerr << "Generalized unseen leaves" << std::endl;
+  //dt->generalizeUnseenLeaves();
+  //std::cerr << "Generalized unseen leaves" << std::endl;
   
-  std::cout << *dt;
+  //std::cout << *dt;
   
   return 0;
 }
 
 void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff) {
-  Instance instance;
-  Classification c;
   int count = 0;
   std::string classFeature = arff.getClassFeature();
   while (!arff.isDone()) {
@@ -53,8 +51,7 @@ void addDataToTree(boost::shared_ptr<DecisionTree> dt, ArffReader &arff) {
     if (count % 10000 == 0)
       std::cerr << count << std::endl;
     
-    arff.next(instance);
-    unsigned int trueClass = (int)(instance[classFeature] + 0.5);
-    dt->classify(instance,c,true,trueClass,instance.weight());
+    InstancePtr instance = arff.next();
+    dt->addData(instance);
   }
 }

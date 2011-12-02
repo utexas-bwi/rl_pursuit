@@ -20,10 +20,9 @@ int main(int argc, const char *argv[]) {
   
   std::ifstream in(argv[1]);
   ArffReader arff(in);
-  Instance instance;
-  DecisionTree dt(arff.getFeatureTypes(),arff.getClassFeature());
+  DecisionTree dt(arff.getFeatureTypes());
   while (!arff.isDone()) {
-    arff.next(instance);
+    InstancePtr instance = arff.next();
     dt.addData(instance);
   }
   dt.train();
