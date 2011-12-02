@@ -42,7 +42,7 @@ public:
   public:
     virtual void classify(const InstancePtr &instance, Classification &classification) const = 0;
     virtual void addData(const InstancePtr &instance) = 0;
-    virtual void train(NodePtr &ptr, const DecisionTree &dt) = 0;
+    virtual void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth) = 0;
     virtual void output(std::ostream &out, unsigned int depth) = 0;
   };
 
@@ -52,7 +52,7 @@ public:
     void addChild(const NodePtr &child, float splitValue);
     void classify(const InstancePtr &instance, Classification &classification) const;
     void addData(const InstancePtr &instance);
-    void train(NodePtr &ptr, const DecisionTree &dt);
+    void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
     void output(std::ostream &out, unsigned int depth = 0);
   private:
     NodePtr getChild(const InstancePtr &instance) const;
@@ -68,11 +68,11 @@ public:
     LeafNode(const InstanceSetPtr &instances);
     void classify(const InstancePtr &instance, Classification &classification) const;
     void addData(const InstancePtr &instance);
-    void train(NodePtr &ptr, const DecisionTree &dt);
+    void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
     void output(std::ostream &out, unsigned int depth = 0);
   private:
     bool oneClass() const;
-    void trySplittingNode(NodePtr &ptr, const DecisionTree &dt);
+    void trySplittingNode(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
   private:
     InstanceSetPtr instances;
   };
@@ -81,7 +81,7 @@ public:
 // MAIN FUNCTIONS
 ////////////////////
 public:
-  DecisionTree(const std::vector<Feature> &features, NodePtr root = NodePtr(), double minGainRatio = 0.0001, unsigned int minInstancesPerLeaf = 2);
+  DecisionTree(const std::vector<Feature> &features, NodePtr root = NodePtr(), double minGainRatio = 0.0001, unsigned int minInstancesPerLeaf = 2, int maxDepth = -1);
   
   void addData(const InstancePtr &instance);
   void classify(const InstancePtr &instance, Classification &classification) const;
@@ -96,6 +96,7 @@ private:
   NodePtr root;
   const double MIN_GAIN_RATIO;
   const unsigned int MIN_INSTANCES_PER_LEAF;
+  const int MAX_DEPTH;
   static const float EPS;
 
   friend class Node;

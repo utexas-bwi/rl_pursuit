@@ -66,9 +66,11 @@ DecisionTree::NodePtr DecisionTree::InteriorNode::getChild(const InstancePtr &in
   return children.back();
 }
 
-void DecisionTree::InteriorNode::train(NodePtr &, const DecisionTree &dt) {
+void DecisionTree::InteriorNode::train(NodePtr &, const DecisionTree &dt, int maxDepth) {
+  if (maxDepth == 0)
+    return;
   for (unsigned int i = 0; i < children.size(); i++) {
-    children[i]->train(children[i],dt);
+    children[i]->train(children[i],dt, maxDepth - 1);
   }
 }
 
@@ -123,7 +125,9 @@ void DecisionTree::LeafNode::addData(const InstancePtr &instance) {
   instances->add(instance);
 }
 
-void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt) {
+void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt, int maxDepth) {
+  if (maxDepth == 0)
+    return;
   if (instances->weight <= EPS) {
 #ifdef DEBUG_DT_SPLITS
     std::cout << "No data, skipping" << std::endl;
@@ -141,12 +145,12 @@ void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt) {
 #endif
   } else {
     //std::cout << "*** trySplittingNode with weight " << instances->weight << std::endl;
-    trySplittingNode(ptr,dt);
+    trySplittingNode(ptr,dt,maxDepth);
     //std::cout << "*** done splittingNode" << std::endl;
   }
 }
 
-void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &dt) {
+void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &dt, int maxDepth) {
   double I = dt.calcIofSet(instances);
   Split bestSplit;
   bestSplit.gain = -1 * std::numeric_limits<float>::infinity();
@@ -199,7 +203,7 @@ void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &
     // change the pointer to point to the new interior node
     ptr = interior;
     // keep training
-    interior->train(ptr,dt);
+    interior->train(ptr,dt,maxDepth);
   } else {
 #ifdef DEBUG_DT_SPLITS
     std::cout << "No useful splits found" << std::endl;
@@ -231,11 +235,12 @@ void DecisionTree::LeafNode::output(std::ostream &out, unsigned int) {
 ////////////////////
 // MAIN FUNCTIONS
 ////////////////////
-DecisionTree::DecisionTree(const std::vector<Feature> &features, NodePtr root, double minGainRatio, unsigned int minInstancesPerLeaf):
+DecisionTree::DecisionTree(const std::vector<Feature> &features, NodePtr root, double minGainRatio, unsigned int minInstancesPerLeaf, int maxDepth):
   Classifier(features),
   root(root),
   MIN_GAIN_RATIO(minGainRatio),
-  MIN_INSTANCES_PER_LEAF(minInstancesPerLeaf)
+  MIN_INSTANCES_PER_LEAF(minInstancesPerLeaf),
+  MAX_DEPTH(maxDepth)
 {
   if (this->root.get() == NULL) {
     InstanceSetPtr instances(new InstanceSet(numClasses));
@@ -252,7 +257,7 @@ void DecisionTree::classify(const InstancePtr &instance, Classification &classif
 }
 
 void DecisionTree::train() {
-  root->train(root,*this);
+  root->train(root,*this,MAX_DEPTH);
 }
 
 void DecisionTree::calcGainRatio(const InstanceSetPtr &instances, DecisionTree::Split &split, double I) const {
