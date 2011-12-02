@@ -81,7 +81,7 @@ public:
 // MAIN FUNCTIONS
 ////////////////////
 public:
-  DecisionTree(const std::vector<Feature> &features, NodePtr root = NodePtr());
+  DecisionTree(const std::vector<Feature> &features, NodePtr root = NodePtr(), double minGainRatio = 0.0001, unsigned int minInstancesPerLeaf = 2);
   
   void addData(const InstancePtr &instance);
   void classify(const InstancePtr &instance, Classification &classification) const;
@@ -92,12 +92,11 @@ private:
   double calcIofSet(const InstanceSetPtr &instances) const; // calculates I(P) for a set
   double calcIofP(const Classification &Pvals) const;
   void splitData(const InstanceSetPtr &instances, Split &split) const;
-public:
-  static const double MIN_GAIN_RATIO;
-  static const unsigned int MIN_INSTANCES_PER_LEAF;
-  static const float EPS;
 private:
   NodePtr root;
+  const double MIN_GAIN_RATIO;
+  const unsigned int MIN_INSTANCES_PER_LEAF;
+  static const float EPS;
 
   friend class Node;
   friend std::ostream& operator<<(std::ostream &out, const DecisionTree &dt);

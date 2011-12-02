@@ -13,8 +13,8 @@ Modified: 2011-12-01
 
 #undef DEBUG_DT_SPLITS
 
-const double DecisionTree::MIN_GAIN_RATIO = 0.0001;
-const unsigned int DecisionTree::MIN_INSTANCES_PER_LEAF = 2;
+//const double DecisionTree::MIN_GAIN_RATIO = 0.0001;
+//const unsigned int DecisionTree::MIN_INSTANCES_PER_LEAF = 2;
 const float DecisionTree::EPS = 0.0001;
 
 ////////////////////
@@ -231,9 +231,11 @@ void DecisionTree::LeafNode::output(std::ostream &out, unsigned int) {
 ////////////////////
 // MAIN FUNCTIONS
 ////////////////////
-DecisionTree::DecisionTree(const std::vector<Feature> &features, NodePtr root):
+DecisionTree::DecisionTree(const std::vector<Feature> &features, NodePtr root, double minGainRatio, unsigned int minInstancesPerLeaf):
   Classifier(features),
-  root(root)
+  root(root),
+  MIN_GAIN_RATIO(minGainRatio),
+  MIN_INSTANCES_PER_LEAF(minInstancesPerLeaf)
 {
   if (this->root.get() == NULL) {
     InstanceSetPtr instances(new InstanceSet(numClasses));
