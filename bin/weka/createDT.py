@@ -43,7 +43,15 @@ def weightTree(inFile,dataFile,outFile):
   cmd = [os.path.join(BASE_PATH,'addWeights%s' % arch),inFile,dataFile]
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
-def main(inFile,basename,stayWeight=None,treeOptions=[]):
+def buildDT(dataFile,outFile):
+  if os.uname()[4] == 'x86_64':
+    arch = '64'
+  else:
+    arch = '32'
+  cmd = [os.path.join('bin','buildDT%s' % arch),dataFile]
+  subprocess.check_call(cmd,stdout=open(outFile,'w'))
+
+def main(inFile,basename,stayWeight=None,treeOptions=[],useWeka=False):
   descFile = os.path.join('data','dt','desc','%s.desc' % basename)
   unweightedFile = os.path.join('data','dt','unweighted','%s.weka' % basename)
   weightedFile = os.path.join('data','dt','weighted','%s.weka' % basename)
@@ -56,12 +64,16 @@ def main(inFile,basename,stayWeight=None,treeOptions=[]):
     if (stayWeight is not None) and (abs(stayWeight - 1.0) > 0.0001):
       print 'Adding stay weights'
       addARFFWeights(tmpData,tmpData,stayWeight)
-    print 'Running weka to create initial tree'
-    createTree(tmpData,descFile,treeOptions)
-    print 'Extracting tree from weka output'
-    extractTree(tmpData,descFile,unweightedFile)
-    print 'Adding class weights to tree'
-    weightTree(unweightedFile,tmpData,weightedFile)
+    if useWeka:
+      print 'Running weka to create initial tree'
+      createTree(tmpData,descFile,treeOptions)
+      print 'Extracting tree from weka output'
+      extractTree(tmpData,descFile,unweightedFile)
+      print 'Adding class weights to tree'
+      weightTree(unweightedFile,tmpData,weightedFile)
+    else:
+      print 'Running buildDT to create a weighted tree'
+      buildDT(tmpData,weightedFile)
     print 'Done.'
   finally:
     os.remove(tmpData)
@@ -69,7 +81,11 @@ def main(inFile,basename,stayWeight=None,treeOptions=[]):
 if __name__ == '__main__':
   import sys
   args = sys.argv[1:]
-  usage = 'Usage trainDT.py inFile basename [treeOptions ...]'
+  usage = 'Usage trainDT.py inFile basename [--weka] [treeOptions ...]'
+  useWeka = False
+  if '--weka' in args:
+    args.remove('--weka')
+    useWeka = True
   if len(args) < 2:
     print usage
     sys.exit(1)
@@ -82,4 +98,4 @@ if __name__ == '__main__':
   stayWeight = None
   treeOptions = args[2:]
 
-  main(inFile,basename,stayWeight,treeOptions)
+  main(inFile,basename,stayWeight,treeOptions,useWeka)
