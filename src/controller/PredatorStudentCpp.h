@@ -12,7 +12,7 @@ Modified: 2011-11-04
 #include "Agent.h"
 #include "PredatorStudentCppAbstract.h"
 
-const Point2D STUDENT_MOVES_OLD[5] = {Point2D(0,0),Point2D(1,0),Point2D(-1,0),Point2D(0,1),Point2D(0,-1)};
+const Point2D VARIABLE_IS_NOT_USED STUDENT_MOVES_OLD[5] = {Point2D(0,0),Point2D(1,0),Point2D(-1,0),Point2D(0,1),Point2D(0,-1)};
 ActionProbs convertStudentAction(int action);
 ActionProbs convertStudentActionNew(const MoveDistribution &action);
 

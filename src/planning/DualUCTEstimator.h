@@ -120,7 +120,7 @@ template<class State, class Action>
 Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool useBounds) {
   //std::cout << "TOP SELECT ACTION" << std::endl << std::flush;
   std::vector<Action> maxActions;
-  float maxVal = -BIGNUM;
+  float maxVal = -UCTEstimator<State,Action>::BIGNUM;
   float val;
 
   for (Action a = (Action)0; a < mainValueEstimator->getNumActions(); a = Action(a+1)) {
@@ -134,7 +134,7 @@ Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool use
     //}
 
     //std::cerr << val << " " << maxVal << std::endl;
-    if (fabs(val - maxVal) < EPS)
+    if (fabs(val - maxVal) < UCTEstimator<State,Action>::EPS)
       maxActions.push_back(a);
     else if (val > maxVal) {
       maxVal = val;

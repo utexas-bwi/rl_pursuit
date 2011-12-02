@@ -22,8 +22,8 @@ Modified: 2011-08-23
 #include <common/DefaultMap.h>
 #include <common/Util.h>
 
-#define BIGNUM 999999
-#define EPS 1e-10
+//#define BIGNUM 999999
+//#define EPS 1e-10
 
 template<class State, class Action>
 class UCTEstimator: public ValueEstimator<State, Action> {
@@ -77,7 +77,15 @@ protected:
   
   DefaultMap<StateAction,unsigned int> rolloutVisitCounts;
   std::vector<HistoryStep> history;
+public:
+  static const float EPS;
+  static const float BIGNUM;
 };
+
+template<class State, class Action>
+const float UCTEstimator<State,Action>::EPS = 1e-10;
+template<class State, class Action>
+const float UCTEstimator<State,Action>::BIGNUM = 999999;
 
 template<class State, class Action>
 std::ostream& operator<<(std::ostream &out, const std::pair<State,Action> &sa) {

@@ -1,10 +1,10 @@
 #include "PredatorDecisionTree.h"
 #include <factory/AgentFactory.h>
 
-PredatorDecisionTree::PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<DecisionTree> decisionTree, const std::string &filename):
+PredatorDecisionTree::PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name):
   Agent(rng,dims),
-  filename(filename),
-  decisionTree(decisionTree),
+  name(name),
+  classifier(classifier),
   featureExtractor(dims)
 {
   // add the feature agents
@@ -17,7 +17,7 @@ PredatorDecisionTree::PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Poi
 ActionProbs PredatorDecisionTree::step(const Observation &obs) {
   Classification c;
   InstancePtr instance = featureExtractor.extract(obs);
-  decisionTree->classify(instance,c);
+  classifier->classify(instance,c);
   assert(c.size() == Action::NUM_ACTIONS);
   ActionProbs actionProbs;
   for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
@@ -29,6 +29,6 @@ void PredatorDecisionTree::restart() {
 }
 
 std::string PredatorDecisionTree::generateDescription() {
-  return "PredatorDecisionTree: chooses actions using a decision tree read from: " + filename;
+  return "PredatorDecisionTree: chooses actions using a decision tree read from: " + name;
 }
 

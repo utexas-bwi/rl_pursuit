@@ -12,12 +12,12 @@ Modified: 2011-09-15
 #include "Agent.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
-#include <learning/DecisionTree.h>
+#include <learning/Classifier.h>
 #include <learning/FeatureExtractor.h>
 
 class PredatorDecisionTree: public Agent {
 public:
-  PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<DecisionTree> decisionTree, const std::string &filename);
+  PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name);
 
   ActionProbs step(const Observation &obs);
   void restart();
@@ -29,8 +29,8 @@ public:
 
 
 protected:
-  const std::string filename;
-  boost::shared_ptr<DecisionTree> decisionTree;
+  const std::string name;
+  boost::shared_ptr<Classifier> classifier;
   FeatureExtractor featureExtractor;
 };
 
