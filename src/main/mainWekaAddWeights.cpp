@@ -38,7 +38,7 @@ int main(int argc, const char *argv[]) {
   //dt->generalizeUnseenLeaves();
   //std::cerr << "Generalized unseen leaves" << std::endl;
   
-  //std::cout << *dt;
+  std::cout << *dt;
   
   return 0;
 }
