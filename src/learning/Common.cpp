@@ -60,7 +60,7 @@ void InstanceSet::add(const InstancePtr &instance) {
   classification[instance->label] += instance->weight;
   weight += instance->weight;
 }
-#include <iostream>
+
 void InstanceSet::normalize() {
   if (weight <= 0) {
     //std::cout << "randomizing for weight: " << weight << std::endl;

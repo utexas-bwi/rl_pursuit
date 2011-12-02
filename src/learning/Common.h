@@ -37,7 +37,7 @@ typedef boost::shared_ptr<Instance> InstancePtr;
 struct FloatCmp {
   static const float EPS;
   bool operator() (const float &x, const float &y) const {
-    return x < y + EPS;
+    return x < y - EPS;
   }
 };
 

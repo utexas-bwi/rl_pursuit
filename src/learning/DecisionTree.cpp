@@ -11,7 +11,7 @@ Modified: 2011-12-01
 #include <iostream>
 #include <limits>
 
-#define DEBUG_DT_SPLITS
+#undef DEBUG_DT_SPLITS
 
 const double DecisionTree::MIN_GAIN_RATIO = 0.0001;
 const unsigned int DecisionTree::MIN_INSTANCES_PER_LEAF = 2;
@@ -49,11 +49,11 @@ DecisionTree::NodePtr DecisionTree::InteriorNode::getChild(const InstancePtr &in
           return children[i];
         break;
       case LESS:
-        if (val < splitValues[i] + EPS)
+        if (val < splitValues[i])
           return children[i];
         break;
       case LEQ:
-        if (val <= splitValues[i] + EPS)
+        if (val <= splitValues[i])
           return children[i];
         break;
       default:
@@ -67,8 +67,9 @@ DecisionTree::NodePtr DecisionTree::InteriorNode::getChild(const InstancePtr &in
 }
 
 void DecisionTree::InteriorNode::train(NodePtr &, const DecisionTree &dt) {
-  for (unsigned int i = 0; i < children.size(); i++)
+  for (unsigned int i = 0; i < children.size(); i++) {
     children[i]->train(children[i],dt);
+  }
 }
 
 void DecisionTree::InteriorNode::output(std::ostream &out, unsigned int depth) {
@@ -155,11 +156,13 @@ void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &
     if (feature.numeric) {
       FloatSet vals;
       instances->getValuesForFeature(feature.name,vals);
+
       FloatSet::iterator it = vals.begin();
       FloatSet::iterator it2 = vals.begin();
       if (it != vals.end())
         it++; // drop the first values
       for (; it != vals.end(); it++, it2++) {
+        //std::cout << "it: " << *it << std::endl;
         Split split;
         split.featureInd = i;
         split.val = (*it + *it2) * 0.5;
@@ -254,7 +257,7 @@ void DecisionTree::calcGainRatio(const InstanceSetPtr &instances, DecisionTree::
   splitData(instances,split);
   unsigned int numAcceptable = 0;
   for (unsigned int i = 0; i < split.instanceSets.size(); i++)
-    if (split.instanceSets.size() >= MIN_INSTANCES_PER_LEAF)
+    if (split.instanceSets[i]->size() >= MIN_INSTANCES_PER_LEAF)
       numAcceptable++;
   if (numAcceptable < 2) {
     split.gain = -1 * std::numeric_limits<double>::infinity();
