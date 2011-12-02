@@ -8,7 +8,7 @@
 
 #include <controller/AgentRandom.h>
 #include <controller/AgentDummy.h>
-#include <controller/PredatorDecisionTree.h>
+#include <controller/PredatorClassifier.h>
 #include <controller/PredatorGreedy.h>
 #include <controller/PredatorGreedyProbabilistic.h>
 #include <controller/PredatorMCTS.h>
@@ -132,7 +132,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     }
     WekaParser parser(filename,Action::NUM_ACTIONS,true);
     boost::shared_ptr<DecisionTree> dt = parser.makeDecisionTree();
-    return ptr(new PredatorDecisionTree(rng,dims,dt,filename));
+    return ptr(new PredatorClassifier(rng,dims,dt,filename));
   } else if (NAME_IN_SET("student")) {
     std::string student = getStudentForTrial(trialNum,options);
     if ((predatorInd < 0) || (predatorInd >= 4)) {

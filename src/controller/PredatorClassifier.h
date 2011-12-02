@@ -2,11 +2,11 @@
 #define PREDATORDECISIONTREE_L0Z40SLR
 
 /*
-File: PredatorDecisionTree.h
+File: PredatorClassifier.h
 Author: Samuel Barrett
 Description: a predator that selects actions using a decision tree
 Created:  2011-09-15
-Modified: 2011-09-15
+Modified: 2011-12-02
 */
 
 #include "Agent.h"
@@ -15,16 +15,16 @@ Modified: 2011-09-15
 #include <learning/Classifier.h>
 #include <learning/FeatureExtractor.h>
 
-class PredatorDecisionTree: public Agent {
+class PredatorClassifier: public Agent {
 public:
-  PredatorDecisionTree(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name);
+  PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name);
 
   ActionProbs step(const Observation &obs);
   void restart();
   std::string generateDescription();
   
-  PredatorDecisionTree* clone() {
-    return new PredatorDecisionTree(*this);
+  PredatorClassifier* clone() {
+    return new PredatorClassifier(*this);
   }
 
 
