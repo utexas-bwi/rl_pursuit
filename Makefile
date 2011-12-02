@@ -74,8 +74,11 @@ $(foreach target,$(TARGETS),$(eval $(call TARGET_template,$(target))))
 
 OBJECTS_ALL = $(sort $(OBJECTS))
 
-clean:
-	$(RM) $(OBJECTS_ALL) $(DEPS)
+clean: cleandeps
+	$(RM) $(OBJECTS_ALL)
+
+cleandeps:
+	$(RM) $(DEPS)
 
 fullclean: clean
 	$(RM) $(BINS)
@@ -86,7 +89,9 @@ fclean: fullclean
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(MAKECMDGOALS),fullclean)
 ifneq ($(MAKECMDGOALS),fclean)
--include $(DEPS)
+ifneq ($(MAKECMDGOALS),cleandeps)
+include $(DEPS)
+endif
 endif
 endif
 endif
