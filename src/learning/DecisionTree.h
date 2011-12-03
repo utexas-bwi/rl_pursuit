@@ -81,7 +81,9 @@ public:
 // MAIN FUNCTIONS
 ////////////////////
 public:
-  DecisionTree(const std::vector<Feature> &features, NodePtr root = NodePtr(), double minGainRatio = 0.0001, unsigned int minInstancesPerLeaf = 2, int maxDepth = -1);
+  DecisionTree(const std::vector<Feature> &features, NodePtr root = NodePtr());
+  
+  void setLearningParams(double minGainRatio = 0.0001, unsigned int minInstancesPerLeaf = 2, int maxDepth = -1);
   
   void addData(const InstancePtr &instance);
   void classify(const InstancePtr &instance, Classification &classification) const;
@@ -94,9 +96,9 @@ private:
   void splitData(const InstanceSetPtr &instances, Split &split) const;
 private:
   NodePtr root;
-  const double MIN_GAIN_RATIO;
-  const unsigned int MIN_INSTANCES_PER_LEAF;
-  const int MAX_DEPTH;
+  double MIN_GAIN_RATIO;
+  unsigned int MIN_INSTANCES_PER_LEAF;
+  int MAX_DEPTH;
   static const float EPS;
 
   friend class Node;

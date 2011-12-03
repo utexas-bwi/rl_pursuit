@@ -235,17 +235,21 @@ void DecisionTree::LeafNode::output(std::ostream &out, unsigned int) {
 ////////////////////
 // MAIN FUNCTIONS
 ////////////////////
-DecisionTree::DecisionTree(const std::vector<Feature> &features, NodePtr root, double minGainRatio, unsigned int minInstancesPerLeaf, int maxDepth):
+DecisionTree::DecisionTree(const std::vector<Feature> &features, NodePtr root):
   Classifier(features),
-  root(root),
-  MIN_GAIN_RATIO(minGainRatio),
-  MIN_INSTANCES_PER_LEAF(minInstancesPerLeaf),
-  MAX_DEPTH(maxDepth)
+  root(root)
 {
   if (this->root.get() == NULL) {
     InstanceSetPtr instances(new InstanceSet(numClasses));
     this->root = NodePtr(new DecisionTree::LeafNode(instances));
   }
+  setLearningParams();
+}
+
+void DecisionTree::setLearningParams(double minGainRatio, unsigned int minInstancesPerLeaf, int maxDepth) {
+  MIN_GAIN_RATIO = minGainRatio;
+  MIN_INSTANCES_PER_LEAF = minInstancesPerLeaf;
+  MAX_DEPTH = maxDepth;
 }
 
 void DecisionTree::addData(const InstancePtr &instance) {
