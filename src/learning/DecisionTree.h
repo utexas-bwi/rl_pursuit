@@ -75,6 +75,7 @@ public:
     void trySplittingNode(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
   private:
     InstanceSetPtr instances;
+    bool hasNewData;
   };
   
 ////////////////////

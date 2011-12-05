@@ -115,6 +115,8 @@ void DecisionTree::InteriorNode::output(std::ostream &out, unsigned int depth) {
 DecisionTree::LeafNode::LeafNode(const InstanceSetPtr &instances):
   instances(instances)
 {
+  if (instances->instances.size() > 0)
+    hasNewData = true;
 }
 
 void DecisionTree::LeafNode::classify(const InstancePtr &, Classification &classification) const {
@@ -123,9 +125,11 @@ void DecisionTree::LeafNode::classify(const InstancePtr &, Classification &class
 
 void DecisionTree::LeafNode::addData(const InstancePtr &instance) {
   instances->add(instance);
+  hasNewData = true;
 }
 
 void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt, int maxDepth) {
+  hasNewData = false;
   if (maxDepth == 0)
     return;
   if (instances->weight <= EPS) {
