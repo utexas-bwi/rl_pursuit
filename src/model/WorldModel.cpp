@@ -85,14 +85,10 @@ void WorldModel::generateObservation(Observation &obs, bool centerPrey) const {
   for (unsigned int i = 0; i < agents.size(); i++)
     obs.positions.push_back(agents[i].pos);
  
-  if (centerPrey) {
-    assert(preyInd >= 0);
-    Point2D offset = 0.5f * dims - agents[preyInd].pos;
-    for (unsigned int i = 0; i < obs.positions.size(); i++)
-      obs.positions[i] = movePosition(dims,obs.positions[i],offset);
-  }
-  if (preyInd >= 0)
-    obs.absPrey = agents[preyInd].pos;
+  assert(preyInd >= 0);
+  obs.absPrey = agents[preyInd].pos;
+  if (centerPrey)
+    obs.centerPrey(dims);
 }
 
 void WorldModel::setPositionsFromObservation(const Observation &obs) {

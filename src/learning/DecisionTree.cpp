@@ -124,11 +124,15 @@ void DecisionTree::LeafNode::classify(const InstancePtr &, Classification &class
 }
 
 void DecisionTree::LeafNode::addData(const InstancePtr &instance) {
+  //std::cout << "weight: " << instances->weight;
   instances->add(instance);
   hasNewData = true;
+  //std::cout << " -> " << instances->weight << std::endl;
 }
 
 void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt, int maxDepth) {
+  if (!hasNewData)
+    return;
   hasNewData = false;
   if (maxDepth == 0)
     return;
@@ -138,14 +142,23 @@ void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt, int max
 #endif
     return;
   }
+  float total = 0;
+  for (unsigned int i = 0; i < instances->classification.size(); i++) {
+    total += instances->classification[i];
+  }
+  assert(fabs(total-1.0) < 0.0001);
   // normalize the classes
   //std::cout << "*" << std::endl;
-  instances->normalize();
+  //instances->normalize();
   //std::cout << "*" << std::endl;
   // only split if we have multiple clases
   if (oneClass()) {
 #ifdef DEBUG_DT_SPLITS
     std::cout << "No split necessary, one class already" << std::endl;
+#endif
+  } else if (instances->size() < 2 * dt.MIN_INSTANCES_PER_LEAF) {
+#ifdef DEBUG_DT_SPLITS
+    std::cout << "Not enough instances to split in two, skipping" << std::endl;
 #endif
   } else {
     //std::cout << "*** trySplittingNode with weight " << instances->weight << std::endl;
@@ -186,7 +199,7 @@ void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &
         bestSplit = split;
     }
   }
-
+  
   if (bestSplit.gain > dt.MIN_GAIN_RATIO) {
     Feature const &feature = dt.features[bestSplit.featureInd];
 #ifdef DEBUG_DT_SPLITS
@@ -282,7 +295,7 @@ void DecisionTree::calcGainRatio(const InstanceSetPtr &instances, DecisionTree::
   double info = 0;
   std::vector<float> ratios(split.instanceSets.size());
   for (unsigned int i = 0; i < split.instanceSets.size(); i++) {
-    split.instanceSets[i]->normalize();
+    //split.instanceSets[i]->normalize();
     ratios[i] = split.instanceSets[i]->weight / instances->weight;
     //std::cout << "ratios[" << i << "]: " << ratios[i] << " " << split.instanceSets[i]->weight << " " << instances->weight  << std::endl;
     info += ratios[i] * calcIofSet(split.instanceSets[i]); 
@@ -344,6 +357,7 @@ void DecisionTree::splitData(const InstanceSetPtr &instances, Split &split) cons
 
 std::ostream& operator<<(std::ostream &out, const DecisionTree &dt) {
   dt.outputHeader(out);
+  out << std::endl;
   dt.root->output(out,0);
   return out;
 }

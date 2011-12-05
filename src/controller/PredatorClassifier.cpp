@@ -41,7 +41,12 @@ void PredatorClassifier::restart() {
 }
 
 std::string PredatorClassifier::generateDescription() {
-  return "PredatorClassifier: chooses actions using a decision tree read from " + name + " with training period " + boost::lexical_cast<std::string>(trainingPeriod);
+  std::string msg = "PredatorClassifier: chooses actions using a decision tree read from " + name;
+  if (trainingPeriod >= 0)
+    msg += " with training period " + boost::lexical_cast<std::string>(trainingPeriod);
+  else
+    msg += " with no online training";
+  return msg;
 }
 
 void PredatorClassifier::learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind) {
@@ -54,7 +59,12 @@ void PredatorClassifier::learn(const Observation &prevObs, const Observation &cu
   classifier->addData(instance);
   trainingCounter++;
   if (trainingCounter >= trainingPeriod) {
+    //std::cout << "training" << std::endl;
     trainingCounter = 0;
     classifier->train();
   }
+    //std::cout << "*************************************" << std::endl;
+    //DecisionTree *dt = (DecisionTree*)(classifier.get());
+    //std::cout << *dt << std::endl;
+    //std::cout << "*************************************" << std::endl;
 }

@@ -63,6 +63,7 @@ InstancePtr FeatureExtractor::extract(const Observation &obs) {
     actionProbs = it->agent->step(obs);
     setFeature(instance,it->name + ".des",actionProbs.maxAction());
   }
+  instance->weight = 1.0;
   return instance;
 }
 

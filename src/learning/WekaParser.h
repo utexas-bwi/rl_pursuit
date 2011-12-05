@@ -22,7 +22,7 @@ class WekaParser {
 public:
   struct Line {
     bool used;
-    unsigned int depth;
+    int depth;
     std::string name;
     DecisionTree::ComparisonOperator op;
     float val;
@@ -34,7 +34,7 @@ public:
   boost::shared_ptr<DecisionTree> makeDecisionTree();
   
 private:
-  boost::shared_ptr<DecisionTree::Node> readDecisionTreeNode(unsigned int lineInd, unsigned int currentDepth);
+  boost::shared_ptr<DecisionTree::Node> readDecisionTreeNode(unsigned int lineInd, int currentDepth);
 
   void tokenizeFile();
   void tokenizeLine(Line &line);

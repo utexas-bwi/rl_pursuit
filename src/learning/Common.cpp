@@ -47,7 +47,7 @@ const float FloatCmp::EPS = 0.0001;
 
 InstanceSet::InstanceSet(unsigned int numClasses):
   weight(0),
-  classification(numClasses)
+  classification(numClasses, 1.0 / numClasses)
 {
 }
 
@@ -57,7 +57,9 @@ unsigned int InstanceSet::getNumClasses() const {
 
 void InstanceSet::add(const InstancePtr &instance) {
   instances.push_back(instance);
-  classification[instance->label] += instance->weight;
+  for (unsigned int i = 0; i < classification.size(); i++)
+    classification[i] *= weight / (weight + instance->weight);
+  classification[instance->label] += instance->weight / (weight + instance->weight);
   weight += instance->weight;
 }
 
@@ -68,11 +70,15 @@ void InstanceSet::normalize() {
       classification[i] = 1.0 / classification.size();
   } else {
     //std::cout << "normalizing with weight: " << weight << std::endl;
-    float total = 0;
     for (unsigned int i = 0; i < classification.size(); i++)
-      total += classification[i];
-    for (unsigned int i = 0; i < classification.size(); i++)
-      classification[i] /= total;
+      classification[i] = 0;
+    for (unsigned int i = 0; i < instances.size(); i++)
+      classification[instances[i]->label] += instances[i]->weight / weight;
+    //float total = 0;
+    //for (unsigned int i = 0; i < classification.size(); i++)
+      //total += classification[i];
+    //for (unsigned int i = 0; i < classification.size(); i++)
+      //classification[i] /= total;
   }
 }
 

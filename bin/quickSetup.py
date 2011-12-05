@@ -42,7 +42,7 @@ def setupWorldCond(parser,values):
     parser.add_option_group(group)
 
 def setupPlanner(parser,values):
-  if values['adhoc'] != 'uct':
+  if values['adhoc'] not in ['uct','mcts']:
     return
   group = OptionGroup(parser,'planner')
   addBoolOption(group,'silver',False)

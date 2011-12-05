@@ -70,6 +70,9 @@ struct Observation {
   const Point2D& myPos() const;
   int getCollision(const Point2D &pos) const;
   bool operator==(const Observation &other) const;
+
+  void centerPrey(const Point2D &dims);
+  void uncenterPrey(const Point2D &dims);
 };
 
 std::ostream& operator<<(std::ostream &out, const Observation &obs) ;

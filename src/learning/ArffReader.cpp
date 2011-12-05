@@ -103,4 +103,9 @@ void ArffReader::readHeader() {
     std::getline(in,str);
     header += str + '\n';
   }
+  // check if there's an additional blank line
+  std::streampos prevPos = in.tellg();
+  std::getline(in,str);
+  if (str != "")
+    in.seekg(prevPos);
 }

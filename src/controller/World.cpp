@@ -61,14 +61,8 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
   Observation absCurrentObs(currentObs);
   // if the prey is centered, uncenter it for the absolute positions
   if (centerPrey) {
-    Point2D offset;
-    offset = prevObs.absPrey - prevObs.preyPos();
-    for (unsigned int i = 0; i < absPrevObs.positions.size(); i++)
-      absPrevObs.positions[i] = movePosition(dims,absPrevObs.positions[i],offset);
-    
-    offset = currentObs.absPrey - currentObs.preyPos();
-    for (unsigned int i = 0; i < absCurrentObs.positions.size(); i++)
-      absCurrentObs.positions[i] = movePosition(dims,absCurrentObs.positions[i],offset);
+    absPrevObs.uncenterPrey(dims);
+    absCurrentObs.uncenterPrey(dims);
   }
 
 

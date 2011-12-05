@@ -24,42 +24,48 @@ WekaParser::WekaParser(const std::string &filename, unsigned int numClasses, boo
 }
 
 boost::shared_ptr<DecisionTree> WekaParser::makeDecisionTree() {
-  for(unsigned int i = 0; i < lines.size(); i++)
-    lines[i].used = false;
+  for(unsigned int i = 0; i < lines.size(); i++) {
+    if (lines[i].name == "")
+      lines[i].used = true;
+    else
+      lines[i].used = false;
+  }
   boost::shared_ptr<DecisionTree::Node> root = readDecisionTreeNode(0,0);
   return boost::shared_ptr<DecisionTree>(new DecisionTree(featureTypes,root));
 }
 
-boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned int lineInd, unsigned int currentDepth) {
+boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned int lineInd, int currentDepth) {
+  Line &line = lines[lineInd];
   //std::cout << lineInd << " " << currentDepth << std::endl;
-  if (lines[lineInd].used && !lines[lineInd].leaf) {
+  if (line.used && !line.leaf) {
     // finished with this line
     //std::cout << "FINISHED THIS LINE" << std::endl;
     return boost::shared_ptr<DecisionTree::Node>();
   }
 
+  //std::cout << line.used << " " << line.leaf << " " << currentDepth << " "  << line.depth + 1 << std::endl;
   // handle leaves specially
-  if (lines[lineInd].used && lines[lineInd].leaf && (currentDepth == lines[lineInd].depth + 1)) {
+  if (line.used && line.leaf && (currentDepth == line.depth + 1)) {
     // make a leaf for this line
-    //boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode((int)(lines[lineInd].classification + 0.5)));
+    //boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode((int)(line.classification + 0.5)));
     InstanceSetPtr instances(new InstanceSet(numClasses));
-    instances->classification = lines[lineInd].classDistribution;
+    instances->classification = line.classDistribution;
     DecisionTree::NodePtr node(new DecisionTree::LeafNode(instances));
-    //boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode(lines[lineInd].classDistribution));
+    //boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode(line.classDistribution));
     //std::cout << "Making leaf: " << node;
     return node;
   }
   
   // check the depth
-  if (currentDepth != lines[lineInd].depth) {
+  if (currentDepth != line.depth) {
     std::cout << "BAD DEPTH" << std::endl;
     return boost::shared_ptr<DecisionTree::Node>();
   }
 
  
-  lines[lineInd].used = true;
-  //std::cout << "MAKING INTERIOR: " << lines[lineInd].name << std::endl;
-  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(lines[lineInd].op,lines[lineInd].name));
+  line.used = true;
+  //std::cout << "MAKING INTERIOR: " << line.name << std::endl;
+  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(line.op,line.name));
   boost::shared_ptr<DecisionTree::Node> child;
   for (unsigned int i = lineInd; i < lines.size(); i++) {
     if (lines[i].depth == currentDepth) {
@@ -74,7 +80,7 @@ boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned 
       break;
   }
 
-  //std::cout << "DONE MAKING INTERIOR: "  << lines[lineInd].name << std::endl;
+  //std::cout << "DONE MAKING INTERIOR: "  << line.name << std::endl;
   return node;
 }
 
@@ -104,17 +110,24 @@ void WekaParser::tokenizeLine(Line &line) {
   if (in.eof()) {
     return;
   }
-  // read the name
-  // don't need to read token, since we did above
-  line.name = str;
-  // read the operator
-  str = readWekaToken(false);
-  line.op = stringToOperator(str);
-  // read the splitValue
-  str = readWekaToken(false);
-  line.val = stringToVal(str,line.name);
-  // read the rest of the line
-  str = readWekaToken(true);
+  if (str == ":") {
+    // only a leaf
+    line.name = "";
+    line.depth--;
+  } else {
+    // read the name
+    // don't need to read token, since we did above
+    line.name = str;
+    // read the operator
+    str = readWekaToken(false);
+    line.op = stringToOperator(str);
+    // read the splitValue
+    str = readWekaToken(false);
+    line.val = stringToVal(str,line.name);
+    // read the rest of the line
+    str = readWekaToken(true);
+  }
+
   if (str == ":") {
     // read the class
     line.leaf = true;
