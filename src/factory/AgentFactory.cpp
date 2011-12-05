@@ -114,7 +114,8 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
   else if (NAME_IN_SET("surroundpenalties","surround-penalties","sp")) {
     bool outputPenaltyMode = options.get("outputPenaltyMode",false).asBool();
     return ptr(new PredatorSurroundWithPenalties(rng,dims,outputPenaltyMode));
-  } else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree")) {
+  } else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree","classifier","class")) {
+    int trainingPeriod = options.get("trainingPeriod",-1).asInt();
     std::string filename = options.get("filename","").asString();
     // fill out the size
     std::string sizeId = "$(SIZE)";
@@ -130,9 +131,8 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       std::string student = getStudentForTrial(trialNum,options);
       filename.replace(ind,studentId.size(),student);
     }
-    const Json::Value copts = options["classifier"];
-    boost::shared_ptr<Classifier> classifier = createClassifier(copts);
-    return ptr(new PredatorClassifier(rng,dims,classifier,filename));
+    boost::shared_ptr<Classifier> classifier = createClassifier(filename,options);
+    return ptr(new PredatorClassifier(rng,dims,classifier,filename,trainingPeriod));
   } else if (NAME_IN_SET("student")) {
     std::string student = getStudentForTrial(trialNum,options);
     if ((predatorInd < 0) || (predatorInd >= 4)) {

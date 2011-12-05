@@ -14,8 +14,8 @@ Modified: 2011-12-02
 #include <learning/Classifier.h>
 #include <learning/DecisionTree.h>
 
-boost::shared_ptr<Classifier> createClassifier(const Json::Value &options);
-boost::shared_ptr<DecisionTree> createDecisionTree(const Json::Value &options);
+boost::shared_ptr<Classifier> createClassifier(const std::string &filename, const Json::Value &options);
+boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const Json::Value &options);
 boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::string &dataFilename, double minGainRatio, unsigned int minInstancesPerLeaf, int maxDepth);
 boost::shared_ptr<DecisionTree> createDecisionTreeFromWeka(const std::string &filename);
 boost::shared_ptr<DecisionTree> createBlankDecisionTreeFromArff(const std::string &dataFilename);

@@ -17,11 +17,12 @@ Modified: 2011-12-02
 
 class PredatorClassifier: public Agent {
 public:
-  PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name);
+  PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name, int trainingPeriod);
 
   ActionProbs step(const Observation &obs);
   void restart();
   std::string generateDescription();
+  void learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind);
   
   PredatorClassifier* clone() {
     return new PredatorClassifier(*this);
@@ -32,6 +33,8 @@ protected:
   const std::string name;
   boost::shared_ptr<Classifier> classifier;
   FeatureExtractor featureExtractor;
+  int trainingPeriod;
+  int trainingCounter;
 };
 
 #endif /* end of include guard: PREDATORDECISIONTREE_L0Z40SLR */
