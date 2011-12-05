@@ -26,6 +26,7 @@ public:
   void set(const ModelUpdater &other);
   virtual void updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) = 0;
   virtual void updateSimulationAction(const Action::Type &action, const State_t &state) = 0;
+  virtual void learnControllers(const Observation &prevObs, const Observation &currentObs);
   void selectModel(const State_t &state);
   std::string generateDescription(unsigned int indentation = 0);
   std::vector<double> getBeliefs();

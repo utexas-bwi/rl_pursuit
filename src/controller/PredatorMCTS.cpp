@@ -14,6 +14,7 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
   if (prevAction < Action::NUM_MOVES) {
     //std::cout << "start predmcts model update" << std::endl;
     modelUpdater->updateRealWorldAction(prevObs,prevAction,obs);
+    modelUpdater->learnControllers(prevObs,obs);
     //std::cout << "stop  predmcts model update" << std::endl;
   }
   // set the beliefs of the model (applicable for the belief mdp)

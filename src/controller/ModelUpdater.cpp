@@ -43,6 +43,14 @@ void ModelUpdater::copyModel(unsigned int ind, Model &model, boost::shared_ptr<A
   }
 }
 
+void ModelUpdater::learnControllers(const Observation &prevObs, const Observation &currentObs) {
+  for (unsigned int i = 0; i < models.size(); i++) {
+    for (unsigned int j = 0; j < models[i].size(); j++) {
+      models[i][j]->learn(prevObs,currentObs,j);
+    }
+  }
+}
+
 void ModelUpdater::selectModel(const State_t &state) {
   unsigned int ind = selectModelInd(state);
   Model model;

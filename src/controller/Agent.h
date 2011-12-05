@@ -18,19 +18,16 @@ Modified: 2011-08-22
 
 class Agent {
 public:
-  Agent(boost::shared_ptr<RNG> rng, const Point2D &dims):
-    rng(rng),
-    dims(dims)
-  {}
+  Agent(boost::shared_ptr<RNG> rng, const Point2D &dims);
 
-  virtual ~Agent() {
-  }
+  virtual ~Agent();
 
   virtual ActionProbs step(const Observation &obs) = 0;
   virtual void restart() = 0; // between episodes
   virtual std::string generateDescription() = 0;
-  virtual std::string generateLongDescription(unsigned int indentation = 0) {return indent(indentation) + generateDescription();}
+  virtual std::string generateLongDescription(unsigned int indentation = 0);
   virtual Agent* clone() = 0;
+  virtual void learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind);
 
 protected:
   boost::shared_ptr<RNG> rng;
