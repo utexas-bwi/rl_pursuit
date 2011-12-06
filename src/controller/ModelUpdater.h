@@ -34,6 +34,10 @@ public:
   void copyModel(unsigned int ind, Model &model,boost::shared_ptr<Agent> adhocAgent = boost::shared_ptr<Agent>()) const;
   void normalizeModelProbs(std::vector<double> &modelProbs);
 
+  void enableOutput(const boost::shared_ptr<std::ostream> &outputStream);
+  void disableOutput();
+  void output();
+
 protected:
   virtual unsigned int selectModelInd(const State_t &state) = 0;
   void removeModel(unsigned int ind);
@@ -46,6 +50,7 @@ protected:
   std::vector<double> modelProbs;
   std::vector<std::string> modelDescriptions;
   std::vector<bool> modelStillUsed;
+  boost::shared_ptr<std::ostream> outputStream;
 };
 
 #endif /* end of include guard: MODELUPDATER_82ED5P8 */

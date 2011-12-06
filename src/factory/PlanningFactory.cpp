@@ -8,6 +8,7 @@ Modified: 2011-10-02
 
 #include "PlanningFactory.h"
 #include <boost/algorithm/string.hpp>
+#include <fstream>
 //#include <controller/WorldSilverMDP.h>
 //#include <controller/WorldSilverWeightedMDP.h>
 #include <controller/ModelUpdaterBayes.h>
@@ -58,17 +59,26 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
       mdp->addAgents(agentModels,modelList[i]);
   }
 
+  boost::shared_ptr<ModelUpdater> ptr;
   if (options.get("silver",false).asBool()) {
     // make a silver updater
     bool weighted = options.get("weighted",false).asBool();
-    return boost::shared_ptr<ModelUpdaterSilver>(new ModelUpdaterSilver(rng,mdp,modelList,modelProbs,modelDescriptions,weighted));
+    ptr = boost::shared_ptr<ModelUpdaterSilver>(new ModelUpdaterSilver(rng,mdp,modelList,modelProbs,modelDescriptions,weighted));
   } else {
     // make a bayes updater
     std::string updateTypeString = options.get("update","bayesian").asString();
     ModelUpdateType updateType = getModelUpdateType(updateTypeString);
 
-    return createModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType);
+    ptr = createModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType);
   }
+  // optionally enable output
+  std::string modelOutput = options.get("modelOutputFile","").asString();
+  if (modelOutput != "") {
+    std::cout << "ENABLING OUTPUT: " << modelOutput << std::endl;
+    boost::shared_ptr<std::ostream> out(new std::ofstream(modelOutput.c_str()));
+    ptr->enableOutput(out);
+  }
+  return ptr;
 }
 
 boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType updateType, const StateConverter &stateConverter, double actionNoise, bool centerPrey) {

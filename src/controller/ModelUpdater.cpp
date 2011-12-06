@@ -126,3 +126,25 @@ void ModelUpdater::updateControllerInformation(const Observation &obs) {
   //mdp->setState(obs);
   //std::cout << "STOP UPDATE CONTROLLER INFO" << std::endl;
 }
+
+void ModelUpdater::enableOutput(const boost::shared_ptr<std::ostream> &outputStream) {
+  this->outputStream = outputStream;
+}
+
+void ModelUpdater::disableOutput() {
+  outputStream.reset();
+}
+
+void ModelUpdater::output() {
+  if (outputStream.get() == NULL)
+    return;
+  std::ostream &out = *outputStream;
+  out << "{";
+  for (unsigned int i = 0; i < models.size(); i++) {
+    if (i != 0)
+      out << ",";
+    out << '"' << modelDescriptions[i] << "\":" << modelProbs[i];
+  }
+  out << "}";
+  out << std::endl;
+}

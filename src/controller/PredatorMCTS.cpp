@@ -17,6 +17,8 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
     modelUpdater->learnControllers(prevObs,obs);
     //std::cout << "stop  predmcts model update" << std::endl;
   }
+  // output the model updater's probabilities
+  modelUpdater->output();
   // set the beliefs of the model (applicable for the belief mdp)
   model->setBeliefs(modelUpdater);
   model->setPreyPos(obs.preyPos());
