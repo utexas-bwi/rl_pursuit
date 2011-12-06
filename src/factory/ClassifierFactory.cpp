@@ -37,9 +37,7 @@ boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, 
 boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::string &dataFilename, double minGainRatio, unsigned int minInstancesPerLeaf, int maxDepth) {
   boost::shared_ptr<DecisionTree> dt;
   if (filename != "") {
-    std::cout << "start create dt from weka" << std::endl << std::flush;
     dt = createDecisionTreeFromWeka(filename);
-    std::cout << "stop  create dt from weka" << std::endl << std::flush;
   } else {
     assert(dataFilename != "");
     dt = createBlankDecisionTreeFromArff(dataFilename);
