@@ -65,7 +65,7 @@ void ArffReader::readHeader() {
   int endInd;
 
   // read until the attributes
-  while (true) {
+  while (in.good()) {
     std::getline(in,str);
     if (str.compare(0,start.size(),start) != 0) {
       header += str + '\n';
@@ -74,7 +74,7 @@ void ArffReader::readHeader() {
     break;
   }
   // read in the attributes
-  while (true) {
+  while (in.good()) {
     if (str.compare(0,start.size(),start) != 0)
       break;
     header += str + '\n';
@@ -99,7 +99,7 @@ void ArffReader::readHeader() {
   }
   header += str + '\n';
   // read until the data
-  while (str != "@data") {
+  while (in.good() && (str != "@data")) {
     std::getline(in,str);
     header += str + '\n';
   }
