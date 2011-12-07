@@ -106,7 +106,7 @@ def mainFromArgs(args):
   assert(len(args) == 2)
   directory = args[0]
   outputFile = args[1]
-  main(directory, True, outputFile, False)
+  main(directory, False, outputFile, False)
 
 if __name__ == '__main__':
   import sys
