@@ -117,20 +117,6 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
   } else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree","classifier","class")) {
     int trainingPeriod = options.get("trainingPeriod",-1).asInt();
     std::string filename = options.get("filename","").asString();
-    // fill out the size
-    std::string sizeId = "$(SIZE)";
-    size_t ind = filename.find(sizeId);
-    if (ind != std::string::npos) {
-      std::string size = boost::lexical_cast<std::string>(dims.x) + "x" + boost::lexical_cast<std::string>(dims.y);
-      filename.replace(ind,sizeId.size(),size);
-    }
-    // fill out the student
-    std::string studentId = "$(STUDENT)";
-    ind = filename.find(studentId);
-    if (ind != std::string::npos) {
-      std::string student = getStudentForTrial(trialNum,options);
-      filename.replace(ind,studentId.size(),student);
-    }
     boost::shared_ptr<Classifier> classifier = createClassifier(filename,options);
     return ptr(new PredatorClassifier(rng,dims,classifier,filename,trainingPeriod));
   } else if (NAME_IN_SET("student")) {

@@ -60,6 +60,43 @@ bool readJson(const std::string &filename, Json::Value &value) {
   return true;
 }
 
+void jsonReplaceStrings(Json::Value &value, const std::map<std::string,std::string> &replacementMap) {
+  // change this value if necessary
+  if (value.isString()) {
+    std::map<std::string,std::string>::const_iterator it;
+    std::string str = value.asString();
+    for (it = replacementMap.begin(); it != replacementMap.end(); it++) {
+      size_t pos = str.find(it->first);
+      if (pos != std::string::npos) {
+        str.replace(pos,it->first.length(),it->second);
+      }
+    }
+    value = Json::Value(str);
+  }
+
+  // check its children
+  Json::Value::iterator child;
+  if (value.isObject()) {
+    std::vector<std::string> names = value.getMemberNames();
+    for (unsigned int i = 0; i < names.size(); i++) {
+      jsonReplaceStrings(value[names[i]],replacementMap);
+    }
+  } else if (value.isArray()) {
+    for (unsigned int i = 0; i < value.size(); i++) {
+      jsonReplaceStrings(value[i],replacementMap);
+    }
+  }
+  //int i = 0;
+  //for (child = value.begin(); child != value.end(); child++) {
+    //i++;
+    ////std::cout << (child != value.end()) << std::endl;
+    //std::cout << value << std::endl << std::flush;
+    //std::cout << i << " of " << value.size() << std::endl << std::flush;
+    //std::cout << *child << std::endl << std::flush;
+    //jsonReplaceStrings(*child,replacementMap);
+  //}
+}
+
 std::string indent(unsigned int indentation) {
   return std::string(indentation * 2,' ');
 }

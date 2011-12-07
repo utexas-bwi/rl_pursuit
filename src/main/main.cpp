@@ -10,6 +10,7 @@ Modified: 2011-08-24
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <boost/lexical_cast.hpp>
 #include <json/json.h>
 #include <factory/WorldFactory.h>
 #include <common/Util.h>
@@ -19,6 +20,8 @@ void displaySummary(double timePassed, const std::vector<std::vector<unsigned in
 void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial);
 void saveResults(const std::string &filename, int startTrial, const std::vector<std::vector<unsigned int> > &numSteps);
 void saveConfig(const Json::Value &options);
+void replaceOptsJob(Json::Value &options, const std::string &jobString);
+void replaceOptsTrial(Json::Value &options, unsigned int trialNum);
 
 int main(int argc, const char *argv[])
 {
@@ -36,7 +39,6 @@ int main(int argc, const char *argv[])
   
   unsigned int configStart = 1;
   int jobNum = -1;
-  std::string jobString = "";
   // try to interpret the first arg as a job number
   bool isJobNum = true;
   for (int i = 0; argv[1][i] != '\0'; i++) {
@@ -46,7 +48,6 @@ int main(int argc, const char *argv[])
     }
   }
   if (isJobNum) {
-    jobString = argv[1];
     jobNum = atoi(argv[1]);
     configStart++;
   }
@@ -57,36 +58,12 @@ int main(int argc, const char *argv[])
       return 1;
     }
   }
-  
+
   int numTrials = options.get("trials",1).asUInt();
-  unsigned int numEpisodes = options.get("numEpisodesPerTrial",1).asUInt();
-  unsigned int numTrialsPerJob = options.get("trialsPerJob",1).asUInt();
-  bool displayDescriptionQ = options["verbosity"].get("description",true).asBool();
-  bool displaySummaryQ = options["verbosity"].get("summary",true).asBool();
-  bool displayObsQ = options["verbosity"].get("observation",true).asBool();
-  bool displayStepsPerEpisodeQ = options["verbosity"].get("stepsPerEpisode",true).asBool();
-  bool displayStepsPerTrialQ = options["verbosity"].get("stepsPerTrial",true).asBool();
-  std::string saveFilename = options["save"].get("results","").asString();
-  bool saveResultsQ = (saveFilename != "");
-  if (saveResultsQ) {
-    size_t pos = saveFilename.find("$(JOBNUM)");
-    if (pos != std::string::npos) {
-      saveFilename.replace(pos,9,jobString);
-    }
-  }
-
-  // get the output DT information
-  unsigned int outputDTSteps = options["verbosity"].get("dtsteps",0).asUInt();
-  std::string outputDTFilename = options["verbosity"].get("dtfile","").asString();
-  bool outputDTCSVQ = (outputDTFilename != "");
-  boost::shared_ptr<OutputDT> outputDT;
-  boost::shared_ptr<std::vector<Action::Type> > actions;
-
-  Observation obs;
-  double startTime = getTime();
   int startTrial = 0;
   int origNumTrials = numTrials;
-
+  unsigned int numTrialsPerJob = options.get("trialsPerJob",1).asUInt();
+  
   if (jobNum < 0) {
     jobNum = 0;
   } else {
@@ -102,6 +79,27 @@ int main(int argc, const char *argv[])
   if (jobNum == 0)
     saveConfig(options);
 
+  replaceOptsJob(options,boost::lexical_cast<std::string>(jobNum)); 
+
+  unsigned int numEpisodes = options.get("numEpisodesPerTrial",1).asUInt();
+  bool displayDescriptionQ = options["verbosity"].get("description",true).asBool();
+  bool displaySummaryQ = options["verbosity"].get("summary",true).asBool();
+  bool displayObsQ = options["verbosity"].get("observation",true).asBool();
+  bool displayStepsPerEpisodeQ = options["verbosity"].get("stepsPerEpisode",true).asBool();
+  bool displayStepsPerTrialQ = options["verbosity"].get("stepsPerTrial",true).asBool();
+  std::string saveFilename = options["save"].get("results","").asString();
+  bool saveResultsQ = (saveFilename != "");
+
+  // get the output DT information
+  unsigned int outputDTSteps = options["verbosity"].get("dtsteps",0).asUInt();
+  std::string outputDTFilename = options["verbosity"].get("dtfile","").asString();
+  bool outputDTCSVQ = (outputDTFilename != "");
+  boost::shared_ptr<OutputDT> outputDT;
+  boost::shared_ptr<std::vector<Action::Type> > actions;
+
+  Observation obs;
+  double startTime = getTime();
+
   std::vector<std::vector<unsigned int> > numSteps(numTrials,std::vector<unsigned int>(numEpisodes,0));
   std::cout << "Running for " << numTrials << " trials" << std::endl;
   
@@ -110,6 +108,10 @@ int main(int argc, const char *argv[])
   for (int trial = 0; trial < numTrials; trial++) {
     trialNum = trial + startTrial;
     randomSeed = trialNum;
+
+    Json::Value trialOptions(options);
+    replaceOptsTrial(trialOptions,trialNum);
+
     boost::shared_ptr<World> world = createWorldAgents(randomSeed,trialNum,options);
     boost::shared_ptr<const WorldModel> model = world->getModel();
 
@@ -233,4 +235,24 @@ void saveConfig(const Json::Value &options) {
   Json::StyledStreamWriter writer("  ");
   writer.write(destFile,options);
   destFile.close();
+}
+
+void replaceOptsJob(Json::Value &options, const std::string &jobString) {
+  std::map<std::string,std::string> reps;
+  reps["$(JOBNUM)"] = jobString;
+  Point2D dims = getDims(options);
+  std::string size = boost::lexical_cast<std::string>(dims.x) + "x" + boost::lexical_cast<std::string>(dims.y);
+  reps["$(SIZE)"] = size;
+  jsonReplaceStrings(options,reps);
+}
+
+void replaceOptsTrial(Json::Value &options, unsigned int trialNum) {
+  std::map<std::string,std::string> reps;
+  reps["$(TRIALNUM)"] = boost::lexical_cast<std::string>(trialNum);
+  Json::Value const &val = options["predatorOptions"];
+  if (!val.isNull()) {
+    std::string student = getStudentForTrial(trialNum,val);
+    reps["$(STUDENT)"] = student;
+  }
+  jsonReplaceStrings(options,reps);
 }

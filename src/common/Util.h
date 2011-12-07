@@ -13,6 +13,7 @@ Modified: 2011-12-02
 #include <string>
 #include <vector>
 #include <ostream>
+#include <map>
 
 #ifndef NULL
 #define NULL 0
@@ -38,6 +39,7 @@ float softmax(float x1, float x2, float factor); // returns the probability of x
 void softmax(const std::vector<unsigned int> &vals, float factor, std::vector<float> &probs); // fills out probs with the probabilities of the vals using a softmax with the given factor
 
 bool readJson(const std::string &filename, Json::Value &value);
+void jsonReplaceStrings(Json::Value &value, const std::map<std::string,std::string> &replacementMap);
 
 std::string indent(unsigned int indentation);
 
