@@ -112,7 +112,7 @@ int main(int argc, const char *argv[])
     Json::Value trialOptions(options);
     replaceOptsTrial(trialOptions,trialNum);
 
-    boost::shared_ptr<World> world = createWorldAgents(randomSeed,trialNum,options);
+    boost::shared_ptr<World> world = createWorldAgents(randomSeed,trialNum,trialOptions);
     boost::shared_ptr<const WorldModel> model = world->getModel();
 
     // create models for the DT csv output if required
