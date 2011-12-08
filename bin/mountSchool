@@ -1,3 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 
-sshfs sbarrett@benayoun.cs.utexas.edu:/u/sbarrett/research/adhoc2/pursuit/ school/ -o nonempty
+DIR="school"
+if [ ! -d $DIR ]; then
+  decision=""
+  while [ "$decision" != "y" -a "$decision" != "n" ]; do
+    echo -n "$DIR directory does not exist yet, create(y,n)? "
+    read decision
+  done
+  if [ $decision == "n" ]; then
+    echo "FAILURE"
+    exit 1
+  fi
+  mkdir school
+fi
+sshfs sbarrett@benayoun.cs.utexas.edu:/u/sbarrett/research/adhoc2/pursuit/ school/
