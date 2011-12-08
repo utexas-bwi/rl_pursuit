@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
   parseCommandLineArgs(&argc,&argv,"[options] arffFilename",1,1);
 
   std::string dataFilename = argv[1];
+  std::cerr << "Training a DT with minGain:" << FLAGS_minGain << " minInstances:" << FLAGS_minInstances << " maxDepth:" << FLAGS_maxDepth << std::endl;
   boost::shared_ptr<DecisionTree> dt = createDecisionTree("",dataFilename,FLAGS_minGain,FLAGS_minInstances,FLAGS_maxDepth);
 
   std::cout << dt << std::endl;
