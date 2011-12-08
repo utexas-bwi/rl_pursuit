@@ -146,7 +146,9 @@ void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt, int max
   for (unsigned int i = 0; i < instances->classification.size(); i++) {
     total += instances->classification[i];
   }
-  assert(fabs(total-1.0) < 0.0001);
+  //if (fabs(total-1.0) < 0.0001)
+    //std::cerr << "WARNING: " << total << " != 1.0" << std::endl << std::flush;
+  //assert(fabs(total-1.0) < 0.0001);
   // normalize the classes
   //std::cout << "*" << std::endl;
   //instances->normalize();
