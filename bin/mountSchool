@@ -1,0 +1,3 @@
+#!/bin/sh
+
+sshfs sbarrett@benayoun.cs.utexas.edu:/u/sbarrett/research/adhoc2/pursuit/ school/ -o nonempty
