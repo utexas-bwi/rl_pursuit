@@ -243,6 +243,8 @@ void replaceOptsJob(Json::Value &options, const std::string &jobString) {
   Point2D dims = getDims(options);
   std::string size = boost::lexical_cast<std::string>(dims.x) + "x" + boost::lexical_cast<std::string>(dims.y);
   reps["$(SIZE)"] = size;
+  reps["$(DIR)"] = options.get("dir","").asString();
+
   jsonReplaceStrings(options,reps);
 }
 

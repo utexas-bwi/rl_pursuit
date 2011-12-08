@@ -18,12 +18,12 @@ def createPursuitConfig(name,numTrials,numTrialsPerJob,configs,outFilename):
 {
   "trials": %s,
   "trialsPerJob": %s,
-  "save": {"results":"%s", "config":"%s"}
+  "save": {"results":"$(DIR)/results/$(JOBNUM).csv", "config":"$(DIR)/results/config.json"},
+  "dir": "%s"
 }
 '''
-  results = os.path.join('condor',name,'results','$(JOBNUM).csv')
-  configSave = os.path.join('condor',name,'results','config.json')
-  contents = contents % (numTrials,numTrialsPerJob,results,configSave)
+  directory = os.path.join('condor',name)
+  contents = contents % (numTrials,numTrialsPerJob,directory)
   oldContents = ''
   for config in configs:
     with open(config,'r') as f:
