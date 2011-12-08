@@ -4,6 +4,10 @@ import json, os
 from scipy.interpolate import interp1d
 from plotModelProbs import plot
 
+ANALYSIS_TYPE_REGULAR = 0
+ANALYSIS_TYPE_CONVERGENCE = 1
+ANALYSIS_TYPE_REMOVAL = 2
+
 def loadFile(filename):
   probs = []
   with open(filename,'r') as f:
@@ -39,7 +43,8 @@ def loadFiles(directory):
     probList.append(loadFile(f))
   return probList
 
-def getAverageProbs(probList,normalized,length):
+def getAverageProbs(probList,normalized,length,analysisType):
+  EPS = 0.05
   if normalized:
     maxLength = length
   else:
@@ -52,7 +57,6 @@ def getAverageProbs(probList,normalized,length):
     vals[key] = [0 for i in range(maxLength)]
   numTrials = float(len(probList))
   for probs in probList:
-    prob = None
     for key in keys:
       tempProb = []
       for step in range(len(probs)):
@@ -71,16 +75,18 @@ def getAverageProbs(probList,normalized,length):
           tempProb.append(tempProb[-1])
 
       for step,p in enumerate(tempProb):
+        if analysisType == ANALYSIS_TYPE_CONVERGENCE:
+          if p > 1.0 - EPS:
+            p = 1.0
+          else:
+            p = 0.0
+        elif analysisType == ANALYSIS_TYPE_REMOVAL:
+          if p < EPS:
+            p = 1.0
+          else:
+            p = 0.0
         vals[key][step] += p / numTrials
   return vals
-    #for step in range(maxLength):
-      #if step < len(probs):
-        #prob = probs[step]
-      #for key,p in prob.iteritems():
-        #if len(prob) == 1:
-          #p = 1.0
-        #vals[key][step] += p / numTrials
-  #return vals
 
 def normalizeListLength(vals,length):
   xs = [x / float(len(vals) - 1) for x in range(len(vals))]
@@ -88,47 +94,22 @@ def normalizeListLength(vals,length):
   newXs = [x / float(length - 1) for x in range(length)]
   return f(newXs)
 
-def getAverageProbsNormalizedLength(probList, length):
-  keys = probList[0][0].keys()
-  vals = {}
-  for key in keys:
-    vals[key] = []
-    for probs in probList:
-      tempVals = []
-      for step,prob in enumerate(probs):
-        if key not in prob:
-          p = 0
-        else:
-          p = prob[key]
-          if len(prob) == 1:
-            p = 1.0 # in case we didn't set this correctly
-        tempVals.append(p)
-      tempVals = normalizeListLength(tempVals,length)
-      for ind,p in enumerate(tempVals):
-        if len(vals[key]) <= ind:
-          vals[key].append([0,0])
-        oldCount = vals[key][ind][1]
-        vals[key][ind][1] += 1
-        vals[key][ind][0] = (oldCount * vals[key][ind][0] + p) / vals[key][ind][1]
-  return vals
-
-def main(directory,normalized,outputFile,plotQ):
+def main(directory,normalized,outputFile,plotQ,convergence):
+  print 'loading files'
   probList = loadFiles(directory)
-  avgProbs = getAverageProbs(probList,normalized,1000)
-  #if normalized:
-    #avgProbs = getAverageProbsNormalizedLength(probList,5)
-  #else:
-    #avgProbs = getAverageProbs(probList)
+  print 'averaging'
+  avgProbs = getAverageProbs(probList,normalized,1000,convergence)
   #for k,v in avgProbs.iteritems():
     #print '%s:' % k,
     #for x in v:
       #print '%4.2f' % x,
     #print ''
-  
+  print 'outputing'
   if outputFile is not None:
     import cPickle as pickle
     with open(outputFile,'w') as f:
       pickle.dump(avgProbs,f,pickle.HIGHEST_PROTOCOL)
+  print 'plotting'
   if plotQ:
     plot(avgProbs)
   
@@ -142,10 +123,17 @@ def mainFromArgs(args):
   if '--plot' in args:
     args.remove('--plot')
     plotQ = True
+  analysisType = ANALYSIS_TYPE_REGULAR
+  if '--conv' in args:
+    args.remove('--conv')
+    analysisType = ANALYSIS_TYPE_CONVERGENCE
+  if '--rm' in args:
+    args.remove('--rm')
+    analysisType = ANALYSIS_TYPE_REMOVAL
   assert(len(args) == 2)
   directory = args[0]
   outputFile = args[1]
-  main(directory, normalized, outputFile, plotQ)
+  main(directory, normalized, outputFile, plotQ,analysisType)
 
 if __name__ == '__main__':
   import sys
