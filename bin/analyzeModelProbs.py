@@ -114,7 +114,7 @@ def getAverageProbsNormalizedLength(probList, length):
 
 def main(directory,normalized,outputFile,plotQ):
   probList = loadFiles(directory)
-  avgProbs = getAverageProbs(probList,normalized,5)
+  avgProbs = getAverageProbs(probList,normalized,1000)
   #if normalized:
     #avgProbs = getAverageProbsNormalizedLength(probList,5)
   #else:
