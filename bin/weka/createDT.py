@@ -43,12 +43,12 @@ def weightTree(inFile,dataFile,outFile):
   cmd = [os.path.join(BASE_PATH,'addWeights%s' % arch),inFile,dataFile]
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
-def buildDT(dataFile,outFile):
+def buildDT(dataFile,outFile,options):
   if os.uname()[4] == 'x86_64':
     arch = '64'
   else:
     arch = '32'
-  cmd = [os.path.join('bin','buildDT%s' % arch),dataFile]
+  cmd = [os.path.join('bin','buildDT%s' % arch),dataFile] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
 def main(inFile,basename,stayWeight=None,treeOptions=[],useWeka=False):
@@ -73,7 +73,7 @@ def main(inFile,basename,stayWeight=None,treeOptions=[],useWeka=False):
       weightTree(unweightedFile,tmpData,weightedFile)
     else:
       print 'Running buildDT to create a weighted tree'
-      buildDT(tmpData,weightedFile)
+      buildDT(tmpData,weightedFile,treeOptions)
     print 'Done.'
   finally:
     os.remove(tmpData)
