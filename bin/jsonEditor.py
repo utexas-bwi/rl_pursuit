@@ -56,7 +56,10 @@ class Tree(object):
 
   def setViews(self,x):
     for opt in self.depOptions:
-      opt.setView()
+      try:
+        opt.setView()
+      except RuntimeError:
+        pass
  
   def addOption(self,vals,parent=None,parent2=None):
     if parent2 is not None:
@@ -97,11 +100,67 @@ class Tree(object):
     else:
       val[key] = str(item.text(1))
 
-  def output(self,item=None):
+  def output(self,outFile=None):
     self.json = {}
     for i in range(self.tree.topLevelItemCount()):
       self.populateJson(self.json,self.tree.topLevelItem(i))
-    print json.dumps(self.json,indent=2)
+    if outFile is None:
+      print json.dumps(self.json,indent=2)
+    else:
+      with open(outFile,'w') as f:
+        json.dump(self.json,f,indent=2)
+  
+  def read(self,filename):
+    with open(filename,'r') as f:
+      defaults = json.load(f)
+    for key,val in defaults.iteritems():
+      for i in range(self.tree.topLevelItemCount()):
+        item = self.tree.topLevelItem(i)
+        if item.text(0) == key:
+          self.readJson(item,key,val)
+          break
+      else:
+        if key not in ['trials','trialsPerJob','save']:
+          import sys
+          print >>sys.stderr,'ERROR: unknown key: %s' % key
+          sys.exit(2)
+    self.setViews(None)
+
+  def readJson(self,item,key,val):
+    if key == 'models':
+      for model in self.models:
+        model.parent().removeChild(model)
+      self.models = {}
+      for m in val:
+        k = m['desc']
+        child = self.options.addModel(k,'UNKNOWN','UNKNOWN')
+        self.readJson(child,k,m)
+        #print m['desc']
+        #self.models[m['desc']]
+
+        #print model
+      #self.models.
+      # handle specially
+      return
+
+    if type(val) in [unicode,int,float,bool]:
+      item.setText(1,str(val))
+      #print 'setting:',key,val
+    elif type(val) is dict:
+      for k,v in val.iteritems():
+        for i in range(item.childCount()):
+          child = item.child(i)
+          if child.text(0) == k:
+            self.readJson(child,k,v)
+            break
+        else:
+          import sys
+          print >>sys.stderr,'ERROR: unknown key: %s' % k
+          sys.exit(2)
+    else:
+      import sys
+      print >>sys.stderr,'ERROR: unknown type: %s for key %s' % (type(val),key)
+      sys.exit(3)
 
 class Options(object):
   def __init__(self,tree):
@@ -143,7 +202,7 @@ class Options(object):
     return a
 
   def setupPlanner(self):
-    p = self.addDependentOption(self.adhoc,'mcts',['planner',''])
+    p = self.addDependentOption(self.adhoc,['mcts','uct'],['planner',''])
     self.addOption('silver',False,p)
     self.addOption('weighted',True,p)
     self.addOption('update','polynomial',p)
@@ -158,6 +217,9 @@ class Options(object):
     self.addOption('playouts',1000,p)
     self.addOption('depth',100,p)
     self.addOption('theoreticallyCorrectLambda',False,p)
+    x = self.addOption('modelOutputFile','',p)
+    x.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+
     self.models = self.addOption('models','',p)
     self.setupModels()
 
@@ -176,17 +238,25 @@ class Options(object):
     self.setupAgent('predator',pred,x)
     x.setExpanded(False)
     self.tree.models[x] = True
+    return x
 
-def main(args):
+def main(args,inFile,outFile):
   app = QtGui.QApplication(args)
 
   tree = Tree()
-  Options(tree)
+  o = Options(tree)
+  tree.options = o
+  if inFile is not None:
+    tree.read(inFile)
 
   tree.setViews(None)
   app.exec_()
-  tree.output()
+  tree.output(outFile)
 
 if __name__ == '__main__':
-  import sys
-  main(sys.argv)
+  from optparse import OptionParser
+  parser = OptionParser()
+  parser.add_option('-i','--in',dest='inFile',help='input file',metavar='FILE',default=None)
+  parser.add_option('-o','--out',dest='outFile',help='output file',metavar='FILE',default=None)
+  options,args = parser.parse_args()
+  main(args,options.inFile,options.outFile)
