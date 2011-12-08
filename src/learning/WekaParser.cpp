@@ -99,13 +99,16 @@ void WekaParser::tokenizeLine(Line &line) {
   line.used = false;
   line.depth = 0;
   
-  std::string str;
-  while (true) {
-    str = readWekaToken(false);
+  std::string str = "\n";
+  while (str == "\n") {
+    str = readWekaToken(true);
+  }
+  while (in.good()) {
     if (str == "|")
       line.depth++;
     else
       break;
+    str = readWekaToken(false);
   }
   if (in.eof()) {
     return;
