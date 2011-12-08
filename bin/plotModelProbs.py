@@ -10,9 +10,9 @@ def loadResults(filename):
 
 def plot(vals):
   for key in vals.iterkeys():
-    ys = [v[0] for v in vals[key]]
+    ys = [v for v in vals[key]]
     plt.plot(ys,label=key)
-  plt.legend()
+  plt.legend(loc='lower left')
   plt.show()
 
 def main(filename):
@@ -21,4 +21,4 @@ def main(filename):
 
 if __name__ == '__main__':
   import sys
-  main(sys.args[1])
+  main(sys.argv[1])
