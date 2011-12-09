@@ -3,7 +3,18 @@
 from PyQt4 import QtGui, QtCore
 import json
 
-class DependentItem(QtGui.QTreeWidgetItem):
+class TreeItem(QtGui.QTreeWidgetItem):
+  def __init__(self,parent,vals):
+    super(TreeItem, self).__init__(parent,map(str,vals))
+    self.dataType = type(vals[1])
+    if vals[1] != '':
+      self.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+    self.setExpanded(True)
+
+  def getVal(self):
+    return self.dataType(self.text(1))
+
+class DependentItem(TreeItem):
   def __init__(self,parent,dependency,depVals,vals):
     super(DependentItem, self).__init__(parent,vals)
     self.dependency = dependency
@@ -11,9 +22,6 @@ class DependentItem(QtGui.QTreeWidgetItem):
       self.depVals = depVals
     else:
       self.depVals = [depVals]
-    if vals[1] != '':
-      self.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
-    self.setExpanded(True)
     self.setView()
 
   def setView(self):
@@ -21,9 +29,6 @@ class DependentItem(QtGui.QTreeWidgetItem):
       self.setHidden(False)
     else:
       self.setHidden(True)
-
-  def getVal(self):
-    return self.text(1)
 
 class Tree(object):
   def __init__(self):
@@ -37,6 +42,7 @@ class Tree(object):
     self.models = {}
     self.tree.itemChanged.connect(self.setViews)
     self.tree.itemClicked.connect(self.click)
+    self.tree.resize(600,800)
 
   def click(self,x,col):
     if x in self.models:
@@ -70,17 +76,12 @@ class Tree(object):
       parent = None
     if parent is None:
       parent = self.tree
-    vals = map(str,vals)
-    temp = QtGui.QTreeWidgetItem(parent,vals)
-    if vals[1] != '':
-      temp.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
-    temp.setExpanded(True)
+    temp = TreeItem(parent,vals)
     return temp
   
   def addDependentOption(self,dependency,depVal,vals,parent=None):
     if parent is None:
       parent = self.tree
-    vals = map(str,vals)
     temp = DependentItem(parent,dependency,depVal,vals)
     self.depOptions.append(temp)
     return temp
@@ -98,7 +99,7 @@ class Tree(object):
       if item.text(0) == 'models':
         val[key] = val[key].values()
     else:
-      val[key] = str(item.text(1))
+      val[key] = item.getVal()
 
   def output(self,outFile=None):
     self.json = {}
