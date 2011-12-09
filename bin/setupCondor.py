@@ -44,6 +44,7 @@ def makeCondorDirs(baseDir):
   makeDir(os.path.join(baseDir))
   makeDir(os.path.join(baseDir,'output'))
   makeDir(os.path.join(baseDir,'results'))
+  makeDir(os.path.join(baseDir,'models'))
 
 def run(name,numTrials,numTrialsPerJob,configs):
   baseDir = os.path.join('condor',name)
