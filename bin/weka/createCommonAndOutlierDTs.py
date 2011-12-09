@@ -4,7 +4,7 @@ import os, sys, tempfile, multiprocessing
 from copy import copy
 from createDT import main as createDT
 
-def process(dataBasename,name,lines):
+def process(dataBasename,name,lines,stayWeight,treeOptions,useWeka):
   fd,filename = tempfile.mkstemp('.arff')
   f = os.fdopen(fd,'w')
   try:
@@ -13,7 +13,7 @@ def process(dataBasename,name,lines):
     print '-------------------'
     f.writelines(lines)
     f.close()
-    createDT(filename,'%s-%s'%(dataBasename,name),stayWeight,treeOptions)
+    createDT(filename,'%s-%s'%(dataBasename,name),stayWeight=stayWeight,treeOptions=treeOptions,useWeka=True)
   finally:
     f.close()
     os.remove(filename)
@@ -24,7 +24,7 @@ def readFile(studentFile):
   ind = temp.index('@data\n') + 1 # get the line where the data starts
   return temp[:ind],temp[ind:]
 
-def main(dataBasename,stayWeight,outliers,treeOptions):
+def main(dataBasename,stayWeight,outliers,treeOptions,useWeka):
   # get the students
   with open('data/students.txt','r') as f:
     students = list(set(f.read().split()))
@@ -54,16 +54,20 @@ def main(dataBasename,stayWeight,outliers,treeOptions):
     header,lines = readFile(filename)
     commonData.extend(lines)
   commonData = header + commonData
-  process(dataBasename,'common',commonData)
+  process(dataBasename,'common',commonData,stayWeight,treeOptions,useWeka)
 
   for filename in outlierFiles:
     student = os.path.splitext(os.path.basename(filename))[0]
     header,lines = readFile(filename)
-    process(dataBasename,'outlier-%s' % student,header+lines)
+    process(dataBasename,'outlier-%s' % student,header+lines,stayWeight,treeOptions,useWeka)
 
 if __name__ == '__main__':
   usage = 'Usage: createLeaveOneOutDTs.py dataBasename [outlier1 ...] [-- treeOptions ...]'
   args = sys.argv[1:]
+  useWeka = False
+  if '--weka' in args:
+    args.remove('--weka')
+    useWeka = True
   if len(args) < 1:
     print usage
     sys.exit(1)
@@ -79,4 +83,4 @@ if __name__ == '__main__':
   stayWeight = None
   outliers = args[1:ind]
   treeOptions = args[ind+1:]
-  main(dataBasename,stayWeight,outliers,treeOptions)
+  main(dataBasename,stayWeight,outliers,treeOptions,useWeka)
