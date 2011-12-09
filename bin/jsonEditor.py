@@ -33,7 +33,6 @@ class DependentItem(TreeItem):
 class Tree(object):
   def __init__(self):
     self.tree = QtGui.QTreeWidget()
-    self.tree.setWindowTitle('Config Editor')
     self.tree.setColumnCount(2)
     self.tree.setHeaderLabels(["Name","Val"])
     self.tree.header().resizeSection(0,300)
@@ -42,7 +41,6 @@ class Tree(object):
     self.models = {}
     self.tree.itemChanged.connect(self.setViews)
     self.tree.itemClicked.connect(self.click)
-    self.tree.resize(600,800)
 
   def click(self,x,col):
     if x in self.models:
@@ -241,18 +239,39 @@ class Options(object):
     self.tree.models[x] = True
     return x
 
+class ConfigEditor(QtGui.QWidget):
+  def __init__(self,inFile,outFile):
+    super(ConfigEditor, self).__init__()
+    
+    tree = Tree()
+    o = Options(tree)
+    tree.options = o
+    if inFile is not None:
+      tree.read(self.inFile)
+    tree.setViews(None)
+
+    modelButton = QtGui.QPushButton("Add Model")
+    modelButton.clicked.connect(lambda: o.addModel('New','random','gr'))
+    saveButton = QtGui.QPushButton("Save")
+    saveButton.clicked.connect(lambda: tree.output(outFile))
+    
+    layout = QtGui.QVBoxLayout()
+    layout.addWidget(tree.tree)
+    hbox = QtGui.QHBoxLayout()
+    layout.addLayout(hbox)
+    self.setLayout(layout)
+    
+    hbox.addWidget(modelButton)
+    hbox.addWidget(saveButton)
+    
+    self.setWindowTitle('Config Editor')
+    self.resize(600,800)
+
 def main(args,inFile,outFile):
   app = QtGui.QApplication(args)
-
-  tree = Tree()
-  o = Options(tree)
-  tree.options = o
-  if inFile is not None:
-    tree.read(inFile)
-
-  tree.setViews(None)
+  win = ConfigEditor(inFile,outFile)
+  win.show()
   app.exec_()
-  tree.output(outFile)
 
 if __name__ == '__main__':
   from optparse import OptionParser
