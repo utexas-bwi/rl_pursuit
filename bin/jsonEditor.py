@@ -3,7 +3,18 @@
 from PyQt4 import QtGui, QtCore
 import json
 
-class DependentItem(QtGui.QTreeWidgetItem):
+class TreeItem(QtGui.QTreeWidgetItem):
+  def __init__(self,parent,vals):
+    super(TreeItem, self).__init__(parent,map(str,vals))
+    self.dataType = type(vals[1])
+    if vals[1] != '':
+      self.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+    self.setExpanded(True)
+
+  def getVal(self):
+    return self.dataType(self.text(1))
+
+class DependentItem(TreeItem):
   def __init__(self,parent,dependency,depVals,vals):
     super(DependentItem, self).__init__(parent,vals)
     self.dependency = dependency
@@ -11,9 +22,6 @@ class DependentItem(QtGui.QTreeWidgetItem):
       self.depVals = depVals
     else:
       self.depVals = [depVals]
-    if vals[1] != '':
-      self.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
-    self.setExpanded(True)
     self.setView()
 
   def setView(self):
@@ -22,13 +30,9 @@ class DependentItem(QtGui.QTreeWidgetItem):
     else:
       self.setHidden(True)
 
-  def getVal(self):
-    return self.text(1)
-
 class Tree(object):
   def __init__(self):
     self.tree = QtGui.QTreeWidget()
-    self.tree.setWindowTitle('Config Editor')
     self.tree.setColumnCount(2)
     self.tree.setHeaderLabels(["Name","Val"])
     self.tree.header().resizeSection(0,300)
@@ -70,17 +74,12 @@ class Tree(object):
       parent = None
     if parent is None:
       parent = self.tree
-    vals = map(str,vals)
-    temp = QtGui.QTreeWidgetItem(parent,vals)
-    if vals[1] != '':
-      temp.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
-    temp.setExpanded(True)
+    temp = TreeItem(parent,vals)
     return temp
   
   def addDependentOption(self,dependency,depVal,vals,parent=None):
     if parent is None:
       parent = self.tree
-    vals = map(str,vals)
     temp = DependentItem(parent,dependency,depVal,vals)
     self.depOptions.append(temp)
     return temp
@@ -98,7 +97,7 @@ class Tree(object):
       if item.text(0) == 'models':
         val[key] = val[key].values()
     else:
-      val[key] = str(item.text(1))
+      val[key] = item.getVal()
 
   def output(self,outFile=None):
     self.json = {}
@@ -240,18 +239,39 @@ class Options(object):
     self.tree.models[x] = True
     return x
 
+class ConfigEditor(QtGui.QWidget):
+  def __init__(self,inFile,outFile):
+    super(ConfigEditor, self).__init__()
+    
+    tree = Tree()
+    o = Options(tree)
+    tree.options = o
+    if inFile is not None:
+      tree.read(self.inFile)
+    tree.setViews(None)
+
+    modelButton = QtGui.QPushButton("Add Model")
+    modelButton.clicked.connect(lambda: o.addModel('New','random','gr'))
+    saveButton = QtGui.QPushButton("Save")
+    saveButton.clicked.connect(lambda: tree.output(outFile))
+    
+    layout = QtGui.QVBoxLayout()
+    layout.addWidget(tree.tree)
+    hbox = QtGui.QHBoxLayout()
+    layout.addLayout(hbox)
+    self.setLayout(layout)
+    
+    hbox.addWidget(modelButton)
+    hbox.addWidget(saveButton)
+    
+    self.setWindowTitle('Config Editor')
+    self.resize(600,800)
+
 def main(args,inFile,outFile):
   app = QtGui.QApplication(args)
-
-  tree = Tree()
-  o = Options(tree)
-  tree.options = o
-  if inFile is not None:
-    tree.read(inFile)
-
-  tree.setViews(None)
+  win = ConfigEditor(inFile,outFile)
+  win.show()
   app.exec_()
-  tree.output(outFile)
 
 if __name__ == '__main__':
   from optparse import OptionParser
