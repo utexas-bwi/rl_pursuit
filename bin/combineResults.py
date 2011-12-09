@@ -1,17 +1,25 @@
 #!/usr/bin/env python
 
-import os
-import shutil
+import os, sys, shutil
 
-def getFilenames(sourceDir):
+def getFilenames(sourceDir,expectedNumEpisodes):
   filenames = []
-  i = 0
-  while True:
+  usedModelFiles = False
+  for i in range(expectedNumEpisodes):
     filename = os.path.join(sourceDir,'results','%i.csv' % i)
     if not(os.path.isfile(filename)):
-      return filenames
-    filenames.append(filename)
-    i += 1
+      # try to recover using the length of the models file
+      modelFile = os.path.join(sourceDir,'models','%i.txt' % i)
+      if os.path.isfile(modelFile):
+        filenames.append([modelFile,True])
+        usedModelFiles = True
+      else:
+         print >>sys.stderr,'Missing episode: %i' % i
+         sys.exit(3)
+    else:
+      filenames.append([filename,False])
+      
+  return filenames, usedModelFiles
 
 def run(targetBase,sourceDir,expectedNumEpisodes):
   sourceJSON = os.path.join(sourceDir,'config.json')
@@ -21,6 +29,10 @@ def run(targetBase,sourceDir,expectedNumEpisodes):
   dirPath,targetName = os.path.split(sourceDir)
   if targetName == '':
     _,targetName = os.path.split(dirPath)
+  filenames,usedModelFiles = getFilenames(sourceDir,expectedNumEpisodes)
+  assert(len(filenames) == expectedNumEpisodes)
+  if usedModelFiles:
+    targetName += '-incomplete'
   targetCSV = os.path.join(targetBase,'%s.csv'%targetName)
   targetJSON = os.path.join(targetBase,'configs','%s.json'%targetName)
   if os.path.exists(targetCSV):
@@ -29,14 +41,15 @@ def run(targetBase,sourceDir,expectedNumEpisodes):
   if os.path.exists(targetJSON):
     print 'Target json already exists:',targetJSON
     return 2
-  filenames = getFilenames(sourceDir)
-  if len(filenames) != expectedNumEpisodes:
-    print 'Unexpected number of episode, expected %i but got %i' % (expectedNumEpisodes,len(filenames))
-    return 3
   contents = ''
-  for filename in filenames:
-    with open(filename,'r') as f:
-      contents += f.read()
+  for i,(filename,isModelFile) in enumerate(filenames):
+    if isModelFile:
+      with open(filename,'r') as f:
+        steps = len(f.readlines())
+        contents += '%s,%s\n' % (i,steps)
+    else:
+      with open(filename,'r') as f:
+        contents += f.read()
   with open(targetCSV,'w') as f:
     f.write(contents)
   shutil.copy(sourceJSON,targetJSON)
