@@ -20,6 +20,7 @@ void displaySummary(double timePassed, const std::vector<std::vector<unsigned in
 void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial);
 void saveResults(const std::string &filename, int startTrial, const std::vector<std::vector<unsigned int> > &numSteps);
 void saveConfig(const Json::Value &options);
+void replaceOptsDir(Json::Value &options);
 void replaceOptsJob(Json::Value &options, const std::string &jobString);
 void replaceOptsTrial(Json::Value &options, unsigned int trialNum);
 
@@ -76,6 +77,7 @@ int main(int argc, const char *argv[])
     std::cerr << "Start trial should be: " << startTrial << std::endl;
     return 1;
   }
+  replaceOptsDir(options);
   if (jobNum == 0)
     saveConfig(options);
 
@@ -237,13 +239,18 @@ void saveConfig(const Json::Value &options) {
   destFile.close();
 }
 
+void replaceOptsDir(Json::Value &options) {
+  std::map<std::string,std::string> reps;
+  reps["$(DIR)"] = options.get("dir","").asString();
+  jsonReplaceStrings(options,reps);
+}
+
 void replaceOptsJob(Json::Value &options, const std::string &jobString) {
   std::map<std::string,std::string> reps;
   reps["$(JOBNUM)"] = jobString;
   Point2D dims = getDims(options);
   std::string size = boost::lexical_cast<std::string>(dims.x) + "x" + boost::lexical_cast<std::string>(dims.y);
   reps["$(SIZE)"] = size;
-  reps["$(DIR)"] = options.get("dir","").asString();
 
   jsonReplaceStrings(options,reps);
 }
