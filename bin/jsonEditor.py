@@ -247,7 +247,7 @@ class ConfigEditor(QtGui.QWidget):
     o = Options(tree)
     tree.options = o
     if inFile is not None:
-      tree.read(self.inFile)
+      tree.read(inFile)
     tree.setViews(None)
 
     modelButton = QtGui.QPushButton("Add Model")
@@ -276,7 +276,10 @@ def main(args,inFile,outFile):
 if __name__ == '__main__':
   from optparse import OptionParser
   parser = OptionParser()
-  parser.add_option('-i','--in',dest='inFile',help='input file',metavar='FILE',default=None)
+  #parser.add_option('-i','--in',dest='inFile',help='input file',metavar='FILE',default=None)
   parser.add_option('-o','--out',dest='outFile',help='output file',metavar='FILE',default=None)
   options,args = parser.parse_args()
-  main(args,options.inFile,options.outFile)
+  assert(len(args) <= 1)
+  if len(args) >= 1:
+    inFile = args[0]
+  main(args,inFile,options.outFile)
