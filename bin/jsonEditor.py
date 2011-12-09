@@ -12,6 +12,8 @@ class TreeItem(QtGui.QTreeWidgetItem):
     self.setExpanded(True)
 
   def getVal(self):
+    if self.dataType is bool:
+      return self.text(1) in ['True','true','T','t']
     return self.dataType(self.text(1))
 
 class DependentItem(TreeItem):
