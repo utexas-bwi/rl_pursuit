@@ -10,7 +10,7 @@ Modified: 2011-10-31
 
 import numpy, csv
 from scipy import stats
-
+'''
 def studentTTest(mu1,sd1,n1,mu2,sd2,n2):
   sxx = ((sd1 ** 2) / float(n1) + (sd2 ** 2) / float(n2)) ** 0.5
   t = (mu1 - mu2) / sxx
@@ -36,7 +36,7 @@ def pairedStudentsTTest(data1,data2):
   dof = n - 1
   p = stats.t.cdf(t,dof)
   return 2*p
-
+'''
 def loadResultsFromFile(filename):
   numSteps = []
   with open(filename,'r') as f:
@@ -46,7 +46,7 @@ def loadResultsFromFile(filename):
       assert(int(iteration) == len(numSteps)),'Missing or out of order results'
       stepsPerTrial = map(int,row[1:])
       numSteps.append(stepsPerTrial)
-  numSteps = numpy.array(numSteps)
+  numSteps = numpy.array(numSteps)[:,0]
   return numSteps
 
 def main(args):
@@ -55,16 +55,16 @@ def main(args):
   resultsPath2 = args[1]
   a = loadResultsFromFile(resultsPath1)
   b = loadResultsFromFile(resultsPath2)
-  
-  print 'Num Episodes:',len(a)
-  print 'prob equal = %f' % pairedStudentsTTest(a,b)
-  if a.mean() < b.mean():
-    print '%s is smaller' % args[0]
+  diffs = a - b
+  print 'Num Episodes:',len(diffs)
+  z,p = stats.wilcoxon(diffs)
+  print 'prob equal = %g' % p
+  if diffs.mean() < 0:
+    print '%s is smaller' % resultsPath1
   else:
-    print '%s is smaller' % args[1]
-  print 'Mean of %s is %f' % (args[0],a.mean())
-  print 'Mean of %s is %f' % (args[1],b.mean())
-
+    print '%s is smaller' % resultsPath2
+  print 'Mean of %s is %f' % (resultsPath1,a.mean())
+  print 'Mean of %s is %f' % (resultsPath2,b.mean())
 if __name__ == '__main__':
   import sys
   main(sys.argv[1:])
