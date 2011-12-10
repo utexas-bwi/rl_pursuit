@@ -19,15 +19,15 @@ PredatorClassifier::PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D
   trainingCounter(0)
 {
   // add the feature agents
-  featureExtractor.addFeatureAgent("GR","GR");
-  featureExtractor.addFeatureAgent("TA","TA");
-  featureExtractor.addFeatureAgent("GP","GP");
-  featureExtractor.addFeatureAgent("PD","PD");
+  //featureExtractor.addFeatureAgent("GR","GR");
+  //featureExtractor.addFeatureAgent("TA","TA");
+  //featureExtractor.addFeatureAgent("GP","GP");
+  //featureExtractor.addFeatureAgent("PD","PD");
 }
 
 ActionProbs PredatorClassifier::step(const Observation &obs) {
   Classification c;
-  InstancePtr instance = featureExtractor.extract(obs);
+  InstancePtr instance = featureExtractor.extract(obs,stepHistory);
   classifier->classify(instance,c);
   assert(c.size() == Action::NUM_ACTIONS);
   ActionProbs actionProbs;
@@ -54,7 +54,7 @@ void PredatorClassifier::learn(const Observation &prevObs, const Observation &cu
     return;
 
   Point2D move = getDifferenceToPoint(dims,prevObs.positions[ind],currentObs.positions[ind]);
-  InstancePtr instance = featureExtractor.extract(prevObs);
+  InstancePtr instance = featureExtractor.extract(prevObs,learnHistory);
   instance->label = getAction(move);
   classifier->addData(instance);
   trainingCounter++;

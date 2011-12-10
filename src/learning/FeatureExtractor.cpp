@@ -10,6 +10,13 @@ Modified: 2011-10-28
 #include <boost/lexical_cast.hpp>
 #include <factory/AgentFactory.h>
 
+const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
+
+FeatureExtractorHistory::FeatureExtractorHistory():
+  actionHistory(FeatureExtractor::HISTORY_SIZE)
+{
+}
+
 FeatureExtractor::FeatureExtractor(const Point2D &dims):
   dims(dims)
 {
@@ -22,7 +29,7 @@ void FeatureExtractor::addFeatureAgent(const std::string &key, const std::string
   featureAgents.push_back(featureAgent);
 }
 
-InstancePtr FeatureExtractor::extract(const Observation &obs) {
+InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHistory &history) {
   assert(obs.preyInd == 0);
   InstancePtr instance(new Instance);
   
@@ -63,6 +70,19 @@ InstancePtr FeatureExtractor::extract(const Observation &obs) {
     actionProbs = it->agent->step(obs);
     setFeature(instance,it->name + ".des",actionProbs.maxAction());
   }
+  // history features and update the history
+  Action::Type a;
+  for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
+    if (j < history.actionHistory.size())
+      a = history.actionHistory[j];
+    else
+      a = Action::NUM_ACTIONS;
+    std::string key = "HistoricalAction." + boost::lexical_cast<std::string>(j);
+    setFeature(instance,key,a);
+    // update it
+    history.actionHistory.push_front();
+  }
+
   instance->weight = 1.0;
   return instance;
 }

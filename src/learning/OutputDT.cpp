@@ -24,6 +24,7 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
   outputArff(outputArff),
   useDesiredActions(useDesiredActions),
   featureExtractor(dims),
+  histories(numPredators),
   numSamples(numSamples)
 {
   for (unsigned int i = 0; i < modelNames.size(); i++)
@@ -70,7 +71,7 @@ void OutputDT::saveStep(unsigned int trialNum, unsigned int numSteps, const Obse
     for (unsigned int predInd = 0; predInd < numPredators; predInd++) {
       unsigned int agentInd = predInd + 1;
       prevObs.myInd = agentInd;
-      InstancePtr instancePtr = featureExtractor.extract(prevObs);
+      InstancePtr instancePtr = featureExtractor.extract(prevObs,histories[predInd]);
       Instance &instance = *instancePtr;
 
       // add the trial number and number of steps

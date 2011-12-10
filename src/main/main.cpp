@@ -121,10 +121,10 @@ int main(int argc, const char *argv[])
     std::vector<std::string> modelNames;
     if (outputDTCSVQ) {
       if (trial == 0) {
-        modelNames.push_back("GR");
-        modelNames.push_back("TA");
-        modelNames.push_back("GP");
-        modelNames.push_back("PD");
+        //modelNames.push_back("GR");
+        //modelNames.push_back("TA");
+        //modelNames.push_back("GP");
+        //modelNames.push_back("PD");
         outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true,true,outputDTSteps));
         actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
       }

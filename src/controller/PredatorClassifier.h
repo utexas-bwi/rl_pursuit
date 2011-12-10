@@ -33,6 +33,8 @@ protected:
   const std::string name;
   boost::shared_ptr<Classifier> classifier;
   FeatureExtractor featureExtractor;
+  FeatureExtractorHistory stepHistory;
+  FeatureExtractorHistory learnHistory;
   int trainingPeriod;
   int trainingCounter;
 };

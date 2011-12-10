@@ -50,6 +50,7 @@ protected:
   std::vector<Instance> instances;
   Observation prevObs;
   FeatureExtractor featureExtractor;
+  std::vector<FeatureExtractorHistory> histories;
   unsigned int numSamples;
 };
 
