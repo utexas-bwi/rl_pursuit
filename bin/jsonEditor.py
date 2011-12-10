@@ -282,6 +282,7 @@ if __name__ == '__main__':
   parser.add_option('-o','--out',dest='outFile',help='output file',metavar='FILE',default=None)
   options,args = parser.parse_args()
   assert(len(args) <= 1)
+  inFile = None
   if len(args) >= 1:
     inFile = args[0]
   main(args,inFile,options.outFile)
