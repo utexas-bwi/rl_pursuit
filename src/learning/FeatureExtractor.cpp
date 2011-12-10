@@ -13,7 +13,8 @@ Modified: 2011-10-28
 const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
 
 FeatureExtractorHistory::FeatureExtractorHistory():
-  actionHistory(FeatureExtractor::HISTORY_SIZE)
+  initialized(false),
+  actionHistory()
 {
 }
 
@@ -70,21 +71,46 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
     actionProbs = it->agent->step(obs);
     setFeature(instance,it->name + ".des",actionProbs.maxAction());
   }
-  // history features and update the history
-  Action::Type a;
-  for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
-    if (j < history.actionHistory.size())
-      a = history.actionHistory[j];
-    else
-      a = Action::NUM_ACTIONS;
-    std::string key = "HistoricalAction." + boost::lexical_cast<std::string>(j);
-    setFeature(instance,key,a);
-    // update it
-    history.actionHistory.push_front();
+  // update the history
+  std::vector<Action::Type> observedActions;
+  if (history.initialized) {
+    calcObservedActions(history.obs,obs,observedActions);
+  } else {
+    for (unsigned int i = 0; i < obs.positions.size(); i++) {
+      history.actionHistory.push_back(boost::circular_buffer<Action::Type>(HISTORY_SIZE));
+      observedActions.push_back(Action::NUM_ACTIONS);
+    }
+  }
+  for (unsigned int agentInd = 0; agentInd < obs.positions.size(); agentInd++) {
+    history.actionHistory[agentInd].push_front(observedActions[agentInd]);
+  }
+  history.initialized = true;
+  history.obs = obs;
+  // add the history features
+  Action::Type action;
+  for (unsigned int agentInd = 0; agentInd < obs.positions.size(); agentInd++) {
+    for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
+      if (j < history.actionHistory[agentInd].size())
+        action = history.actionHistory[agentInd][j];
+      else
+        action = Action::NUM_ACTIONS;
+      std::string key = "HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j);
+      setFeature(instance,key,action);
+    }
   }
 
   instance->weight = 1.0;
   return instance;
+}
+
+void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs, std::vector<Action::Type> &actions) {
+  actions.clear();
+  prevObs.uncenterPrey(dims);
+  obs.uncenterPrey(dims);
+  for (unsigned int i = 0; i < prevObs.positions.size(); i++) {
+    Point2D diff = getDifferenceToPoint(dims,prevObs.positions[i],obs.positions[i]);
+    actions.push_back(getAction(diff));
+  }
 }
 
 void FeatureExtractor::setFeature(InstancePtr &instance, const std::string &key, float val) {

@@ -125,7 +125,7 @@ int main(int argc, const char *argv[])
         //modelNames.push_back("TA");
         //modelNames.push_back("GP");
         //modelNames.push_back("PD");
-        outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true,true,outputDTSteps));
+        outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true,false,outputDTSteps));
         actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
       }
 

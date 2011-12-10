@@ -19,7 +19,10 @@ Modified: 2011-12-09
 
 struct FeatureExtractorHistory {
   FeatureExtractorHistory();
-  boost::circular_buffer<Action::Type> actionHistory;
+
+  bool initialized;
+  std::vector<boost::circular_buffer<Action::Type> > actionHistory;
+  Observation obs;
 };
 
 class FeatureExtractor {
@@ -28,6 +31,7 @@ public:
   
   void addFeatureAgent(const std::string &key, const std::string &name);
   InstancePtr extract(const Observation &obs, FeatureExtractorHistory &history);
+  void calcObservedActions(Observation prevObs, Observation obs, std::vector<Action::Type> &actions);
 
 protected:
   struct FeatureAgent {

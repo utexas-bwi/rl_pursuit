@@ -36,7 +36,7 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
   // relative positions of the agents
   featureTypes.push_back(FeatureType("Prey.dx",0));
   featureTypes.push_back(FeatureType("Prey.dy",0));
-  for (unsigned int i = 0; i < numPredators; i++){
+  for (unsigned int i = 0; i < numPredators; i++) {
     std::string pred = "Pred" + boost::lexical_cast<std::string>(i);
     featureTypes.push_back(FeatureType(pred + ".dx",0));
     featureTypes.push_back(FeatureType(pred + ".dy",0));
@@ -50,6 +50,13 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
   // most likely actions predicted by the models
   for (unsigned int i = 0; i < modelNames.size(); i++)
     featureTypes.push_back(FeatureType(modelNames[i]+".des",Action::NUM_ACTIONS));
+  // history features
+  for (unsigned int agentInd = 0; agentInd < numPredators + 1; agentInd++) {
+    for (unsigned int j = 0; j < FeatureExtractor::HISTORY_SIZE; j++) {
+      std::string key = "HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j);
+      featureTypes.push_back(FeatureType(key,Action::NUM_ACTIONS+1)); // + 1 for when there is no history
+    }
+  }
   // the true action
   if (useDesiredActions)
     featureTypes.push_back(FeatureType("Pred.des",Action::NUM_ACTIONS));
@@ -66,7 +73,13 @@ void OutputDT::saveStep(unsigned int trialNum, unsigned int numSteps, const Obse
   assert(obs.preyInd == 0);
   if (useDesiredActions)
     assert(desiredActions.size() == obs.positions.size());
+
+
   if (numSteps > 1) {
+    std::vector<Action::Type> observedActions;
+    if (!useDesiredActions) {
+      featureExtractor.calcObservedActions(prevObs,obs,observedActions);
+    }
     std::vector<std::string> output;
     for (unsigned int predInd = 0; predInd < numPredators; predInd++) {
       unsigned int agentInd = predInd + 1;
@@ -85,10 +98,7 @@ void OutputDT::saveStep(unsigned int trialNum, unsigned int numSteps, const Obse
       if (useDesiredActions) {
         ss << desiredActions[agentInd];
       } else {
-        // the true action taken
-        Point2D diff = getDifferenceToPoint(dims,prevObs.positions[agentInd],obs.positions[agentInd]);
-        Action::Type action = getAction(diff);
-        ss << action;
+        ss << observedActions[agentInd];
       }
       ss << std::endl;
       std::string temp;
