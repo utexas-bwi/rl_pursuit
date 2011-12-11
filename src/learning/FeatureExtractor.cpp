@@ -3,7 +3,7 @@ File: FeatureExtractor.cpp
 Author: Samuel Barrett
 Description: extracts a set of features of the agents
 Created:  2011-10-28
-Modified: 2011-10-28
+Modified: 2011-12-10
 */
 
 #include "FeatureExtractor.h"
@@ -11,6 +11,7 @@ Modified: 2011-10-28
 #include <factory/AgentFactory.h>
 
 const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
+const bool FeatureExtractor::USE_ALL_AGENTS_HISTORY = true;
 
 FeatureExtractorHistory::FeatureExtractorHistory():
   initialized(false),
@@ -99,8 +100,15 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
         action = history.actionHistory[agentInd][j];
       else
         action = Action::NUM_ACTIONS;
-      std::string key = "HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j);
-      setFeature(instance,key,action);
+      if (USE_ALL_AGENTS_HISTORY) {
+        std::string key = "HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j);
+        setFeature(instance,key,action);
+      }
+
+      if (agentInd == obs.myInd) {
+        setFeature(instance,"MyHistoricalAction." + boost::lexical_cast<std::string>(j),action);
+      }
+
     }
   }
 
@@ -121,3 +129,4 @@ void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs,
 void FeatureExtractor::setFeature(InstancePtr &instance, const std::string &key, float val) {
   (*instance)[key] = val;
 }
+

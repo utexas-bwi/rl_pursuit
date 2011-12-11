@@ -3,7 +3,7 @@ File: OutputDT.cpp
 Author: Samuel Barrett
 Description: outputs information for the decision tree
 Created:  2011-10-26
-Modified: 2011-10-26
+Modified: 2011-12-10
 */
 
 #include "OutputDT.h"
@@ -50,13 +50,18 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
   for (unsigned int i = 0; i < modelNames.size(); i++)
     featureTypes.push_back(FeatureType(modelNames[i]+".des",Action::NUM_ACTIONS));
   // history features
-  for (unsigned int agentInd = 0; agentInd < numPredators + 1; agentInd++) {
-    for (unsigned int j = 0; j < FeatureExtractor::HISTORY_SIZE; j++) {
-      std::string key = "HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j);
-      featureTypes.push_back(FeatureType(key,Action::NUM_ACTIONS+1)); // + 1 for when there is no history
+  if (FeatureExtractor::USE_ALL_AGENTS_HISTORY) {
+    for (unsigned int agentInd = 0; agentInd < numPredators + 1; agentInd++) {
+      for (unsigned int j = 0; j < FeatureExtractor::HISTORY_SIZE; j++) {
+        std::string key = "HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j);
+        featureTypes.push_back(FeatureType(key,Action::NUM_ACTIONS+1)); // + 1 for when there is no history
+      }
     }
   }
-  // the true action
+  for (unsigned int j = 0; j < FeatureExtractor::HISTORY_SIZE; j++) {
+    featureTypes.push_back(FeatureType("MyHistoricalAction." + boost::lexical_cast<std::string>(j),Action::NUM_ACTIONS+1));
+  }
+  // the true action - NOTE: must be last
   if (useDesiredActions)
     featureTypes.push_back(FeatureType("Pred.des",Action::NUM_ACTIONS));
   else

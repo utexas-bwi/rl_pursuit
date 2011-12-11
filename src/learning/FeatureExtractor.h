@@ -6,7 +6,7 @@ File: FeatureExtractor.h
 Author: Samuel Barrett
 Description: extracts a set of features of the agents
 Created:  2011-10-28
-Modified: 2011-12-09
+Modified: 2011-12-10
 */
 
 #include <deque>
@@ -48,6 +48,7 @@ protected:
   std::vector<Feature> featureTypes;
 public:
   static const unsigned int HISTORY_SIZE;
+  static const bool USE_ALL_AGENTS_HISTORY;
 };
 
 #endif /* end of include guard: FEATUREEXTRACTOR_XSHC1OD2 */

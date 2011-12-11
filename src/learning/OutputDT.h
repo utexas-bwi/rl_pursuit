@@ -6,7 +6,7 @@ File: OutputDT.h
 Author: Samuel Barrett
 Description: outputs information for the decision tree
 Created:  2011-10-26
-Modified: 2011-10-26
+Modified: 2011-12-10
 */
 
 #include <fstream>
