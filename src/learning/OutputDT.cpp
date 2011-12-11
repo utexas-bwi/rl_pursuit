@@ -24,7 +24,6 @@ OutputDT::OutputDT(const std::string &filename, const Point2D &dims, unsigned in
   outputArff(outputArff),
   useDesiredActions(useDesiredActions),
   featureExtractor(dims),
-  histories(numPredators),
   numSamples(numSamples)
 {
   for (unsigned int i = 0; i < modelNames.size(); i++)
@@ -74,8 +73,10 @@ void OutputDT::saveStep(unsigned int trialNum, unsigned int numSteps, const Obse
   if (useDesiredActions)
     assert(desiredActions.size() == obs.positions.size());
 
-
-  if (numSteps > 1) {
+  if (numSteps <= 1) {
+    histories.clear();
+    histories.resize(numPredators);
+  } else {
     std::vector<Action::Type> observedActions;
     if (!useDesiredActions) {
       featureExtractor.calcObservedActions(prevObs,obs,observedActions);

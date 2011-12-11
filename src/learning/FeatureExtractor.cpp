@@ -18,6 +18,11 @@ FeatureExtractorHistory::FeatureExtractorHistory():
 {
 }
 
+void FeatureExtractorHistory::reset() {
+  initialized = false;
+  actionHistory.clear();
+}
+
 FeatureExtractor::FeatureExtractor(const Point2D &dims):
   dims(dims)
 {

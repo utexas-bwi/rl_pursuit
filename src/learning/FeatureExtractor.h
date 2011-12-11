@@ -19,6 +19,7 @@ Modified: 2011-12-09
 
 struct FeatureExtractorHistory {
   FeatureExtractorHistory();
+  void reset();
 
   bool initialized;
   std::vector<boost::circular_buffer<Action::Type> > actionHistory;
