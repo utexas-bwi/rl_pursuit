@@ -9,6 +9,10 @@ WekaParser::WekaParser(const std::string &filename, unsigned int numClasses, boo
   numClasses(numClasses),
   useClassDistributions(useClassDistributions)
 {
+  if (!in.good()) {
+    std::cerr << "WekaParser: error opening file: " << filename << std::endl;
+    exit(54);
+  }
   assert(in.good());
   ArffReader arff(in);
   featureTypes = arff.getFeatureTypes();

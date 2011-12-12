@@ -11,7 +11,7 @@ Modified: 2011-12-10
 #include <factory/AgentFactory.h>
 
 const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
-const bool FeatureExtractor::USE_ALL_AGENTS_HISTORY = true;
+const bool FeatureExtractor::USE_ALL_AGENTS_HISTORY = false;
 
 FeatureExtractorHistory::FeatureExtractorHistory():
   initialized(false),
