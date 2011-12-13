@@ -6,7 +6,7 @@ File: UCTEstimator.h
 Author: Samuel Barrett
 Description: a value estimator based on UCT
 Created:  2011-08-23
-Modified: 2011-08-23
+Modified: 2011-12-13
 */
 
 #include <iostream>
@@ -54,6 +54,7 @@ public:
   virtual float calcActionValue(const State &state, const Action &action, bool useBounds);
   unsigned int getNumVisits(const State &state, const Action &action);
   Action getNumActions();
+  void pruneOldVisits(unsigned int minVisitsToKeep);
 
 protected:
   void checkInternals();
@@ -73,6 +74,7 @@ protected:
   DefaultMap<StateAction,float> values;
   DefaultMap<State,unsigned int> stateVisits;
   DefaultMap<StateAction,unsigned int> stateActionVisits;
+  DefaultMap<State,unsigned int> recentStateVisits;
   //DefaultMap<StateAction,std::pair<float,unsigned int> > stateActions;
   
   DefaultMap<StateAction,unsigned int> rolloutVisitCounts;
@@ -108,6 +110,7 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   stateVisits(initialStateVisits),
   stateActionVisits(initialStateActionVisits),
   //stateActions(std::make_pair(initialValue,initialStateActionVisits)),
+  recentStateVisits(0),
   rolloutVisitCounts(0)
 {
   if (nrewardBound > 0) {
@@ -243,6 +246,7 @@ float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, floa
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
   stateActionVisits[key]++;
+  recentStateVisits[key.first]++;
   float retVal = 0;
   if (theoreticallyCorrectLambda)
     retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
@@ -322,6 +326,24 @@ unsigned int UCTEstimator<State,Action>::getNumVisits(const State &state, const 
 template<class State, class Action>
 Action UCTEstimator<State,Action>::getNumActions() {
   return numActions;
+}
+
+template<class State, class Action>
+void UCTEstimator<State,Action>::pruneOldVisits(unsigned int minVisitsToKeep) {
+  typename DefaultMap<State,unsigned int>::iterator it = stateVisits.begin();
+  while (it != stateVisits.end()) {
+    if (recentStateVisits[it->second] < minVisitsToKeep) {
+      for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
+        StateAction key = StateAction(it->first,a);
+        values.erase(key);
+        stateActionVisits.erase(key);
+      }
+      stateVisits.erase(it++); // NOTE: the ++ must be like this because the we erase the copy, after incrementing the original
+    } else {
+      ++it;
+    }
+  }
+  recentStateVisits.clear();
 }
 
 #endif /* end of include guard: UCTESTIMATOR_8N1RY426 */

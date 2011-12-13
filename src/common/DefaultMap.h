@@ -6,7 +6,7 @@ File: DefaultMap.h
 Author: Samuel Barrett
 Description: a map that returns a default value without inserting when get is called.
 Created:  2011-08-23
-Modified: 2011-08-23
+Modified: 2011-12-13
 */
 
 //#define DEFAULTMAP_USE_BOOST
@@ -55,6 +55,14 @@ public:
 
   void clear() {
     vals.clear();
+  }
+
+  void erase(iterator position) {
+    vals.erase(position);
+  }
+
+  size_t erase(const Key &key) {
+    return vals.erase(key);
   }
 
   unsigned int size() {

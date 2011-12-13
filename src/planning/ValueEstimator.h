@@ -6,7 +6,7 @@ File: ValueEstimator.h
 Author: Samuel Barrett
 Description: an abstract value estimator used for planning
 Created:  2011-08-23
-Modified: 2011-08-23
+Modified: 2011-12-13
 */
 
 #include <string>
@@ -23,6 +23,7 @@ public:
   virtual void visit(const State &state, const Action &action, float reward) = 0;
   virtual void restart() = 0;
   virtual std::string generateDescription(unsigned int indentation = 0) = 0;
+  virtual void pruneOldVisits(unsigned int minVisitsToKeep) = 0;
 };
 
 #endif /* end of include guard: VALUEESTIMATOR_VKVQ0GPY */

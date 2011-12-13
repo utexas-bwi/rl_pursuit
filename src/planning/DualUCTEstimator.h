@@ -6,7 +6,7 @@ File: DualUCTEstimator.h
 Author: Samuel Barrett
 Description: combines 2 value estimators
 Created:  2011-10-01
-Modified: 2011-10-03
+Modified: 2011-12-13
 */
 
 #include <boost/shared_ptr.hpp>
@@ -28,6 +28,7 @@ public:
   
   Action selectAction(const State &state, bool useBounds);
   float calcActionValue(const State &state, const Action &action, bool useBounds);
+  void pruneOldVisits(unsigned int minVisitsToKeep);
 
 private:
   boost::shared_ptr<RNG> rng;
@@ -153,6 +154,12 @@ Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool use
   
   //std::cout << "BOTTOM SELECT ACTION " << maxActions.size() << std::endl << std::flush;
   return maxActions[rng->randomInt(maxActions.size())];
+}
+  
+template<class State, class Action>
+void DualUCTEstimator<State,Action>::pruneOldVisits(unsigned int minVisitsToKeep) {
+  mainValueEstimator->pruneOldVisits(minVisitsToKeep);
+  generalValueEstimator->pruneOldVisits(minVisitsToKeep);
 }
 
 #endif /* end of include guard: DUALUCTESTIMATOR_F3MKQ7CG */
