@@ -17,13 +17,17 @@ void WorldMDP::setPreyPos(const Point2D &preyPos) {
 
 void WorldMDP::setState(const State_t &state) {
   //std::cout << "worldmdp setState: " << state << std::endl;
-  std::vector<Point2D> positions(STATE_SIZE);
-  getPositionsFromState(state,model->getDims(),positions,preyPos,usePreySymmetry);
-  for (unsigned int i = 0; i < STATE_SIZE; i++)
-    model->setAgentPosition(i,positions[i]);
-  //Observation obs;
-  //controller->generateObservation(obs);
-  //std::cout << "worldmdp setstate2: " << obs << std::endl;
+  Observation obs;
+  obs.preyInd = 0;
+  obs.positions.resize(STATE_SIZE);
+  getPositionsFromState(state,model->getDims(),obs.positions,preyPos,usePreySymmetry);
+  obs.absPrey = this->preyPos;
+  setState(obs);
+
+  //std::vector<Point2D> positions(STATE_SIZE);
+  //getPositionsFromState(state,model->getDims(),positions,preyPos,usePreySymmetry);
+  //for (unsigned int i = 0; i < STATE_SIZE; i++)
+    //model->setAgentPosition(i,positions[i]);
 }
 
 void WorldMDP::setState(const Observation &obs) {

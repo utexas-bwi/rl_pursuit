@@ -16,6 +16,7 @@ Action::Type getAction(const Point2D &move) {
     if (move == Action::MOVES[i])
       return (Action::Type)i;
   std::cout << "Action::getAction: ERROR: Action not found for: " << move << std::endl;
+  assert(false);
   return Action::RANDOM;
 }
 
@@ -140,6 +141,7 @@ std::ostream& operator<<(std::ostream &out, const Observation &obs) {
   for (unsigned int i = 0; i < obs.positions.size(); i++)
     out << obs.positions[i] << " ";
   out << "Prey: " << obs.preyInd << " me: " << obs.myInd;
+  out << " absPrey: "  << obs.absPrey;
   out << ">";
   return out;
 }

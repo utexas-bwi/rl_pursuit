@@ -28,7 +28,7 @@ public:
   inline void setAgentPosition(unsigned int ind, const Point2D &pos) {agents[ind].pos = pos;}
   Point2D getAgentPosition(unsigned int ind, Action::Type action = Action::NOOP) const;
   void generateObservation(Observation &obs, bool centerPrey) const;
-  void setPositionsFromObservation(const Observation &obs);
+  void setPositionsFromObservation(Observation obs);
   std::string generateDescription(unsigned int indentation = 0);
 
 protected:

@@ -21,7 +21,7 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
   modelUpdater->output();
   // set the beliefs of the model (applicable for the belief mdp)
   model->setBeliefs(modelUpdater);
-  model->setPreyPos(obs.preyPos());
+  model->setPreyPos(obs.absPrey);
   // do the searching
   State_t state = model->getState(obs);
   //std::cout << "----------START SEARCH---------" << std::endl;
@@ -32,6 +32,7 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
   prevObs = obs;
   
   // update the internal models to the current state
+  //std::cout << "update controller information: " << obs << std::endl;
   modelUpdater->updateControllerInformation(obs);
   
   return ActionProbs(prevAction);

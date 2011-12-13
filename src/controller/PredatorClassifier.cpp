@@ -38,6 +38,7 @@ ActionProbs PredatorClassifier::step(const Observation &obs) {
 
 void PredatorClassifier::restart() {
   trainingCounter = 0;
+  stepHistory.reset();
 }
 
 std::string PredatorClassifier::generateDescription() {

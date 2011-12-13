@@ -91,7 +91,8 @@ void WorldModel::generateObservation(Observation &obs, bool centerPrey) const {
     obs.centerPrey(dims);
 }
 
-void WorldModel::setPositionsFromObservation(const Observation &obs) {
+void WorldModel::setPositionsFromObservation(Observation obs) {
+  obs.uncenterPrey(dims);
   for (unsigned int i = 0; i < agents.size(); i++)
     setAgentPosition(i,obs.positions[i]);
 }
