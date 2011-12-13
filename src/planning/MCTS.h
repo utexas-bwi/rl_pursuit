@@ -20,14 +20,14 @@ Modified: 2011-12-13
 template<class State, class Action>
 class MCTS {
 public:
-  MCTS (boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth);
+  MCTS (boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, unsigned int minVisitsToKeep);
   virtual ~MCTS () {}
 
   void search(const State &startState);
   Action selectWorldAction(const State &state);
   void restart();
   std::string generateDescription(unsigned int indentation = 0);
-  void pruneOldVisits(unsigned int minVisitsToKeep) {
+  void pruneOldVisits() {
     valueEstimator->pruneOldVisits(minVisitsToKeep);
   }
 
@@ -44,18 +44,20 @@ private:
   unsigned int maxDepth;
   bool valid;
   double endPlanningTime;
+  unsigned int minVisitsToKeep;
 };
 
 ////////////////////////////////////////////////////////////////////////////
 
 template<class State, class Action>
-MCTS<State,Action>::MCTS(boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth):
+MCTS<State,Action>::MCTS(boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, unsigned int minVisitsToKeep):
   model(model),
   valueEstimator(valueEstimator),
   modelUpdater(modelUpdater),
   numPlayouts(numPlayouts),
   maxPlanningTime(maxPlanningTime),
-  maxDepth(maxDepth)
+  maxDepth(maxDepth),
+  minVisitsToKeep(minVisitsToKeep)
 {
   checkInternals();
 }

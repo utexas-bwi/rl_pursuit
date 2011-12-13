@@ -330,17 +330,19 @@ Action UCTEstimator<State,Action>::getNumActions() {
 
 template<class State, class Action>
 void UCTEstimator<State,Action>::pruneOldVisits(unsigned int minVisitsToKeep) {
-  typename DefaultMap<State,unsigned int>::iterator it = stateVisits.begin();
-  while (it != stateVisits.end()) {
-    if (recentStateVisits[it->second] < minVisitsToKeep) {
-      for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
-        StateAction key = StateAction(it->first,a);
-        values.erase(key);
-        stateActionVisits.erase(key);
+  if (minVisitsToKeep > 0) {
+    typename DefaultMap<State,unsigned int>::iterator it = stateVisits.begin();
+    while (it != stateVisits.end()) {
+      if (recentStateVisits[it->second] < minVisitsToKeep) {
+        for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
+          StateAction key = StateAction(it->first,a);
+          values.erase(key);
+          stateActionVisits.erase(key);
+        }
+        stateVisits.erase(it++); // NOTE: the ++ must be like this because the we erase the copy, after incrementing the original
+      } else {
+        ++it;
       }
-      stateVisits.erase(it++); // NOTE: the ++ must be like this because the we erase the copy, after incrementing the original
-    } else {
-      ++it;
     }
   }
   recentStateVisits.clear();

@@ -261,6 +261,7 @@ class Options(object):
     self.addOption('rewardBound',0.5,p)
     self.addOption('playouts',1000,p)
     self.addOption('depth',100,p)
+    self.addOption('pruningVisits',0,p)
     self.addOption('theoreticallyCorrectLambda',False,p)
     self.addOption('student','$(STUDENT)',p)
     self.addOption('students','data/students.txt',p)
