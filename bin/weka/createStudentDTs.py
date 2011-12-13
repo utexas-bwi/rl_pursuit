@@ -13,7 +13,7 @@ def main(basename,stayWeight,treeOptions):
     print student
     print '-------------------'
     dataFile = os.path.join(dataDir,'%s.arff'%student)
-    createDT(dataFile,'%s-%s'%(student,basename),stayWeight,treeOptions)
+    createDT(dataFile,'%s-%s'%(basename,student),stayWeight,treeOptions)
 
 if __name__ == '__main__':
   import sys
