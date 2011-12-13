@@ -6,7 +6,7 @@ File: MCTS.h
 Author: Samuel Barrett
 Description: a monte-carlo tree search
 Created:  2011-08-23
-Modified: 2011-08-23
+Modified: 2011-12-13
 */
 
 #include <boost/shared_ptr.hpp>
@@ -27,6 +27,9 @@ public:
   Action selectWorldAction(const State &state);
   void restart();
   std::string generateDescription(unsigned int indentation = 0);
+  void pruneOldVisits(unsigned int minVisitsToKeep) {
+    valueEstimator->pruneOldVisits(minVisitsToKeep);
+  }
 
 private:
   void checkInternals();
