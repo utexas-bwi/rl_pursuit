@@ -263,8 +263,7 @@ class Options(object):
     self.addOption('depth',100,p)
     self.addOption('theoreticallyCorrectLambda',False,p)
     self.addOption('student','$(STUDENT)',p)
-    self.addOption('foreachStudent',False,p)
-    self.addOption('includeCurrentStudent',True,p)
+    self.addOption('students','data/students.txt',p)
     x = self.addOption('modelOutputFile','',p)
     x.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
 
@@ -284,6 +283,8 @@ class Options(object):
     self.addOption('desc',desc,x)
     self.setupAgent('prey',prey,x)
     self.setupAgent('predator',pred,x)
+    self.addOption('foreachStudent',False,p)
+    self.addOption('includeCurrentStudent',True,p)
     x.setExpanded(False)
     self.tree.models[x] = True
     return x
