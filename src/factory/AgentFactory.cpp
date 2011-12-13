@@ -73,6 +73,19 @@ std::string getStudentForTrial(unsigned int trialNum, const Json::Value &options
   return student;
 }
 
+void getAvailableStudents(const std::string &filename, std::set<std::string> &students) {
+  std::ifstream in(filename.c_str());
+  assert(in.good());
+  std::string name;
+  while (true) {
+    in >> name;
+    if (!in.good())
+      break;
+    students.insert(name);
+  }
+  in.close();
+}
+
 boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions) {
   typedef boost::shared_ptr<Agent> ptr;
   

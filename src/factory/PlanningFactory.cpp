@@ -9,6 +9,7 @@ Modified: 2011-10-02
 #include "PlanningFactory.h"
 #include <boost/algorithm/string.hpp>
 #include <fstream>
+#include <set>
 //#include <controller/WorldSilverMDP.h>
 //#include <controller/WorldSilverWeightedMDP.h>
 #include <controller/ModelUpdaterBayes.h>
@@ -44,19 +45,45 @@ boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<R
 boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options) {
   // create the agents
   const Json::Value models = options["models"];
-  std::vector<std::vector<boost::shared_ptr<Agent> > > modelList(models.size());
+  std::vector<std::vector<boost::shared_ptr<Agent> > > modelList;
   std::vector<double> modelProbs;
   std::vector<std::string> modelDescriptions;
-  for (unsigned int i = 0; i < models.size(); i++) {
-    modelProbs.push_back(models[i].get("prob",1.0).asDouble());
-    modelDescriptions.push_back(models[i].get("desc","NO DESCRIPTION").asString());
+  std::string currentStudent = options.get("student","UNKNOWN_STUDENT").asString();
 
-    std::vector<AgentModel> agentModels;
-    createAgentControllersAndModels(rng,dims,trialNum,replacementInd,models[i],adhocAgent,modelList[i],agentModels);
+  for (unsigned int i = 0; i < models.size(); i++) {
+    bool foreachStudent = models[i].get("foreachStudent",false).asBool();
+    bool includeCurrentStudent = models[i].get("includeCurrentStudent",true).asBool();
+    std::set<std::string> students;
+    if (foreachStudent) {
+      getAvailableStudents(options["students"].asString(),students);
+      if (!includeCurrentStudent) {
+        students.erase(currentStudent);
+      }
+      std::cout << "FOREACH STUDENT: " << students.size() << std::endl;
+    } else {
+      std::cout << "NOT FOREACH" << std::endl;
+      students.insert(currentStudent);
+    }
     
-    // add the first set of agents to the world
-    if (i == 0)
-      mdp->addAgents(agentModels,modelList[i]);
+    // iterate through the considered students
+    for (std::set<std::string>::iterator it = students.begin(); it != students.end(); it++) {
+      Json::Value modelOptions(models[i]);
+      std::map<std::string,std::string> reps;
+      reps["$(MODEL_STUDENT)"] = *it;
+      jsonReplaceStrings(modelOptions,reps);
+
+      modelProbs.push_back(modelOptions.get("prob",1.0).asDouble());
+      modelDescriptions.push_back(modelOptions.get("desc","NO DESCRIPTION").asString());
+
+      std::vector<AgentModel> agentModels;
+      std::vector<AgentPtr> newModel;
+      createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,adhocAgent,newModel,agentModels);
+      modelList.push_back(newModel);
+      
+      // add the first set of agents to the world
+      if ((i == 0) && (it == students.begin()))
+        mdp->addAgents(agentModels,newModel);
+    }
   }
 
   boost::shared_ptr<ModelUpdater> ptr;

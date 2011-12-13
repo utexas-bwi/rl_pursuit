@@ -34,4 +34,6 @@ protected:
   const Point2D dims;
 };
 
+typedef boost::shared_ptr<Agent> AgentPtr;
+
 #endif /* end of include guard: AGENT_BDMSDS5P */
