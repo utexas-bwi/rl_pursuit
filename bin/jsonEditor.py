@@ -218,6 +218,9 @@ class Options(object):
     self.addOption('playouts',1000,p)
     self.addOption('depth',100,p)
     self.addOption('theoreticallyCorrectLambda',False,p)
+    self.addOption('student','$(STUDENT)',p)
+    self.addOption('foreachStudent',False,p)
+    self.addOption('includeCurrentStudent',True,p)
     x = self.addOption('modelOutputFile','',p)
     x.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
 
@@ -241,6 +244,11 @@ class Options(object):
     self.tree.models[x] = True
     return x
 
+def save(parent,tree):
+  dialog = QtGui.QFileDialog(parent,directory='configs/',filter='*.json')
+  dialog.fileSelected.connect(lambda f: tree.output(f))
+  dialog.show()
+
 class ConfigEditor(QtGui.QWidget):
   def __init__(self,inFile,outFile):
     super(ConfigEditor, self).__init__()
@@ -255,7 +263,10 @@ class ConfigEditor(QtGui.QWidget):
     modelButton = QtGui.QPushButton("Add Model")
     modelButton.clicked.connect(lambda: o.addModel('New','random','gr'))
     saveButton = QtGui.QPushButton("Save")
-    saveButton.clicked.connect(lambda: tree.output(outFile))
+    saveButton.clicked.connect(lambda: save(self,tree))
+    #saveButton.clicked.connect(lambda: tree.output(outFile))
+    printButton = QtGui.QPushButton("Print")
+    printButton.clicked.connect(lambda: tree.output(None))
     
     layout = QtGui.QVBoxLayout()
     layout.addWidget(tree.tree)
@@ -264,6 +275,7 @@ class ConfigEditor(QtGui.QWidget):
     self.setLayout(layout)
     
     hbox.addWidget(modelButton)
+    hbox.addWidget(printButton)
     hbox.addWidget(saveButton)
     
     self.setWindowTitle('Config Editor')
