@@ -16,9 +16,9 @@ def loadResultsFromFile(filename):
   with open(filename,'r') as f:
     reader = csv.reader(f)
     for row in reader:
-      #iteration = row[0]
+      iteration = int(row[0])
       stepsPerTrial = map(int,row[1:])
-      numSteps.append(stepsPerTrial)
+      numSteps.append([iteration] + stepsPerTrial)
   numSteps = numpy.array(numSteps)
   return numSteps
 
@@ -95,8 +95,14 @@ def getStudentInds(path,includeStudents,excludeStudents):
 def main(paths,outputCsv,includeStudents,excludeStudents):
   studentInds = getStudentInds('data/students.txt',includeStudents,excludeStudents)
   for i,path in enumerate(paths):
-    numSteps = loadResults(path)
-    numSteps = numSteps[studentInds,:]
+    res = loadResults(path)
+    trials = res[:,0]
+    numSteps = res[:,1:]
+    inds = []
+    for trial in trials:
+      if trial in studentInds:
+        inds.append(trial)
+    numSteps = numSteps[inds,:]
     printResults(numSteps,path,outputCsv,i==0)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
