@@ -47,27 +47,43 @@ def loadResultsFromFileSet(filenames):
         pass
   return numSteps
 
-def printResults(episodeLengths,label):
+def printResults(episodeLengths,label,outputCsv,outputHeader):
   #for i in range(len(episodeLengths)):
     #for j in range(len(episodeLengths[i])):
       #if episodeLengths[i][j] > 1000:
         #episodeLengths[i][j] = 1000
-  print '-----------------------------------'
-  print label
-  if episodeLengths is None:
-    print 'Num episodes = ',0
-    return
-  print 'Num episodes = ',len(episodeLengths)
-  print 'mean=',numpy.mean(episodeLengths)
-  print 'means=',numpy.mean(episodeLengths,0)
-  print 'median=',numpy.median(episodeLengths)
-  print 'std=',numpy.std(episodeLengths)
-  print 'min,max=',numpy.min(episodeLengths),numpy.max(episodeLengths)
+  if outputCsv:
+    if outputHeader:
+      print 'label, Num episodes, mean, means, median, std, min, max'
+    vals = [label]
+    if episodeLengths is None:
+      vals.append(0)
+    else:
+      vals.append(len(episodeLengths))
+      vals.append(numpy.mean(episodeLengths))
+      vals.append(numpy.mean(episodeLengths,0))
+      vals.append(numpy.median(episodeLengths))
+      vals.append(numpy.std(episodeLengths))
+      vals.append(numpy.min(episodeLengths))
+      vals.append(numpy.max(episodeLengths))
+    print ','.join(map(str,vals))
+  else:
+    print '-----------------------------------'
+    print label
+    if episodeLengths is None:
+      print 'Num episodes = ',0
+      return
+    print 'Num episodes = ',len(episodeLengths)
+    print 'mean=',numpy.mean(episodeLengths)
+    print 'means=',numpy.mean(episodeLengths,0)
+    print 'median=',numpy.median(episodeLengths)
+    print 'std=',numpy.std(episodeLengths)
+    print 'min,max=',numpy.min(episodeLengths),numpy.max(episodeLengths)
 
-def main(paths):
-  for path in paths:
+def main(paths,outputCsv):
+  for i,path in enumerate(paths):
     numSteps = loadResults(path)
-    printResults(numSteps,path)
+    printResults(numSteps,path,outputCsv,i==0)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
     #numSteps = loadResultsFromFileSet(filenames)
@@ -80,9 +96,12 @@ def main(paths):
 
 if __name__ == '__main__':
   import sys
-  startInd = 1
-  sameResult = False
-  if sys.argv[1] in ['-h','--help']:
+  args = sys.argv[1:]
+  outputCsv = False
+  if '--csv' in args:
+    args.remove('--csv')
+    outputCsv = True
+  if args[0] in ['-h','--help']:
     print 'Usage: printResults.py result1.csv [result2.csv]'
     print 'NOTE: can take directories or files'
     #print '  -a treats all the result files as if they come from a single result'
@@ -91,4 +110,4 @@ if __name__ == '__main__':
     #startInd = 2
     #sameResult = True
 
-  main(sys.argv[startInd:])
+  main(args,outputCsv)
