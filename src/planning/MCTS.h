@@ -92,6 +92,7 @@ std::string MCTS<State,Action>::generateDescription(unsigned int indentation) {
   ss << prefix << "num playouts: " << numPlayouts << "\n";
   ss << prefix << "max planning time: " << maxPlanningTime << "\n";
   ss << prefix << "max depth: " << maxDepth << "\n";
+  ss << prefix << "pruning memory size: " << pruningMemorySize << "\n";
   ss << prefix << "ValueEstimator:\n";
   ss << valueEstimator->generateDescription(indentation+1) << "\n";
   ss << prefix << "Model:\n";
