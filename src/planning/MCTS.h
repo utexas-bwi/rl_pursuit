@@ -20,7 +20,7 @@ Modified: 2011-12-13
 template<class State, class Action>
 class MCTS {
 public:
-  MCTS (boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, unsigned int minVisitsToKeep);
+  MCTS (boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize);
   virtual ~MCTS () {}
 
   void search(const State &startState);
@@ -28,7 +28,7 @@ public:
   void restart();
   std::string generateDescription(unsigned int indentation = 0);
   void pruneOldVisits() {
-    valueEstimator->pruneOldVisits(minVisitsToKeep);
+    valueEstimator->pruneOldVisits(pruningMemorySize);
   }
 
 private:
@@ -44,20 +44,20 @@ private:
   unsigned int maxDepth;
   bool valid;
   double endPlanningTime;
-  unsigned int minVisitsToKeep;
+  int pruningMemorySize;
 };
 
 ////////////////////////////////////////////////////////////////////////////
 
 template<class State, class Action>
-MCTS<State,Action>::MCTS(boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, unsigned int minVisitsToKeep):
+MCTS<State,Action>::MCTS(boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize):
   model(model),
   valueEstimator(valueEstimator),
   modelUpdater(modelUpdater),
   numPlayouts(numPlayouts),
   maxPlanningTime(maxPlanningTime),
   maxDepth(maxDepth),
-  minVisitsToKeep(minVisitsToKeep)
+  pruningMemorySize(pruningMemorySize)
 {
   checkInternals();
 }

@@ -23,7 +23,7 @@ public:
   virtual void visit(const State &state, const Action &action, float reward) = 0;
   virtual void restart() = 0;
   virtual std::string generateDescription(unsigned int indentation = 0) = 0;
-  virtual void pruneOldVisits(unsigned int minVisitsToKeep) = 0;
+  virtual void pruneOldVisits(int memorySize) = 0; // 1 keeps the most recent, 0 keeps none, <0 means no pruning
 };
 
 #endif /* end of include guard: VALUEESTIMATOR_VKVQ0GPY */

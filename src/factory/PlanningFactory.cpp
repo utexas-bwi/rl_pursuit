@@ -196,15 +196,15 @@ boost::shared_ptr<ValueEstimator<State_t,Action::Type> > createValueEstimator(un
 
 ///////////////////////////////////////////////////////////////
 
-boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, unsigned int minVisitsToKeep) {
-  return boost::shared_ptr<MCTS<State_t,Action::Type> >(new MCTS<State_t,Action::Type>(model,valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth,minVisitsToKeep));
+boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize) {
+  return boost::shared_ptr<MCTS<State_t,Action::Type> >(new MCTS<State_t,Action::Type>(model,valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth,pruningMemorySize));
 }
 
 boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,const Json::Value &options) {
   unsigned int numPlayouts = options.get("playouts",0).asUInt();
   double maxPlanningTime = options.get("time",0.0).asDouble();
   unsigned int maxDepth = options.get("depth",0).asUInt();
-  unsigned int minVisitsToKeep = options.get("pruningVisits",0).asUInt();
+  int pruningMemorySize = options.get("pruningMemory",-1).asInt();
 
-  return createMCTS(model,valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth,minVisitsToKeep);
+  return createMCTS(model,valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth,pruningMemorySize);
 }

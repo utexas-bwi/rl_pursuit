@@ -28,7 +28,7 @@ public:
   
   Action selectAction(const State &state, bool useBounds);
   float calcActionValue(const State &state, const Action &action, bool useBounds);
-  void pruneOldVisits(unsigned int minVisitsToKeep);
+  void pruneOldVisits(int memorySize);
 
 private:
   boost::shared_ptr<RNG> rng;
@@ -157,9 +157,9 @@ Action DualUCTEstimator<State,Action>::selectAction(const State &state, bool use
 }
   
 template<class State, class Action>
-void DualUCTEstimator<State,Action>::pruneOldVisits(unsigned int minVisitsToKeep) {
-  mainValueEstimator->pruneOldVisits(minVisitsToKeep);
-  generalValueEstimator->pruneOldVisits(minVisitsToKeep);
+void DualUCTEstimator<State,Action>::pruneOldVisits(int memorySize) {
+  mainValueEstimator->pruneOldVisits(memorySize);
+  generalValueEstimator->pruneOldVisits(memorySize);
 }
 
 #endif /* end of include guard: DUALUCTESTIMATOR_F3MKQ7CG */

@@ -54,7 +54,7 @@ public:
   virtual float calcActionValue(const State &state, const Action &action, bool useBounds);
   unsigned int getNumVisits(const State &state, const Action &action);
   Action getNumActions();
-  void pruneOldVisits(unsigned int minVisitsToKeep);
+  void pruneOldVisits(int memorySize); // 0 keeps the most recent, -1 keeps none
 
 protected:
   void checkInternals();
@@ -74,8 +74,8 @@ protected:
   DefaultMap<StateAction,float> values;
   DefaultMap<State,unsigned int> stateVisits;
   DefaultMap<StateAction,unsigned int> stateActionVisits;
-  DefaultMap<State,unsigned int> recentStateVisits;
-  //DefaultMap<StateAction,std::pair<float,unsigned int> > stateActions;
+  DefaultMap<State,int> lastStateVisit;
+  int numPruneCalls;
   
   DefaultMap<StateAction,unsigned int> rolloutVisitCounts;
   std::vector<HistoryStep> history;
@@ -110,7 +110,8 @@ UCTEstimator<State,Action>::UCTEstimator(boost::shared_ptr<RNG> rng, Action numA
   stateVisits(initialStateVisits),
   stateActionVisits(initialStateActionVisits),
   //stateActions(std::make_pair(initialValue,initialStateActionVisits)),
-  recentStateVisits(0),
+  lastStateVisit(-1),
+  numPruneCalls(0),
   rolloutVisitCounts(0)
 {
   if (nrewardBound > 0) {
@@ -246,7 +247,7 @@ float UCTEstimator<State,Action>::updateStateAction(const StateAction &key, floa
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateVisits[key.first]++;
   stateActionVisits[key]++;
-  recentStateVisits[key.first]++;
+  lastStateVisit[key.first] = numPruneCalls;
   float retVal = 0;
   if (theoreticallyCorrectLambda)
     retVal = lambda * newQ + (1.0 - lambda) * maxValueForState(key.first);
@@ -329,23 +330,27 @@ Action UCTEstimator<State,Action>::getNumActions() {
 }
 
 template<class State, class Action>
-void UCTEstimator<State,Action>::pruneOldVisits(unsigned int minVisitsToKeep) {
-  if (minVisitsToKeep > 0) {
-    typename DefaultMap<State,unsigned int>::iterator it = stateVisits.begin();
-    while (it != stateVisits.end()) {
-      if (recentStateVisits[it->second] < minVisitsToKeep) {
-        for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
-          StateAction key = StateAction(it->first,a);
-          values.erase(key);
-          stateActionVisits.erase(key);
-        }
-        stateVisits.erase(it++); // NOTE: the ++ must be like this because the we erase the copy, after incrementing the original
-      } else {
-        ++it;
+void UCTEstimator<State,Action>::pruneOldVisits(int memorySize) {
+  // 1 keeps the most recent, 0 keeps none, <0 means no pruning
+  numPruneCalls++;
+  if (memorySize < 0) {
+    return;
+  }
+
+  typename DefaultMap<State,unsigned int>::iterator it = stateVisits.begin();
+  while (it != stateVisits.end()) {
+    if (lastStateVisit[it->second] < numPruneCalls - memorySize) { //always true if memorySize is 0 because numPruneCalls is incremented above
+      for (Action a = (Action)0; a < numActions; a = Action(a+1)) {
+        StateAction key = StateAction(it->first,a);
+        values.erase(key);
+        stateActionVisits.erase(key);
       }
+      lastStateVisit.erase(it->second);
+      stateVisits.erase(it++); // NOTE: the ++ must be like this because the we erase the copy, after incrementing the original
+    } else {
+      ++it;
     }
   }
-  recentStateVisits.clear();
 }
 
 #endif /* end of include guard: UCTESTIMATOR_8N1RY426 */
