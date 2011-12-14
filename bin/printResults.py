@@ -80,9 +80,23 @@ def printResults(episodeLengths,label,outputCsv,outputHeader):
     print 'std=',numpy.std(episodeLengths)
     print 'min,max=',numpy.min(episodeLengths),numpy.max(episodeLengths)
 
-def main(paths,outputCsv):
+def getStudentInds(path,includeStudents,excludeStudents):
+  with open(path,'r') as f:
+    students = [x.strip() for x in f.readlines()]
+  inds = []
+  for i,student in enumerate(students):
+    if (len(includeStudents) > 0) and (student not in includeStudents):
+      continue
+    if student in excludeStudents:
+      continue
+    inds.append(i)
+  return inds
+
+def main(paths,outputCsv,includeStudents,excludeStudents):
+  studentInds = getStudentInds('data/students.txt',includeStudents,excludeStudents)
   for i,path in enumerate(paths):
     numSteps = loadResults(path)
+    numSteps = numSteps[studentInds,:]
     printResults(numSteps,path,outputCsv,i==0)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
@@ -94,20 +108,15 @@ def main(paths,outputCsv):
       #numSteps = loadResults(filename)
       #print numSteps.size,numSteps.mean()
 
+def mainArgs(args):
+  from optparse import OptionParser
+  parser = OptionParser('printResults.py [options] result1.csv [result2.csv ...]\nNOTE: can take directories or files')
+  parser.add_option('-c','--csv',action='store_true',dest='outputCsv',default=False,help='output in csv format')
+  parser.add_option('-o','--only',action='append',dest='includeStudents',default=[],help='output only for specified students',metavar='STUDENT')
+  parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
+  options,args = parser.parse_args(args)
+  return main(args,options.outputCsv,options.includeStudents,options.excludeStudents)
+
 if __name__ == '__main__':
   import sys
-  args = sys.argv[1:]
-  outputCsv = False
-  if '--csv' in args:
-    args.remove('--csv')
-    outputCsv = True
-  if args[0] in ['-h','--help']:
-    print 'Usage: printResults.py result1.csv [result2.csv]'
-    print 'NOTE: can take directories or files'
-    #print '  -a treats all the result files as if they come from a single result'
-    sys.exit(0)
-  #if sys.argv[1] == '-a':
-    #startInd = 2
-    #sameResult = True
-
-  main(args,outputCsv)
+  sys.exit(mainArgs(sys.argv[1:]))
