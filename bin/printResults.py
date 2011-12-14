@@ -83,6 +83,16 @@ def printResults(episodeLengths,label,outputCsv,outputHeader):
 def getStudentInds(path,includeStudents,excludeStudents):
   with open(path,'r') as f:
     students = [x.strip() for x in f.readlines()]
+  # sanity check some stuff
+  for student in includeStudents:
+    if student not in students:
+      print >>sys.stderr,'ERROR: Unknown include student: %s' % student
+      sys.exit(1)
+  for student in excludeStudents:
+    if student not in students:
+      print >>sys.stderr,'ERROR: Unknown exclude student: %s' % student
+      sys.exit(1)
+  # get the indices
   inds = []
   for i,student in enumerate(students):
     if (len(includeStudents) > 0) and (student not in includeStudents):
@@ -118,7 +128,7 @@ def mainArgs(args):
   from optparse import OptionParser
   parser = OptionParser('printResults.py [options] result1.csv [result2.csv ...]\nNOTE: can take directories or files')
   parser.add_option('-c','--csv',action='store_true',dest='outputCsv',default=False,help='output in csv format')
-  parser.add_option('-o','--only',action='append',dest='includeStudents',default=[],help='output only for specified students',metavar='STUDENT')
+  parser.add_option('-i','--include',action='append',dest='includeStudents',default=[],help='output only for specified students',metavar='STUDENT')
   parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
   options,args = parser.parse_args(args)
   return main(args,options.outputCsv,options.includeStudents,options.excludeStudents)
