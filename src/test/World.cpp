@@ -203,3 +203,18 @@ TEST_F(WorldTest,OutcomeProbApproxComplex) {
   // make sure we've tested every viable outcome
   EXPECT_NEAR(1.0,total,0.001);
 }
+
+TEST_F(WorldTest,PossibleOutcomesApprox) {
+  std::vector<std::vector<WorldStepOutcome> > outcomesByAction;
+  model->setAgentPosition(1,Point2D(1,2));
+  ActionProbs action;
+  action[Action::RIGHT] = 0.75;
+  action[Action::UP] = 0.25;
+  agents[1]->setAction(action);
+  action.reset();
+  action[Action::LEFT] = 0.5;
+  action[Action::DOWN] = 0.25;
+  action[Action::NOOP] = 0.25;
+  agents[2]->setAction(action);
+  world->getPossibleOutcomesApprox(abstractAgents,agents[4],outcomesByAction);
+}

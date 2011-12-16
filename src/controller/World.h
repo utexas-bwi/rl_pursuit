@@ -22,6 +22,11 @@ Modified: 2011-10-27
 
 #include <gtest/gtest_prod.h>
 
+struct WorldStepOutcome {
+  Observation obs;
+  double prob;
+  Action::Type agentDummyAction;
+};
 
 class World {
 public:
@@ -41,6 +46,7 @@ public:
   std::string generateDescription(unsigned int indentation = 0);
   double getOutcomeProb(Observation prevObs,const Observation &currentObs);
   double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs, std::vector<boost::shared_ptr<Agent> > &agents);
+  void getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr agentDummy, std::vector<std::vector<WorldStepOutcome> > &outcomesByAction);
   void printAgents();
 
 protected:

@@ -52,6 +52,114 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vec
   //std::cout << "STOP  WORLD STEP" << std::endl;
 }
 
+void World::getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr agentDummy, std::vector<std::vector<WorldStepOutcome> > &outcomesByAction) {
+  const double EPS = 0.01;
+  Observation obs;
+  std::vector<ActionProbs> actionProbList(agents.size());
+
+  // get the agents action distributions
+  generateObservation(obs);
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    actionProbList[i] = getAgentAction(i,agents[i],obs);
+  }
+
+  // find the dummy agent if provided
+  int agentDummyInd = -1;
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    if (agentDummy == agents[i]) {
+      agentDummyInd = (int)i;
+      break;
+    }
+  }
+  assert(agentDummyInd != -1);
+
+  // calculate the probs
+  std::vector<WorldStepOutcome> outcomes(1);
+  outcomes[0].obs = obs;
+  outcomes[0].obs.uncenterPrey(dims);
+  outcomes[0].prob = 1.0;
+  //for (Action::Type dummyAction = (Action::Type)0; dummyAction <= Action::NUM_ACTIONS; dummyAction = Action::Type(dummyAction+1)) {
+  //}
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    std::cout << i << std::endl;
+    std::vector<WorldStepOutcome> newOutcomes;
+    for (Action::Type a = Action::Type(0); a < Action::NUM_ACTIONS; a = Action::Type(a + 1)) {
+      std::cout << "  " << a << std::endl;
+      double actionProb;
+      if ((int)i == agentDummyInd) {
+        actionProb = 1.0;
+      } else {
+        actionProb = actionProbList[i][a];
+      }
+      if (actionProb < EPS)
+        continue;
+      for (unsigned int j = 0; j < outcomes.size(); j++) {
+        std::vector<Point2D> &positions = outcomes[j].obs.positions;
+        std::cout << "    considering outcome: " << outcomes[j].prob;
+        for (unsigned int k = 0; k < positions.size(); k++)
+          std::cout << " " << positions[k];
+        std::cout << std::endl;
+        Point2D pos = movePosition(dims,positions[i],a);
+        // check for collisions
+        bool collision = false;
+        for (unsigned int k = 0; k < positions.size(); k++) {
+          if (k == i)
+            continue;
+          if (positions[k] == pos) {
+            collision = true;
+            break;
+          }
+        } // end for k
+        WorldStepOutcome outcome(outcomes[j]);
+        outcome.prob *= actionProb;
+        if (outcome.prob < EPS)
+          continue;
+        if ((int)i == agentDummyInd) {
+          outcome.agentDummyAction = a;
+        }
+        if (!collision) {
+          outcome.obs.positions[i] = pos;
+        }
+        // check if this outcome already exists
+        bool outcomeExists = false;
+        for (unsigned int k = 0; k < newOutcomes.size(); k++) {
+          if ((newOutcomes[k].agentDummyAction == outcome.agentDummyAction) && (newOutcomes[k].obs == outcome.obs)) {
+            newOutcomes[k].prob += outcome.prob;
+            outcomeExists = true;
+            break;
+          }
+        }
+        if (!outcomeExists)
+          newOutcomes.push_back(outcome);
+        std::cout << "    adding outcome: " << newOutcomes.back().prob;
+        for (unsigned int k = 0; k < newOutcomes.back().obs.positions.size(); k++)
+          std::cout << " " << newOutcomes.back().obs.positions[k];
+        std::cout << std::endl;
+      }
+    }
+    std::cout << "setting outcomes" << std::endl;
+    outcomes = newOutcomes;
+  }
+  
+  // sort the resulting actions
+  std::cout << std::endl;
+  std::cout << "result:" << std::endl;
+  outcomesByAction.clear();
+  outcomesByAction.resize(Action::NUM_ACTIONS);
+  for (unsigned int a = 0; a < Action::NUM_ACTIONS; a++) {
+    std::cout << a << std::endl;
+    for (unsigned int i = 0; i < outcomes.size(); i++) {
+      if (outcomes[i].agentDummyAction == a) {
+        outcomesByAction[a].push_back(outcomes[i]);
+        std::cout << "  " << outcomes[i].prob;
+        for (unsigned k = 0; k < outcomes[i].obs.positions.size(); k++)
+          std::cout << " " << outcomes[i].obs.positions[k];
+        std::cout << std::endl;
+      }
+    }
+  }
+}
+
 double World::getOutcomeProbApprox(Observation prevObs, const Observation &currentObs, std::vector<boost::shared_ptr<Agent> > &agents) {
   double modelProb = 1.0;
   ActionProbs actionProbs;
@@ -78,7 +186,7 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
         continue;
       //std::cout << "      " << Action::MOVES[action] << " " << prob << std::endl;
       // get the requestedPosition
-      requestedPosition = movePosition(world->getDims(),absPrevObs.positions[agentInd],(Action::Type)action);
+      requestedPosition = movePosition(dims,absPrevObs.positions[agentInd],(Action::Type)action);
       //std::cout << "      req: " << absPrevObs.positions[agentInd] << "->" << requestedPosition << std::endl;
       
       // did the agent decide to stay still?
@@ -234,7 +342,9 @@ bool World::getRequestedPositionsForActionIndices(const std::vector<unsigned int
 void World::handleCollisions(const std::vector<Point2D> &requestedPositions) {
   // ORDERED COLLISION DECISION
   std::vector<unsigned int> agentOrder(agents.size());
-  rng->randomOrdering(agentOrder);
+  //rng->randomOrdering(agentOrder);
+  for (unsigned int i = 0; i < agentOrder.size(); i++)
+    agentOrder[i] = i;
   handleCollisionsOrdered(requestedPositions,agentOrder);
 }
 
