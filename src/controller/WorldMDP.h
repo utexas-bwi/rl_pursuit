@@ -31,13 +31,14 @@ public:
   virtual State_t getState(const Observation &obs);
 
   virtual void takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal);
-  virtual void step(Action::Type adhocAction, std::vector<boost::shared_ptr<Agent> > &agents);
+  virtual void step(Action::Type adhocAction); //, std::vector<boost::shared_ptr<Agent> > &agents);
+  virtual void learnControllers(const Observation &prevObs, const Observation &currentObs);
   virtual float getRewardRangePerStep();
   virtual std::string generateDescription(unsigned int indentation = 0);
   void setAgents(const std::vector<boost::shared_ptr<Agent> > &agents);
   //void saveAgents();
   //void loadAgents();
-  double getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs, std::vector<boost::shared_ptr<Agent> > &agents);
+  double getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs);//, std::vector<boost::shared_ptr<Agent> > &agents);
   boost::shared_ptr<AgentDummy> getAdhocAgent();
   virtual void addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent);
   virtual void addAgents(const std::vector<AgentModel> &agentModels, const std::vector<boost::shared_ptr<Agent> > agents);
@@ -59,6 +60,7 @@ protected:
 
   Point2D preyPos;
   bool usePreySymmetry;
+  static const bool useCaching;
 
   friend class WorldMDPTest;
   friend class ModelUpdaterBayesTest;

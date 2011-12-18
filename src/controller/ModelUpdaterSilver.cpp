@@ -48,8 +48,8 @@ void StateHelperSilver::addBelief(unsigned int ind) {
   }
 }
 
-ModelUpdaterSilver::ModelUpdaterSilver(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const std::vector<Model> &models, const std::vector<double> &modelPrior, const std::vector<std::string> &modelDescriptions, bool useFrequencyCounts):
-  ModelUpdater(rng,mdp,models,modelPrior,modelDescriptions),
+ModelUpdaterSilver::ModelUpdaterSilver(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, bool useFrequencyCounts):
+  ModelUpdater(rng,models),
   useFrequencyCounts(useFrequencyCounts)
 {
 }
@@ -75,7 +75,7 @@ unsigned int ModelUpdaterSilver::selectModelInd(const State_t &state) {
   std::map<State_t,boost::shared_ptr<StateHelperSilver> >::iterator it = stateHelpers.find(state);
   if (it == stateHelpers.end()) {
     // unseen state, sample from the priors
-    currentBeliefInd = rng->randomInt(modelProbs.size());
+    currentBeliefInd = rng->randomInt(models.size());
   } else {
     // sample from the state helper
     currentBeliefInd = it->second->sampleBeliefs(rng);

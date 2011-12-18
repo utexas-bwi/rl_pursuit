@@ -38,16 +38,14 @@ boost::shared_ptr<RNG> makeRNG(unsigned int seed) {
 }
 
 // MODEL UPDATER
-boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const std::vector<std::vector<boost::shared_ptr<Agent> > > &modelList, const std::vector<double> &modelProbs, const std::vector<std::string> &modelDescriptions, ModelUpdateType updateType) {
-    return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType));
+boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType updateType) {
+    return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,models,updateType));
 }
 
-boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, boost::shared_ptr<Agent> adhocAgent, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options) {
+boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options) {
   // create the agents
   const Json::Value models = options["models"];
-  std::vector<std::vector<boost::shared_ptr<Agent> > > modelList;
-  std::vector<double> modelProbs;
-  std::vector<std::string> modelDescriptions;
+  std::vector<ModelInfo> modelList;
   std::string currentStudent = options.get("student","UNKNOWN_STUDENT").asString();
 
   for (unsigned int i = 0; i < models.size(); i++) {
@@ -69,18 +67,16 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
       std::map<std::string,std::string> reps;
       reps["$(MODEL_STUDENT)"] = *it;
       jsonReplaceStrings(modelOptions,reps);
-
-      modelProbs.push_back(modelOptions.get("prob",1.0).asDouble());
-      modelDescriptions.push_back(modelOptions.get("desc","NO DESCRIPTION").asString());
+      
+      double prob = modelOptions.get("prob",1.0).asDouble();
+      std::string desc = modelOptions.get("desc","NO DESCRIPTION").asString();
 
       std::vector<AgentModel> agentModels;
-      std::vector<AgentPtr> newModel;
-      createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,adhocAgent,newModel,agentModels);
-      modelList.push_back(newModel);
-      
-      // add the first set of agents to the world
-      if ((i == 0) && (it == students.begin()))
-        mdp->addAgents(agentModels,newModel);
+      std::vector<AgentPtr> agents;
+      createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,agents,agentModels);
+      boost::shared_ptr<WorldMDP> newMDP(new WorldMDP(*mdp));
+      newMDP->addAgents(agentModels,agents);
+      modelList.push_back(ModelInfo(newMDP,desc,prob));
     }
   }
 
@@ -88,13 +84,13 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
   if (options.get("silver",false).asBool()) {
     // make a silver updater
     bool weighted = options.get("weighted",false).asBool();
-    ptr = boost::shared_ptr<ModelUpdaterSilver>(new ModelUpdaterSilver(rng,mdp,modelList,modelProbs,modelDescriptions,weighted));
+    ptr = boost::shared_ptr<ModelUpdaterSilver>(new ModelUpdaterSilver(rng,modelList,weighted));
   } else {
     // make a bayes updater
     std::string updateTypeString = options.get("update","bayesian").asString();
     ModelUpdateType updateType = getModelUpdateType(updateTypeString);
 
-    ptr = createModelUpdaterBayes(rng,mdp,modelList,modelProbs,modelDescriptions,updateType);
+    ptr = createModelUpdaterBayes(rng,modelList,updateType);
   }
   // optionally enable output
   std::string modelOutput = options.get("modelOutputFile","").asString();
@@ -106,7 +102,7 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
   return ptr;
 }
 
-boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType updateType, const StateConverter &stateConverter, double actionNoise, bool centerPrey) {
+boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType /*updateType*/, const StateConverter &/*stateConverter*/, double actionNoise, bool centerPrey) {
   // create some rngs
   boost::shared_ptr<RNG> rngWorld1 = makeRNG(rng->randomUInt());
   boost::shared_ptr<RNG> rngWorld2 = makeRNG(rng->randomUInt());
@@ -138,8 +134,10 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
   //controller = createWorldAgents(rngOther,controller,0,Json::Value());
   //std::cout << "HERE2" << std::endl;
  
-  boost::shared_ptr<ModelUpdaterBayes> modelUpdater = createModelUpdaterBayes(rngModelUpdater,mdp,std::vector<std::vector<boost::shared_ptr<Agent> > >(),std::vector<double>(),std::vector<std::string>(),updateType);
-  return boost::shared_ptr<WorldMDP>(new WorldBeliefMDP(rngMDP2,model,controller,adhocAgent,usePreySymmetry,stateConverter,modelUpdater));
+  // TODO fix belief mdp
+  assert(false);
+  //boost::shared_ptr<ModelUpdaterBayes> modelUpdater = createModelUpdaterBayes(rngModelUpdater,mdp,std::vector<std::vector<boost::shared_ptr<Agent> > >(),std::vector<double>(),std::vector<std::string>(),updateType);
+  //return boost::shared_ptr<WorldMDP>(new WorldBeliefMDP(rngMDP2,model,controller,adhocAgent,usePreySymmetry,stateConverter,modelUpdater));
 }
 
 boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, double actionNoise, bool centerPrey, const Json::Value &options) {
@@ -196,15 +194,15 @@ boost::shared_ptr<ValueEstimator<State_t,Action::Type> > createValueEstimator(un
 
 ///////////////////////////////////////////////////////////////
 
-boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize) {
-  return boost::shared_ptr<MCTS<State_t,Action::Type> >(new MCTS<State_t,Action::Type>(model,valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth,pruningMemorySize));
+boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize) {
+  return boost::shared_ptr<MCTS<State_t,Action::Type> >(new MCTS<State_t,Action::Type>(valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth,pruningMemorySize));
 }
 
-boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<Model<State_t,Action::Type> > model, boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,const Json::Value &options) {
+boost::shared_ptr<MCTS<State_t,Action::Type> > createMCTS(boost::shared_ptr<ValueEstimator<State_t,Action::Type> > valueEstimator,boost::shared_ptr<ModelUpdater> modelUpdater,const Json::Value &options) {
   unsigned int numPlayouts = options.get("playouts",0).asUInt();
   double maxPlanningTime = options.get("time",0.0).asDouble();
   unsigned int maxDepth = options.get("depth",0).asUInt();
   int pruningMemorySize = options.get("pruningMemory",-1).asInt();
 
-  return createMCTS(model,valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth,pruningMemorySize);
+  return createMCTS(valueEstimator,modelUpdater,numPlayouts,maxPlanningTime,maxDepth,pruningMemorySize);
 }

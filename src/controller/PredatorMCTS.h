@@ -18,7 +18,7 @@ Modified: 2011-08-23
 
 class PredatorMCTS: public Agent {
 public:
-  PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<WorldMDP> model, boost::shared_ptr<ModelUpdater> modelUpdater);
+  PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater);
 
   ActionProbs step(const Observation &obs);
   void restart();
@@ -32,7 +32,6 @@ public:
 
 protected:
   boost::shared_ptr<MCTS<State_t,Action::Type> > planner;
-  boost::shared_ptr<WorldMDP> model;
   boost::shared_ptr<ModelUpdater> modelUpdater;
   Observation prevObs;
   Action::Type prevAction;

@@ -45,7 +45,7 @@ public:
 
   std::string generateDescription(unsigned int indentation = 0);
   double getOutcomeProb(Observation prevObs,const Observation &currentObs);
-  double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs, std::vector<boost::shared_ptr<Agent> > &agents);
+  double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs);//, std::vector<boost::shared_ptr<Agent> > &agents);
   void getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr agentDummy, std::vector<std::vector<WorldStepOutcome> > &outcomesByAction);
   void printAgents();
 
@@ -53,7 +53,9 @@ protected:
   boost::shared_ptr<RNG> rng;
   boost::shared_ptr<WorldModel> world;
   const Point2D dims;
+public:
   std::vector<boost::shared_ptr<Agent> > agents;
+protected:
   double actionNoise;
   bool centerPrey;
 

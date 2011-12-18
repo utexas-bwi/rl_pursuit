@@ -1,6 +1,8 @@
 #include "WorldMDP.h"
 #include <controller/ModelUpdater.h>
 
+const bool WorldMDP::useCaching = true;
+
 WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, bool usePreySymmetry):
   rng(rng),
   model(model),
@@ -41,9 +43,9 @@ State_t WorldMDP::getState(const Observation &obs) {
   return state;
 }
 
-void WorldMDP::step(Action::Type adhocAction, std::vector<boost::shared_ptr<Agent> > &agents) {
+void WorldMDP::step(Action::Type adhocAction) {//, std::vector<boost::shared_ptr<Agent> > &agents) {
   adhocAgent->setAction(adhocAction);
-  controller->step(agents);
+  controller->step();//agents);
 }
 
 void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
@@ -92,9 +94,9 @@ void WorldMDP::loadAgents() {
   setAgents(savedModel);
 }
 */
-double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs,std::vector<boost::shared_ptr<Agent> > &agents) {
+double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs) { //,std::vector<boost::shared_ptr<Agent> > &agents) {
   adhocAgent->setAction(adhocAction);
-  double probApprox = controller->getOutcomeProbApprox(prevObs,currentObs,agents);
+  double probApprox = controller->getOutcomeProbApprox(prevObs,currentObs);//,agents);
   //double probExact = controller->getOutcomeProb(prevObs,currentObs);
   //std::cout << "probs: " << probApprox << " " << probExact << std::endl;
   return probApprox;
@@ -113,4 +115,19 @@ void WorldMDP::addAgents(const std::vector<AgentModel> &agentModels, const std::
   assert(agentModels.size() == agents.size());
   for (unsigned int i = 0; i < agents.size(); i++)
     addAgent(agentModels[i],agents[i]);
+}
+  
+void WorldMDP::learnControllers(const Observation &prevObs, const Observation &currentObs) {
+  Observation absPrevObs(prevObs);
+  Observation absCurrentObs(currentObs);
+  absPrevObs.uncenterPrey(getDims());
+  absCurrentObs.uncenterPrey(getDims());
+
+  for (unsigned int i = 0; i < controller->agents.size(); i++) {
+    controller->agents[i]->learn(absPrevObs,absCurrentObs,i);
+  }
+    //for (unsigned int j = 0; j < models[i].size(); j++) {
+      //models[i][j]->learn(absPrevObs,absCurrentObs,j);
+    //}
+  //}
 }

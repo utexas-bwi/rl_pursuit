@@ -1,9 +1,8 @@
 #include "PredatorMCTS.h"
 
-PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<WorldMDP> model, boost::shared_ptr<ModelUpdater> modelUpdater):
+PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater):
   Agent(rng,dims),
   planner(planner),
-  model(model),
   modelUpdater(modelUpdater),
   prevAction(Action::NUM_MOVES)
 {}
@@ -21,10 +20,10 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
   // output the model updater's probabilities
   modelUpdater->output();
   // set the beliefs of the model (applicable for the belief mdp)
-  model->setBeliefs(modelUpdater);
-  model->setPreyPos(obs.absPrey);
+  //model->setBeliefs(modelUpdater); // TODO
+  modelUpdater->setPreyPos(obs.absPrey);
   // do the searching
-  State_t state = model->getState(obs);
+  State_t state = modelUpdater->getState(obs);
   //std::cout << "----------START SEARCH---------" << std::endl;
   planner->search(state);
   //std::cout << "----------STOP  SEARCH---------" << std::endl;

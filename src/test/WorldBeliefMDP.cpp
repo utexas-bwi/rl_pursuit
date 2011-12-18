@@ -5,7 +5,7 @@ Description: tests WorldBeliefMDP
 Created:  2011-10-18
 Modified: 2011-10-18
 */
-
+/*
 #include <gtest/gtest.h>
 #include <controller/WorldBeliefMDP.h>
 #include "AgentDummyTest.h"
@@ -174,3 +174,4 @@ TEST_F(WorldBeliefMDPTest,SetBeliefs) {
   EXPECT_NEAR(2.0 / 3.5,b[1],0.0001);
   EXPECT_NEAR(0.5 / 3.5,b[2],0.0001);
 }
+*/

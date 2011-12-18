@@ -160,7 +160,7 @@ void World::getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr ag
   }
 }
 
-double World::getOutcomeProbApprox(Observation prevObs, const Observation &currentObs, std::vector<boost::shared_ptr<Agent> > &agents) {
+double World::getOutcomeProbApprox(Observation prevObs, const Observation &currentObs) { //, std::vector<boost::shared_ptr<Agent> > &agents) {
   double modelProb = 1.0;
   ActionProbs actionProbs;
   Point2D requestedPosition;

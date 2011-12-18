@@ -53,7 +53,7 @@ TEST_F(WorldModelTest,Set) {
 
 TEST_F(WorldModelTest,Observation) {
   Observation obs;
-  model->generateObservation(obs,true);
+  model->generateObservation(obs,false);
   Observation saved_obs(obs);
   for (int i = 0; i < 5; i++)
     EXPECT_EQ(Point2D(i,i),obs.positions[i]);
@@ -62,7 +62,7 @@ TEST_F(WorldModelTest,Observation) {
   obs.myInd = 2;
   EXPECT_EQ(Point2D(2,2),obs.myPos());
   model->setAgentPosition(2,Point2D(3,1));
-  model->generateObservation(obs,true);
+  model->generateObservation(obs,false);
   obs.myInd = 2;
   EXPECT_EQ(Point2D(3,1),obs.myPos());
 

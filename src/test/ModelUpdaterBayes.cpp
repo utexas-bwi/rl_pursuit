@@ -5,7 +5,7 @@ Description: tests ModelUpdaterBayes
 Created:  2011-10-18
 Modified: 2011-10-18
 */
-
+/*
 #include <gtest/gtest.h>
 #include <controller/ModelUpdaterBayes.h>
 #include "AgentDummyTest.h"
@@ -317,3 +317,4 @@ TEST_F(ModelUpdaterBayesTest,CopyModel) {
   EXPECT_EQ(3u,modelsDummy[1][adhocInd]->numSteps);
   EXPECT_EQ(3u,copyDummy[adhocInd]->numSteps);
 }
+*/

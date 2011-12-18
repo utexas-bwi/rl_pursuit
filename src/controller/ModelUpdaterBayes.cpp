@@ -13,24 +13,25 @@ Modified: 2011-10-02
 
 const float ModelUpdaterBayes::MIN_MODEL_PROB = 0.001;
 
-ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const std::vector<Model> &models, const std::vector<double> &modelPrior, const std::vector<std::string> &modelDescriptions, ModelUpdateType modelUpdateType):
-  ModelUpdater(rng,mdp,models,modelPrior,modelDescriptions),
+ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType):
+  ModelUpdater(rng,models),
   modelUpdateType(modelUpdateType)
 {
-  normalizeModelProbs(modelProbs);
 }
 
 void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
   //std::cout << "  " << prevObs << " " << lastAction << std::endl;
   //std::cout << "  " << currentObs << std::endl;
   // done if we're down to 1 model
-  if (modelProbs.size() == 1)
+  if (models.size() == 1)
     return;
   // done if we're not doing updates
   if (modelUpdateType == NO_MODEL_UPDATES)
     return;
 
-  std::vector<double> newModelProbs(modelProbs);
+  std::vector<double> newModelProbs(models.size());
+  for (unsigned int i = 0; i < models.size(); i++)
+    newModelProbs[i] = models[i].prob;
 
 #ifdef DEBUG_MODELS
   std::cout << "ORIG PROBS: " << std::endl;
@@ -41,9 +42,9 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
   // calculate the new model probabilities
   getNewModelProbs(prevObs,lastAction,currentObs,newModelProbs);
   // reset the mdp
-  mdp->setState(currentObs);
+  //mdp->setState(currentObs); // TODO removed in model change, is this okay to leave out?
   // normalize the probabilities
-  normalizeModelProbs(newModelProbs);
+  normalizeProbs(newModelProbs);
   // check if all zero probs
   if (allProbsTooLow(newModelProbs)) {
 #ifdef DEBUG_MODELS
@@ -52,7 +53,8 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
     return;
   }
   // set our models
-  modelProbs.swap(newModelProbs);
+  for (unsigned int i = 0; i < models.size(); i++)
+    models[i].prob = newModelProbs[i];
   // delete models with very low probabilities
   removeLowProbabilityModels();
 #ifdef DEBUG_MODELS
@@ -71,8 +73,8 @@ unsigned int ModelUpdaterBayes::selectModelInd(const State_t &) {
   float val = rng->randomFloat();
   double total = 0;
   unsigned int selectedInd;
-  for (selectedInd = 0; selectedInd < modelProbs.size() - 1; selectedInd++) { // -1 because if it's not in the first n - 1, it's in the last and it makes the later processing easier
-    total += modelProbs[selectedInd];
+  for (selectedInd = 0; selectedInd < models.size() - 1; selectedInd++) { // -1 because if it's not in the first n - 1, it's in the last and it makes the later processing easier
+    total += models[selectedInd].prob;
     if (val < total)
       break;
   }
@@ -83,7 +85,7 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
   double modelProb;
   double loss;
   double eta = 0.5; // eta must be <= 0.5
-  for (unsigned int i = 0; i < modelProbs.size(); i++) {
+  for (unsigned int i = 0; i < models.size(); i++) {
     modelProb = calculateModelProb(i,prevObs,lastAction,currentObs);
     switch(modelUpdateType) {
       case BAYESIAN_UPDATES:
@@ -101,10 +103,9 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
 }
 
 double ModelUpdaterBayes::calculateModelProb(unsigned int modelInd, const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
-  Model model;
-  copyModel(modelInd,model);
+  WorldMDP mdp(*(models[modelInd].mdp));
   //mdp->setAgents(model);
-  double prob = mdp->getOutcomeProb(prevObs,lastAction,currentObs,model);
+  double prob = mdp.getOutcomeProb(prevObs,lastAction,currentObs);
   //std::cout << "    CALCULATE MODEL PROB FOR " << modelInd << " = " << prob << std::endl;
   return prob;
 }
@@ -121,8 +122,8 @@ void ModelUpdaterBayes::removeLowProbabilityModels() {
   bool removedModels = false;
   unsigned int i = 0;
   // remove the models that are below the threshold
-  while (i < modelProbs.size()) {
-    if (modelProbs[i] < MIN_MODEL_PROB) {
+  while (i < models.size()) {
+    if (models[i].prob < MIN_MODEL_PROB) {
       removeModel(i);
       removedModels = true;
     } else {
@@ -131,7 +132,7 @@ void ModelUpdaterBayes::removeLowProbabilityModels() {
   }
   // renormalize if we removed models
   if (removedModels)
-    normalizeModelProbs(modelProbs);
+    normalizeModelProbs();
 }
 
 std::string ModelUpdaterBayes::generateSpecificDescription() {

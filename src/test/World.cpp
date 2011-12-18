@@ -20,7 +20,7 @@ public:
   WorldTest():
     rng(new RNG(0)),
     model(createWorldModel(Point2D(5,5))),
-    world(createWorld(rng,model,0.0,true))
+    world(createWorld(rng,model,0.0,false))
   {
     for (int i = 0; i < 5; i++) {
       boost::shared_ptr<AgentDummyTest> agent(new AgentDummyTest(rng,Point2D(5,5)));
@@ -41,7 +41,8 @@ public:
       currentObs.positions.push_back(Point2D(endPositions[i][0],endPositions[i][1]));
       agents[i]->setAction(actions[i]);
     }
-    return world->getOutcomeProbApprox(prevObs,currentObs,abstractAgents);
+    prevObs.preyInd = currentObs.preyInd = 0;
+    return world->getOutcomeProbApprox(prevObs,currentObs);//,abstractAgents);
   }
 
 protected:

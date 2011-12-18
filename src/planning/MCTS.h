@@ -20,7 +20,7 @@ Modified: 2011-12-13
 template<class State, class Action>
 class MCTS {
 public:
-  MCTS (boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize);
+  MCTS (boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize);
   virtual ~MCTS () {}
 
   void search(const State &startState);
@@ -36,7 +36,6 @@ private:
   void rollout(const State &startState);
 
 private:
-  boost::shared_ptr<Model<State,Action> > model;
   boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator;
   boost::shared_ptr<ModelUpdater> modelUpdater;
   unsigned int numPlayouts;
@@ -50,8 +49,7 @@ private:
 ////////////////////////////////////////////////////////////////////////////
 
 template<class State, class Action>
-MCTS<State,Action>::MCTS(boost::shared_ptr<Model<State,Action> > model, boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize):
-  model(model),
+MCTS<State,Action>::MCTS(boost::shared_ptr<ValueEstimator<State,Action> > valueEstimator, boost::shared_ptr<ModelUpdater> modelUpdater, unsigned int numPlayouts, double maxPlanningTime, unsigned int maxDepth, int pruningMemorySize):
   valueEstimator(valueEstimator),
   modelUpdater(modelUpdater),
   numPlayouts(numPlayouts),
@@ -96,7 +94,7 @@ std::string MCTS<State,Action>::generateDescription(unsigned int indentation) {
   ss << prefix << "ValueEstimator:\n";
   ss << valueEstimator->generateDescription(indentation+1) << "\n";
   ss << prefix << "Model:\n";
-  ss << model->generateDescription(indentation+1) << "\n";
+  //ss << model->generateDescription(indentation+1) << "\n"; // TODO removed during model change
   return ss.str();
 }
 
@@ -116,15 +114,12 @@ void MCTS<State,Action>::checkInternals() {
 template<class State, class Action>
 void MCTS<State,Action>::rollout(const State &startState) {
   //std::cout << "------------START ROLLOUT--------------" << std::endl;
-  modelUpdater->selectModel(startState);
+  boost::shared_ptr<Model<State,Action> > model = modelUpdater->selectModel(startState);
   State state(startState);
   State newState;
   Action action;
   float reward;
   bool terminal = false;
-  //std::cout << "start mcts set state" << std::endl;
-  model->setState(startState);
-  //std::cout << "stop  mcts set state" << std::endl;
   valueEstimator->startRollout();
 
   for (unsigned int depth = 0; (depth < maxDepth) || (maxDepth == 0); depth++) {

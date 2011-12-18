@@ -23,7 +23,7 @@ TEST(WorldMDP,GetSetPositions) {
   unsigned int numTests = 5000;
   State_t state;
 
-  getPositionsFromState(0,dims,positions,false);
+  getPositionsFromState(0,dims,positions,true);
   // the first agent gets put in the center of the grid
   EXPECT_EQ(0.5f * dims,positions[0]);
   for (unsigned int j = 1; j < 5; j++) {
@@ -35,8 +35,8 @@ TEST(WorldMDP,GetSetPositions) {
     for (unsigned int j = 0; j < 5; j++) {
       obs.positions.push_back(Point2D(rng.randomInt(dims.x),rng.randomInt(dims.y)));
     }
-    state = getStateFromObs(dims,obs,false);
-    getPositionsFromState(state,dims,positions,false);
+    state = getStateFromObs(dims,obs,true);
+    getPositionsFromState(state,dims,positions,true);
     Point2D diff = 0.5f * dims - obs.positions[0];
     for (unsigned int j = 0; j < 5; j++) {
       ASSERT_EQ(movePosition(dims,obs.positions[j],diff),positions[j]);

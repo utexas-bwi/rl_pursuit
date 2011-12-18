@@ -17,22 +17,31 @@ Modified: 2011-09-21
 #include <controller/Agent.h>
 #include <controller/State.h>
 
+struct ModelInfo {
+  ModelInfo(const boost::shared_ptr<WorldMDP> &mdp, const std::string &description, double prob);
+  boost::shared_ptr<WorldMDP> mdp;
+  std::string description;
+  double prob;
+};
+
 class ModelUpdater {
 public:
-  typedef std::vector<boost::shared_ptr<Agent> > Model;
 
-  ModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const std::vector<Model> &models, const std::vector<double> &modelPrior, const std::vector<std::string> &modelDescriptions);
+  ModelUpdater(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models);
 
   void set(const ModelUpdater &other);
   virtual void updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) = 0;
   virtual void updateSimulationAction(const Action::Type &action, const State_t &state) = 0;
   virtual void learnControllers(const Observation &prevObs, const Observation &currentObs);
-  void selectModel(const State_t &state);
+  boost::shared_ptr<WorldMDP> selectModel(const State_t &state);
   std::string generateDescription(unsigned int indentation = 0);
   std::vector<double> getBeliefs();
   void updateControllerInformation(const Observation &obs);
-  void copyModel(unsigned int ind, Model &model,boost::shared_ptr<Agent> adhocAgent = boost::shared_ptr<Agent>()) const;
-  void normalizeModelProbs(std::vector<double> &modelProbs);
+  //void copyModel(unsigned int ind, Model &model,boost::shared_ptr<Agent> adhocAgent = boost::shared_ptr<Agent>()) const;
+  void normalizeModelProbs();
+  void normalizeProbs(std::vector<double> &modelProbs);
+  void setPreyPos(const Point2D &preyPos);
+  State_t getState(const Observation &obs);
 
   void enableOutput(const boost::shared_ptr<std::ostream> &outputStream);
   void disableOutput();
@@ -45,10 +54,7 @@ protected:
 
 protected:
   boost::shared_ptr<RNG> rng;
-  boost::shared_ptr<WorldMDP> mdp;
-  std::vector<Model> models;
-  std::vector<double> modelProbs;
-  std::vector<std::string> modelDescriptions;
+  std::vector<ModelInfo> models;
   std::vector<bool> modelStillUsed;
   boost::shared_ptr<std::ostream> outputStream;
 };

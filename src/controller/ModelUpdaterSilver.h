@@ -27,7 +27,7 @@ private:
 
 class ModelUpdaterSilver: public ModelUpdater {
 public:
-  ModelUpdaterSilver(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const std::vector<Model> &models, const std::vector<double> &modelPrior, const std::vector<std::string> &modelDescriptions, bool useFrequencyCounts);
+  ModelUpdaterSilver(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, bool useFrequencyCounts);
   void updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
   void updateSimulationAction(const Action::Type &action, const State_t &state);
 
