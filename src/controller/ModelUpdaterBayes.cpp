@@ -103,9 +103,11 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
 }
 
 double ModelUpdaterBayes::calculateModelProb(unsigned int modelInd, const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
-  WorldMDP mdp(*(models[modelInd].mdp));
+  boost::shared_ptr<WorldMDP> mdp = models[modelInd].mdp->clone();
+  //boost::shared_ptr<WorldMDP> mdp = models[modelInd].mdp;
+  //(*(models[modelInd].mdp));
   //mdp->setAgents(model);
-  double prob = mdp.getOutcomeProb(prevObs,lastAction,currentObs);
+  double prob = mdp->getOutcomeProb(prevObs,lastAction,currentObs);
   //std::cout << "    CALCULATE MODEL PROB FOR " << modelInd << " = " << prob << std::endl;
   return prob;
 }

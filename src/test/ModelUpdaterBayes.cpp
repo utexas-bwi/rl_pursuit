@@ -68,15 +68,18 @@ public:
 
   void checkNumSteps(const std::vector<boost::shared_ptr<AgentDummyTest> > &agents, unsigned int numSteps) {
     for (unsigned int i = 0; i < agents.size(); i++) {
-      if (i == adhocInd)
-        continue;
+      std::cout << "  " << i << std::endl;
+      //if (i == adhocInd)
+        //continue;
       EXPECT_EQ(numSteps,agents[i]->numSteps);
     }
   }
 
   void checkModelsSteps(unsigned int numSteps) {
-    for (unsigned int i = 0; i < modelsDummy.size(); i++)
+    for (unsigned int i = 0; i < modelsDummy.size(); i++) {
+      std::cout << "checking: " << models[i].description << std::endl;
       checkNumSteps(modelsDummy[i],numSteps);
+    }
   }
 
 protected:
@@ -147,7 +150,11 @@ TEST_F(ModelUpdaterBayesTest,BayesianActionUpdates) {
   trueAgents[adhocInd]->setAction(Action::UP);
 
   world->generateObservation(currentObs);
+  std::cout << "PRE" << std::endl;
+  checkModelsSteps(0);
   updater->updateRealWorldAction(prevObs,lastAction,currentObs);
+  std::cout << "POST" << std::endl;
+  checkModelsSteps(0);
   // check probs after 1 step
   probs = updater->getBeliefs();
   double probCorrect = 1.0 / 1.75;
