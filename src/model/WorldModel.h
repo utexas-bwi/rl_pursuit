@@ -31,6 +31,10 @@ public:
   void setPositionsFromObservation(Observation obs);
   std::string generateDescription(unsigned int indentation = 0);
 
+  virtual boost::shared_ptr<WorldModel> clone() const {
+    return boost::shared_ptr<WorldModel>(new WorldModel(*this));
+  }
+
 protected:
   const Point2D dims;
   std::vector<AgentModel> agents;

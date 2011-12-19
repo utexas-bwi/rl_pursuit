@@ -342,9 +342,9 @@ bool World::getRequestedPositionsForActionIndices(const std::vector<unsigned int
 void World::handleCollisions(const std::vector<Point2D> &requestedPositions) {
   // ORDERED COLLISION DECISION
   std::vector<unsigned int> agentOrder(agents.size());
-  //rng->randomOrdering(agentOrder);
-  for (unsigned int i = 0; i < agentOrder.size(); i++)
-    agentOrder[i] = i;
+  rng->randomOrdering(agentOrder);
+  //for (unsigned int i = 0; i < agentOrder.size(); i++)
+    //agentOrder[i] = i;
   handleCollisionsOrdered(requestedPositions,agentOrder);
 }
 
@@ -386,7 +386,7 @@ bool World::addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agen
   return true;
 }
 
-boost::shared_ptr<const WorldModel> World::getModel() {
+boost::shared_ptr<WorldModel> World::getModel() {
   return world;
 }
 
@@ -438,4 +438,19 @@ ActionProbs World::getAgentAction(unsigned int ind, boost::shared_ptr<Agent> age
   }
 
   return actionProbs;
+}
+
+boost::shared_ptr<World> World::clone() const {
+  boost::shared_ptr<AgentDummy> oldAdhocAgent, newAdhocAgent;
+  return clone(oldAdhocAgent,newAdhocAgent);
+}
+
+boost::shared_ptr<World> World::clone(const boost::shared_ptr<AgentDummy> &oldAdhocAgent, boost::shared_ptr<AgentDummy> &newAdhocAgent) const {
+  boost::shared_ptr<World> controller(new World(rng,world->clone(),actionNoise,centerPrey));
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    controller->agents.push_back(boost::shared_ptr<Agent>(agents[i]->clone()));
+    if (agents[i].get() == oldAdhocAgent.get())
+      newAdhocAgent = boost::static_pointer_cast<AgentDummy>(controller->agents.back());
+  }
+  return controller;
 }

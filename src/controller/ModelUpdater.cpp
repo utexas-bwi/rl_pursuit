@@ -26,7 +26,8 @@ ModelUpdater::ModelUpdater(boost::shared_ptr<RNG> rng, const std::vector<ModelIn
 
 void ModelUpdater::set(const ModelUpdater &other) {
   models.clear();
-  models = other.models; // TODO SET WORLDMDP operator= correctly
+  for (unsigned int i = 0; i < other.models.size(); i++)
+    models.push_back(ModelInfo(other.models[i].mdp->clone(),other.models[i].description,other.models[i].prob));
 }
 
 //void ModelUpdater::copyModel(unsigned int ind, Model &model, boost::shared_ptr<Agent> adhocAgent) const {
@@ -58,7 +59,8 @@ void ModelUpdater::learnControllers(const Observation &prevObs, const Observatio
 
 boost::shared_ptr<WorldMDP> ModelUpdater::selectModel(const State_t &state) {
   unsigned int ind = selectModelInd(state);
-  boost::shared_ptr<WorldMDP> mdp(new WorldMDP(*(models[ind].mdp)));
+  //boost::shared_ptr<WorldMDP> mdp(new WorldMDP(*(models[ind].mdp)));
+  boost::shared_ptr<WorldMDP> mdp = models[ind].mdp->clone();
   mdp->setState(state);
   return mdp;
   //std::cout << "SELECT MODEL: " << modelDescriptions[ind] << std::endl;
@@ -102,8 +104,12 @@ void ModelUpdater::removeModel(unsigned int ind) {
 
 std::string ModelUpdater::generateDescription(unsigned int indentation) {
   std::string msg = indent(indentation) + "ModelUpdater " + generateSpecificDescription() + ":\n";
+  msg += indent(indentation+1) + "SHORT:\n";
   for (unsigned int i = 0; i < models.size(); i++)
-    msg += indent(indentation+1) + models[i].description + ": " + boost::lexical_cast<std::string>(models[i].prob) + "\n";
+    msg += indent(indentation+2) + models[i].description + ": " + boost::lexical_cast<std::string>(models[i].prob) + "\n";
+  msg += indent(indentation+1) + "LONG:\n";
+  for (unsigned int i = 0; i < models.size(); i++)
+    msg += models[i].mdp->generateDescription(indentation+2);
   return msg;
 }
 

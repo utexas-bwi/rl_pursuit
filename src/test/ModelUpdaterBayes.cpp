@@ -5,7 +5,7 @@ Description: tests ModelUpdaterBayes
 Created:  2011-10-18
 Modified: 2011-10-18
 */
-/*
+
 #include <gtest/gtest.h>
 #include <controller/ModelUpdaterBayes.h>
 #include "AgentDummyTest.h"
@@ -18,7 +18,6 @@ public:
     rng(new RNG(0)),
     dims(5,5),
     mdp(createWorldMDP(rng,dims,true,false,NO_MODEL_UPDATES,StateConverter(5,5),0.0,true)),
-    models(3,std::vector<boost::shared_ptr<Agent> >(5,boost::shared_ptr<Agent>())),
     modelsDummy(3,std::vector<boost::shared_ptr<AgentDummyTest> >(5,boost::shared_ptr<AgentDummyTest>())),
     adhocInd(1)
   {
@@ -35,30 +34,36 @@ public:
     createAgentModels(adhocInd-1,agentModels);
     for (int i = 0; i < 5; i++)
       agentModels[i].pos = Point2D(i,i);
-    mdp->addAgents(agentModels,agentsAbstract);
-    mdp->adhocAgent = trueAgents[adhocInd];
    
     // create the models
     for (int i = 0; i < 3; i++) {
+      std::string desc = "Correct";
+      if (i == 1)
+        desc = "Incorrect";
+      if (i == 2)
+        desc = "Close";
+      std::cout << "making model: " << desc << std::endl << std::flush;
+      boost::shared_ptr<WorldMDP> newMDP = mdp->clone();
       for (unsigned int j = 0; j < 5; j++) {
-        if (j == adhocInd)
-          agent = trueAgents[j];
-        else
+        //if (j == adhocInd)
+          //agent = trueAgents[j];
+        //else
           agent = boost::shared_ptr<AgentDummyTest>(new AgentDummyTest(rng,Point2D(5,5)));
-        models[i][j] = agent;
+        if (j == adhocInd)
+          newMDP->adhocAgent = agent;
+        newMDP->addAgent(agentModels[j],agent);
         modelsDummy[i][j] = agent;
       }
-      modelPrior.push_back(1.0);
+      models.push_back(ModelInfo(newMDP,desc,1.0));
     }
-    modelDescriptions.push_back("Correct");
-    modelDescriptions.push_back("Incorrect");
-    modelDescriptions.push_back("Close");
 
     resetUpdater(BAYESIAN_UPDATES);
+    mdp->addAgents(agentModels,agentsAbstract);
+    mdp->adhocAgent = trueAgents[adhocInd];
   }
 
   void resetUpdater(ModelUpdateType modelUpdateType) {
-    updater = createModelUpdaterBayes(rng,mdp,models,modelPrior,modelDescriptions,modelUpdateType);
+    updater = createModelUpdaterBayes(rng,models,modelUpdateType);
   }
 
   void checkNumSteps(const std::vector<boost::shared_ptr<AgentDummyTest> > &agents, unsigned int numSteps) {
@@ -83,11 +88,12 @@ protected:
   std::vector<boost::shared_ptr<AgentDummyTest> > trueAgents;
   std::vector<boost::shared_ptr<Agent> > agentsAbstract;
   boost::shared_ptr<ModelUpdaterBayes> updater;
-  std::vector<std::vector<boost::shared_ptr<Agent> > > models;
+  //std::vector<std::vector<boost::shared_ptr<Agent> > > models;
   std::vector<std::vector<boost::shared_ptr<AgentDummyTest> > > modelsDummy;
 
-  std::vector<double> modelPrior;
-  std::vector<std::string> modelDescriptions;
+  //std::vector<double> modelPrior;
+  //std::vector<std::string> modelDescriptions;
+  std::vector<ModelInfo> models;
   unsigned int adhocInd;
 };
 
@@ -205,7 +211,7 @@ TEST_F(ModelUpdaterBayesTest,PolynomialActionUpdates) {
   // check probs before starting
   for (int i = 0; i < 3; i++)
     expectedProbs[i] = 1.0;
-  updater->normalizeModelProbs(expectedProbs);
+  updater->normalizeProbs(expectedProbs);
   
   probs = updater->getBeliefs();
   for (unsigned int i = 0; i < probs.size(); i++)
@@ -234,7 +240,7 @@ TEST_F(ModelUpdaterBayesTest,PolynomialActionUpdates) {
   expectedProbs[0] *= 1.0;
   expectedProbs[1] *= (1 - eta);
   expectedProbs[2] *= (1 - eta * 0.25);
-  updater->normalizeModelProbs(expectedProbs);
+  updater->normalizeProbs(expectedProbs);
   for (unsigned int i = 0; i < expectedProbs.size(); i++)
     EXPECT_NEAR(expectedProbs[i],probs[i],0.00001);
   if (true)
@@ -252,7 +258,7 @@ TEST_F(ModelUpdaterBayesTest,PolynomialActionUpdates) {
   expectedProbs[0] *= 1.0;
   expectedProbs[1] *= (1 - eta);
   expectedProbs[2] *= (1 - eta * 0.25);
-  updater->normalizeModelProbs(expectedProbs);
+  updater->normalizeProbs(expectedProbs);
   probs = updater->getBeliefs();
   for (unsigned int i = 0; i < expectedProbs.size(); i++)
     EXPECT_NEAR(expectedProbs[i],probs[i],0.00001);
@@ -271,12 +277,15 @@ TEST_F(ModelUpdaterBayesTest,PolynomialActionUpdates) {
 }
 
 TEST_F(ModelUpdaterBayesTest,AdvancedTests) {
-  // test the sampling
+  std::vector<double> modelPrior(3);
   modelPrior[0] = 1.0;
   modelPrior[1] = 0.5;
   modelPrior[2] = 1.5;
+  // test the sampling
+  for (unsigned int i = 0; i < 3; i++)
+    models[i].prob = modelPrior[i];
   resetUpdater(BAYESIAN_UPDATES);
-  updater->normalizeModelProbs(modelPrior);
+  updater->normalizeProbs(modelPrior);
   unsigned int numSamples = 100000;
 
   std::vector<unsigned int> sampleCounts(3,0);
@@ -287,6 +296,7 @@ TEST_F(ModelUpdaterBayesTest,AdvancedTests) {
 }
 
 TEST_F(ModelUpdaterBayesTest,CopyModel) {
+  /*
   std::vector<boost::shared_ptr<Agent> > copy;
 
   updater->copyModel(1,copy);
@@ -316,5 +326,5 @@ TEST_F(ModelUpdaterBayesTest,CopyModel) {
   checkNumSteps(copyDummy,2);
   EXPECT_EQ(3u,modelsDummy[1][adhocInd]->numSteps);
   EXPECT_EQ(3u,copyDummy[adhocInd]->numSteps);
+  */
 }
-*/

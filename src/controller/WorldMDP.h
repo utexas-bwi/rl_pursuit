@@ -42,12 +42,15 @@ public:
   boost::shared_ptr<AgentDummy> getAdhocAgent();
   virtual void addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent);
   virtual void addAgents(const std::vector<AgentModel> &agentModels, const std::vector<boost::shared_ptr<Agent> > agents);
-  Point2D getDims() {
+  Point2D getDims() const {
     return model->getDims();
   }
   virtual void setBeliefs(boost::shared_ptr<ModelUpdater> ) {
     // do nothing :)
   }
+
+  virtual boost::shared_ptr<WorldMDP> clone() const;
+  void setAdhocAgent(boost::shared_ptr<AgentDummy> adhocAgent);
 
 
 protected:
@@ -55,8 +58,6 @@ protected:
   boost::shared_ptr<WorldModel> model;
   boost::shared_ptr<World> controller;
   boost::shared_ptr<AgentDummy> adhocAgent;
-  std::vector<boost::shared_ptr<Agent> > currentModel;
-  std::vector<boost::shared_ptr<Agent> > savedModel;
 
   Point2D preyPos;
   bool usePreySymmetry;

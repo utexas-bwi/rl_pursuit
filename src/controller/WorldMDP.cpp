@@ -1,5 +1,7 @@
 #include "WorldMDP.h"
 #include <controller/ModelUpdater.h>
+#include <controller/ModelUpdaterBayes.h>
+#include <factory/PlanningFactory.h>
 
 const bool WorldMDP::useCaching = true;
 
@@ -130,4 +132,15 @@ void WorldMDP::learnControllers(const Observation &prevObs, const Observation &c
       //models[i][j]->learn(absPrevObs,absCurrentObs,j);
     //}
   //}
+}
+  
+boost::shared_ptr<WorldMDP> WorldMDP::clone() const {
+  boost::shared_ptr<AgentDummy> newAdhocAgent;
+  boost::shared_ptr<World> newController = controller->clone(adhocAgent,newAdhocAgent);
+  boost::shared_ptr<WorldMDP> mdp(new WorldMDP(rng,newController->getModel(),newController,newAdhocAgent,usePreySymmetry));
+  return mdp;
+}
+
+void WorldMDP::setAdhocAgent(boost::shared_ptr<AgentDummy> adhocAgent) {
+  this->adhocAgent = adhocAgent;
 }

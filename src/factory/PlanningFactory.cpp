@@ -73,8 +73,11 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
 
       std::vector<AgentModel> agentModels;
       std::vector<AgentPtr> agents;
-      createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,agents,agentModels);
-      boost::shared_ptr<WorldMDP> newMDP(new WorldMDP(*mdp));
+      boost::shared_ptr<WorldMDP> newMDP = mdp->clone();
+      boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(rng,dims));
+      newMDP->setAdhocAgent(adhocAgent);
+      
+      createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,adhocAgent,agents,agentModels);
       newMDP->addAgents(agentModels,agents);
       modelList.push_back(ModelInfo(newMDP,desc,prob));
     }

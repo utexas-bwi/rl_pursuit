@@ -19,6 +19,7 @@ Modified: 2011-10-27
 #include <model/AgentModel.h>
 #include <model/WorldModel.h>
 #include "Agent.h"
+#include "AgentDummy.h"
 
 #include <gtest/gtest_prod.h>
 
@@ -40,7 +41,7 @@ public:
   void randomizePositions();
   void restartAgents();
   bool addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition=false);
-  boost::shared_ptr<const WorldModel> getModel();
+  boost::shared_ptr<WorldModel> getModel();
   void setAgentControllers(const std::vector<boost::shared_ptr<Agent> > newAgents);
 
   std::string generateDescription(unsigned int indentation = 0);
@@ -48,6 +49,9 @@ public:
   double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs);//, std::vector<boost::shared_ptr<Agent> > &agents);
   void getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr agentDummy, std::vector<std::vector<WorldStepOutcome> > &outcomesByAction);
   void printAgents();
+  
+  boost::shared_ptr<World> clone() const;
+  virtual boost::shared_ptr<World> clone(const boost::shared_ptr<AgentDummy> &oldAdhocAgent, boost::shared_ptr<AgentDummy> &newAdhocAgent) const;
 
 protected:
   boost::shared_ptr<RNG> rng;
@@ -55,9 +59,9 @@ protected:
   const Point2D dims;
 public:
   std::vector<boost::shared_ptr<Agent> > agents;
-protected:
   double actionNoise;
   bool centerPrey;
+protected:
 
 protected:
   void handleCollisions(const std::vector<Point2D> &requestedPositions);
