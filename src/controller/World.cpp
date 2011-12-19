@@ -149,7 +149,7 @@ void World::getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr ag
   for (unsigned int a = 0; a < Action::NUM_ACTIONS; a++) {
     std::cout << a << std::endl;
     for (unsigned int i = 0; i < outcomes.size(); i++) {
-      if (outcomes[i].agentDummyAction == a) {
+      if (outcomes[i].agentDummyAction == (int)a) {
         outcomesByAction[a].push_back(outcomes[i]);
         std::cout << "  " << outcomes[i].prob;
         for (unsigned k = 0; k < outcomes[i].obs.positions.size(); k++)
