@@ -342,9 +342,9 @@ bool World::getRequestedPositionsForActionIndices(const std::vector<unsigned int
 void World::handleCollisions(const std::vector<Point2D> &requestedPositions) {
   // ORDERED COLLISION DECISION
   std::vector<unsigned int> agentOrder(agents.size());
-  rng->randomOrdering(agentOrder);
-  //for (unsigned int i = 0; i < agentOrder.size(); i++)
-    //agentOrder[i] = i;
+  //rng->randomOrdering(agentOrder);
+  for (unsigned int i = 0; i < agentOrder.size(); i++)
+    agentOrder[i] = i;
   handleCollisionsOrdered(requestedPositions,agentOrder);
 }
 
