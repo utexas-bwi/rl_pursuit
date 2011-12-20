@@ -1,6 +1,6 @@
 #include "World.h"
 #include <boost/lexical_cast.hpp>
-
+/*
 bool ObservationComp::operator() (const Observation& lhs, const Observation& rhs) const {
   if (lhs.positions.size() < rhs.positions.size())
     return true;
@@ -19,15 +19,25 @@ bool ObservationComp::operator() (const Observation& lhs, const Observation& rhs
   return false;
 }
 
+std::size_t hash_value(const Observation &o) {
+  std::size_t seed = 0;
+  boost::hash_combine(seed,o.preyInd);
+  for (unsigned int i = 0; i < o.positions.size(); i++) {
+    boost::hash_combine(seed,o.positions[i].x);
+    boost::hash_combine(seed,o.positions[i].y);
+  }
+  return seed;
+}
+*/
 World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise, bool centerPrey):
   rng(rng),
   world(world),
   dims(world->getDims()),
   actionNoise(actionNoise),
-  centerPrey(centerPrey),
-  cachingEnabled(false),
-  uncachedAgentInd(-1),
-  actionCache(new ActionCache())
+  centerPrey(centerPrey)
+  //cachingEnabled(false),
+  //uncachedAgentInd(-1),
+  //actionCache(new ActionCache())
 {
 }
 
@@ -56,7 +66,7 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
   generateObservation(obs);
 
   std::vector<ActionProbs> actionProbList;
-  
+/*  
   // check if we already have this in the cache
   if (cachingEnabled) {
     ActionCache::iterator it = actionCache->find(obs);
@@ -91,9 +101,9 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
       }
     }
   }
-  
+*/  
   // get the agents actions if they weren't in the cache
-  if (actionProbList.size() == 0) {
+  //if (actionProbList.size() == 0) {
     actionProbList.resize(agents.size());
     for (unsigned int i = 0; i < agents.size(); i++) {
       actionProbList[i] = getAgentAction(i,agents[i],obs);
@@ -104,11 +114,11 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
         assert(actionProbList[i].checkTotal());
       }
     }
-    if (cachingEnabled) {
-      obs.myInd = 0;
-      (*actionCache)[obs] = actionProbList;
-    }
-  }
+    //if (cachingEnabled) {
+      //obs.myInd = 0;
+      //(*actionCache)[obs] = actionProbList;
+    //}
+  //}
 
   // now select the actions from the probs
   for (unsigned int i = 0; i < agents.size(); i++) {
@@ -121,7 +131,7 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
   handleCollisions(requestedPositions);
   //std::cout << "STOP  WORLD STEP" << std::endl;
 }
-
+/*
 void World::setUncachedAgent(boost::shared_ptr<Agent> agent) {
   for (unsigned int i = 0; i < agents.size(); i++) {
     if (agents[i].get() == agent.get()) {
@@ -131,8 +141,9 @@ void World::setUncachedAgent(boost::shared_ptr<Agent> agent) {
   }
   assert(false);
 }
-
+*/
 void World::getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr agentDummy, std::vector<std::vector<WorldStepOutcome> > &outcomesByAction) {
+  assert(false); // doesn't currently work correctly, assumes fixed ordering of agents
   const double EPS = 0.01;
   Observation obs;
   std::vector<ActionProbs> actionProbList(agents.size());
@@ -532,17 +543,17 @@ boost::shared_ptr<World> World::clone(const boost::shared_ptr<AgentDummy> &oldAd
     if (agents[i].get() == oldAdhocAgent.get())
       newAdhocAgent = boost::static_pointer_cast<AgentDummy>(controller->agents.back());
   }
-  controller->cachingEnabled = cachingEnabled;
-  controller->actionCache = actionCache;
-  controller->uncachedAgentInd = uncachedAgentInd;
+  //controller->cachingEnabled = cachingEnabled;
+  //controller->actionCache = actionCache;
+  //controller->uncachedAgentInd = uncachedAgentInd;
   return controller;
 }
-
+/*
 void World::setCaching(bool cachingEnabled) {
   this->cachingEnabled = cachingEnabled;
   // TODO
 }
-  
+*/  
 void World::learnControllers(const Observation &prevObs, const Observation &currentObs) {
   Observation absPrevObs(prevObs);
   Observation absCurrentObs(currentObs);
@@ -552,14 +563,4 @@ void World::learnControllers(const Observation &prevObs, const Observation &curr
   for (unsigned int i = 0; i < agents.size(); i++) {
     agents[i]->learn(absPrevObs,absCurrentObs,i);
   }
-}
-
-std::size_t hash_value(const Observation &o) {
-  std::size_t seed = 0;
-  boost::hash_combine(seed,o.preyInd);
-  for (unsigned int i = 0; i < o.positions.size(); i++) {
-    boost::hash_combine(seed,o.positions[i].x);
-    boost::hash_combine(seed,o.positions[i].y);
-  }
-  return seed;
 }

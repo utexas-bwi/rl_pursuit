@@ -49,10 +49,10 @@ public:
     // do nothing :)
   }
 
-  virtual void setCaching(bool cachingEnabled);
-  void resetCache() {
-    controller->resetCache();
-  }
+  //virtual void setCaching(bool cachingEnabled);
+  //void resetCache() {
+    //controller->resetCache();
+  //}
 
   virtual boost::shared_ptr<WorldMDP> clone() const;
   void setAdhocAgent(boost::shared_ptr<AgentDummy> adhocAgent);

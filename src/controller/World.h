@@ -29,12 +29,12 @@ struct WorldStepOutcome {
   double prob;
   Action::Type agentDummyAction;
 };
-
+/*
 struct ObservationComp {
   bool operator() (const Observation& lhs, const Observation& rhs) const;
 };
 std::size_t hash_value(const Observation &o);
-
+*/
 class World {
 public:
   World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise, bool centerPrey);
@@ -42,7 +42,7 @@ public:
   void generateObservation(Observation &obs);
   void step();
   void step(boost::shared_ptr<std::vector<Action::Type> > actions);
-  void setUncachedAgent(boost::shared_ptr<Agent> agent);
+  //void setUncachedAgent(boost::shared_ptr<Agent> agent);
   //void step(std::vector<boost::shared_ptr<Agent> > &agents);
   //void step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents);
   void randomizePositions();
@@ -59,10 +59,10 @@ public:
   
   boost::shared_ptr<World> clone() const;
   virtual boost::shared_ptr<World> clone(const boost::shared_ptr<AgentDummy> &oldAdhocAgent, boost::shared_ptr<AgentDummy> &newAdhocAgent) const;
-  void setCaching(bool cachingEnabled);
-  void resetCache() {
-    actionCache = boost::shared_ptr<ActionCache>(new ActionCache());
-  }
+  //void setCaching(bool cachingEnabled);
+  //void resetCache() {
+    //actionCache = boost::shared_ptr<ActionCache>(new ActionCache());
+  //}
   void learnControllers(const Observation &prevObs, const Observation &currentObs);
 
 protected:
@@ -72,12 +72,12 @@ protected:
   std::vector<boost::shared_ptr<Agent> > agents;
   double actionNoise;
   bool centerPrey;
-  bool cachingEnabled;
-  int uncachedAgentInd;
+  //bool cachingEnabled;
+  //int uncachedAgentInd;
 
   //typedef std::map<Observation,std::vector<ActionProbs>,ObservationComp> ActionCache;
-  typedef boost::unordered_map<Observation,std::vector<ActionProbs> > ActionCache;
-  boost::shared_ptr<ActionCache> actionCache;
+  //typedef boost::unordered_map<Observation,std::vector<ActionProbs> > ActionCache;
+  //boost::shared_ptr<ActionCache> actionCache;
 
 protected:
   void handleCollisions(const std::vector<Point2D> &requestedPositions);

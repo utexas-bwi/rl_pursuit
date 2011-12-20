@@ -137,7 +137,7 @@ void WorldMDP::setAdhocAgent(boost::shared_ptr<AgentDummy> adhocAgent) {
   this->adhocAgent = adhocAgent;
 }
   
-void WorldMDP::setCaching(bool cachingEnabled) {
-  controller->setCaching(cachingEnabled);
-  controller->setUncachedAgent(adhocAgent);
-}
+//void WorldMDP::setCaching(bool cachingEnabled) {
+  //controller->setCaching(cachingEnabled);
+  //controller->setUncachedAgent(adhocAgent);
+//}
