@@ -31,7 +31,7 @@ SOURCES += $(SOURCE_STUDENTS)
 # objects
 OBJECTS_STUDENT := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(SOURCE_STUDENTS:.cpp=.o))
 # flags
-FLAGS = -W -Wall -Werror -pedantic-errors -O2 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -std=c++0x
+FLAGS = -W -Wall -Werror -pedantic-errors -O3 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -std=c++0x
 STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
 LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython$(PYTHON_VERSION) -lboost_python -lgflags
 
