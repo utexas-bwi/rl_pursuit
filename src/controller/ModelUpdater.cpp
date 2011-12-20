@@ -104,12 +104,12 @@ void ModelUpdater::removeModel(unsigned int ind) {
 
 std::string ModelUpdater::generateDescription(unsigned int indentation) {
   std::string msg = indent(indentation) + "ModelUpdater " + generateSpecificDescription() + ":\n";
-  msg += indent(indentation+1) + "SHORT:\n";
+  //msg += indent(indentation+1) + "SHORT:\n";
   for (unsigned int i = 0; i < models.size(); i++)
-    msg += indent(indentation+2) + models[i].description + ": " + boost::lexical_cast<std::string>(models[i].prob) + "\n";
-  msg += indent(indentation+1) + "LONG:\n";
-  for (unsigned int i = 0; i < models.size(); i++)
-    msg += models[i].mdp->generateDescription(indentation+2);
+    msg += indent(indentation+1) + models[i].description + ": " + boost::lexical_cast<std::string>(models[i].prob) + "\n";
+  //msg += indent(indentation+1) + "LONG:\n";
+  //for (unsigned int i = 0; i < models.size(); i++)
+    //msg += models[i].mdp->generateDescription(indentation+2);
   return msg;
 }
 

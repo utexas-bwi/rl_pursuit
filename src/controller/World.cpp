@@ -1,48 +1,118 @@
 #include "World.h"
 #include <boost/lexical_cast.hpp>
 
+bool ObservationComp::operator() (const Observation& lhs, const Observation& rhs) const {
+  if (lhs.positions.size() < rhs.positions.size())
+    return true;
+  else if (lhs.positions.size() > rhs.positions.size())
+    return false;
+  if (lhs.preyInd < rhs.preyInd)
+    return true;
+  else if (lhs.preyInd > rhs.preyInd)
+    return false;
+  for (unsigned int i = 0; i < lhs.positions.size(); i++) {
+    if (lhs.positions[i] < rhs.positions[i])
+      return true;
+    else if (rhs.positions[i] < lhs.positions[i])
+      return false;
+  }
+  return false;
+}
+
 World::World(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise, bool centerPrey):
   rng(rng),
   world(world),
   dims(world->getDims()),
   actionNoise(actionNoise),
-  centerPrey(centerPrey)
+  centerPrey(centerPrey),
+  cachingEnabled(false),
+  uncachedAgentInd(-1),
+  actionCache(new ActionCache())
 {
-}
-
-void World::step() {
-  step(boost::shared_ptr<std::vector<Action::Type> >(),agents);
-}
-
-void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
-  step(actions,agents);
-}
-
-void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
-  step(boost::shared_ptr<std::vector<Action::Type> >(),agents);
 }
 
 void World::generateObservation(Observation &obs) {
   world->generateObservation(obs,centerPrey);
 }
 
-void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents) {
+void World::step() {
+  step(boost::shared_ptr<std::vector<Action::Type> >());//,agents);
+}
+
+void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
+  //step(actions,agents);
+//}
+
+//void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
+  //step(boost::shared_ptr<std::vector<Action::Type> >(),agents);
+//}
+
+//void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents) {
   //std::cout << "START WORLD STEP" << std::endl;
-  ActionProbs actionProbs;
   Action::Type action;
   Observation obs;
   std::vector<Point2D> requestedPositions(agents.size());
   
   generateObservation(obs);
-  for (unsigned int i = 0; i < agents.size(); i++) {
-    actionProbs = getAgentAction(i,agents[i],obs);
-    if (!actionProbs.checkTotal()) {
-      for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
-        std::cout << actionProbs[(Action::Type)i] << " ";
-      std::cout << std::endl;
+
+  std::vector<ActionProbs> actionProbList;
+  
+  // check if we already have this in the cache
+  if (cachingEnabled) {
+    ActionCache::iterator it = actionCache->find(obs);
+    if (it != actionCache->end()) {
+      //for (unsigned int i = 0; i < agents.size(); i++) {
+        //if ((int)i == uncachedAgentInd)
+          //continue;
+        //ActionProbs p = getAgentAction(i,agents[i],obs);
+        //Observation temp(it->first);
+        //ActionProbs p2 = getAgentAction(i,agents[i],temp);
+        //for (int j = 0; j < 5; j++) {
+          //Action::Type a = (Action::Type)j;
+          //double val = abs(p[a] - it->second[i][a]);
+          //if (val > 0.01) {
+            //std::cout << i << " " << j << std::endl;
+            //std::cout << "  " << obs << std::endl;
+            //std::cout << "  " << it->first << std::endl;
+            //std::cout << "  " << val << " " << agents[i]->generateDescription() << std::endl;
+            //std::cout << "    " << p[a] << " " << it->second[i][a] << " " << p2[a] << std::endl;
+          //}
+        //}
+      //}
+      actionProbList = it->second;
+      if (uncachedAgentInd >= 0) {
+        actionProbList[uncachedAgentInd] = getAgentAction(uncachedAgentInd,agents[uncachedAgentInd],obs);
+      }
+      for (unsigned int i = 0; i < agents.size(); i++) {
+        if ((int)i == uncachedAgentInd)
+          continue;
+        obs.myInd = i;
+        agents[i]->minimalStep(obs);
+      }
     }
-    assert(actionProbs.checkTotal());
-    action = actionProbs.selectAction(rng);
+  }
+  
+  // get the agents actions if they weren't in the cache
+  if (actionProbList.size() == 0) {
+    actionProbList.resize(agents.size());
+    for (unsigned int i = 0; i < agents.size(); i++) {
+      actionProbList[i] = getAgentAction(i,agents[i],obs);
+      if (!actionProbList[i].checkTotal()) {
+        for (unsigned int j = 0; j < Action::NUM_ACTIONS; j++)
+          std::cout << actionProbList[i][(Action::Type)j] << " ";
+        std::cout << std::endl;
+        assert(actionProbList[i].checkTotal());
+      }
+    }
+    if (cachingEnabled) {
+      obs.myInd = 0;
+      (*actionCache)[obs] = actionProbList;
+    }
+  }
+
+  // now select the actions from the probs
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    action = actionProbList[i].selectAction(rng);
     if (actions.get() != NULL)
       (*actions)[i] = action;
     requestedPositions[i] = world->getAgentPosition(i,action);
@@ -50,6 +120,16 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vec
 
   handleCollisions(requestedPositions);
   //std::cout << "STOP  WORLD STEP" << std::endl;
+}
+
+void World::setUncachedAgent(boost::shared_ptr<Agent> agent) {
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    if (agents[i].get() == agent.get()) {
+      uncachedAgentInd = (int)i;
+      return;
+    }
+  }
+  assert(false);
 }
 
 void World::getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr agentDummy, std::vector<std::vector<WorldStepOutcome> > &outcomesByAction) {
@@ -342,9 +422,9 @@ bool World::getRequestedPositionsForActionIndices(const std::vector<unsigned int
 void World::handleCollisions(const std::vector<Point2D> &requestedPositions) {
   // ORDERED COLLISION DECISION
   std::vector<unsigned int> agentOrder(agents.size());
-  //rng->randomOrdering(agentOrder);
-  for (unsigned int i = 0; i < agentOrder.size(); i++)
-    agentOrder[i] = i;
+  rng->randomOrdering(agentOrder);
+  //for (unsigned int i = 0; i < agentOrder.size(); i++)
+    //agentOrder[i] = i;
   handleCollisionsOrdered(requestedPositions,agentOrder);
 }
 
@@ -452,5 +532,34 @@ boost::shared_ptr<World> World::clone(const boost::shared_ptr<AgentDummy> &oldAd
     if (agents[i].get() == oldAdhocAgent.get())
       newAdhocAgent = boost::static_pointer_cast<AgentDummy>(controller->agents.back());
   }
+  controller->cachingEnabled = cachingEnabled;
+  controller->actionCache = actionCache;
+  controller->uncachedAgentInd = uncachedAgentInd;
   return controller;
+}
+
+void World::setCaching(bool cachingEnabled) {
+  this->cachingEnabled = cachingEnabled;
+  // TODO
+}
+  
+void World::learnControllers(const Observation &prevObs, const Observation &currentObs) {
+  Observation absPrevObs(prevObs);
+  Observation absCurrentObs(currentObs);
+  absPrevObs.uncenterPrey(dims);
+  absCurrentObs.uncenterPrey(dims);
+
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    agents[i]->learn(absPrevObs,absCurrentObs,i);
+  }
+}
+
+std::size_t hash_value(const Observation &o) {
+  std::size_t seed = 0;
+  boost::hash_combine(seed,o.preyInd);
+  for (unsigned int i = 0; i < o.positions.size(); i++) {
+    boost::hash_combine(seed,o.positions[i].x);
+    boost::hash_combine(seed,o.positions[i].y);
+  }
+  return seed;
 }

@@ -32,6 +32,7 @@ public:
   
   void addFeatureAgent(const std::string &key, const std::string &name);
   InstancePtr extract(const Observation &obs, FeatureExtractorHistory &history);
+  void updateHistory(const Observation &obs, FeatureExtractorHistory &history);
   void calcObservedActions(Observation prevObs, Observation obs, std::vector<Action::Type> &actions);
 
 protected:

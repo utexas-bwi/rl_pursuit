@@ -97,10 +97,8 @@ void WorldModel::setPositionsFromObservation(Observation obs) {
     setAgentPosition(i,obs.positions[i]);
 }
 
-#include <boost/lexical_cast.hpp>
-
 std::string WorldModel::generateDescription(unsigned int indentation) {
   std::string s;
-  s += indent(indentation) + "WorldModel " + dims.toString() + " " + boost::lexical_cast<std::string>(preyInd);
+  s += indent(indentation) + "WorldModel " + dims.toString();
   return s;
 }

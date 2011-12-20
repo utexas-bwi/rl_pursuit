@@ -70,6 +70,7 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
       
       double prob = modelOptions.get("prob",1.0).asDouble();
       std::string desc = modelOptions.get("desc","NO DESCRIPTION").asString();
+      bool caching = modelOptions.get("cache",false).asBool();
 
       std::vector<AgentModel> agentModels;
       std::vector<AgentPtr> agents;
@@ -79,6 +80,9 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
       
       createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,adhocAgent,agents,agentModels);
       newMDP->addAgents(agentModels,agents);
+      newMDP->setCaching(caching);
+      newMDP->resetCache();
+
       modelList.push_back(ModelInfo(newMDP,desc,prob));
     }
   }

@@ -78,20 +78,7 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
     setFeature(instance,it->name + ".des",actionProbs.maxAction());
   }
   // update the history
-  std::vector<Action::Type> observedActions;
-  if (history.initialized) {
-    calcObservedActions(history.obs,obs,observedActions);
-  } else {
-    for (unsigned int i = 0; i < obs.positions.size(); i++) {
-      history.actionHistory.push_back(boost::circular_buffer<Action::Type>(HISTORY_SIZE));
-      observedActions.push_back(Action::NUM_ACTIONS);
-    }
-  }
-  for (unsigned int agentInd = 0; agentInd < obs.positions.size(); agentInd++) {
-    history.actionHistory[agentInd].push_front(observedActions[agentInd]);
-  }
-  history.initialized = true;
-  history.obs = obs;
+  updateHistory(obs,history);
   // add the history features
   Action::Type action;
   for (unsigned int agentInd = 0; agentInd < obs.positions.size(); agentInd++) {
@@ -116,10 +103,29 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
   return instance;
 }
 
+void FeatureExtractor::updateHistory(const Observation &obs, FeatureExtractorHistory &history) {
+  std::vector<Action::Type> observedActions;
+  if (history.initialized) {
+    calcObservedActions(history.obs,obs,observedActions);
+  } else {
+    //std::cout << "no hist " << obs << std::endl;
+    for (unsigned int i = 0; i < obs.positions.size(); i++) {
+      history.actionHistory.push_back(boost::circular_buffer<Action::Type>(HISTORY_SIZE));
+      observedActions.push_back(Action::NUM_ACTIONS);
+    }
+  }
+  for (unsigned int agentInd = 0; agentInd < obs.positions.size(); agentInd++) {
+    history.actionHistory[agentInd].push_front(observedActions[agentInd]);
+  }
+  history.initialized = true;
+  history.obs = obs;
+}
+
 void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs, std::vector<Action::Type> &actions) {
   actions.clear();
   prevObs.uncenterPrey(dims);
   obs.uncenterPrey(dims);
+  //std::cout << prevObs << " " << obs << std::endl << std::flush;
   for (unsigned int i = 0; i < prevObs.positions.size(); i++) {
     Point2D diff = getDifferenceToPoint(dims,prevObs.positions[i],obs.positions[i]);
     actions.push_back(getAction(diff));

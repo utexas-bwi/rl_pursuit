@@ -49,6 +49,11 @@ public:
     // do nothing :)
   }
 
+  virtual void setCaching(bool cachingEnabled);
+  void resetCache() {
+    controller->resetCache();
+  }
+
   virtual boost::shared_ptr<WorldMDP> clone() const;
   void setAdhocAgent(boost::shared_ptr<AgentDummy> adhocAgent);
 
@@ -61,8 +66,7 @@ protected:
 
   Point2D preyPos;
   bool usePreySymmetry;
-  static const bool useCaching;
-
+  
   friend class WorldMDPTest;
   friend class ModelUpdaterBayesTest;
 };

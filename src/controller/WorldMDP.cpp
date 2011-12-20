@@ -3,8 +3,6 @@
 #include <controller/ModelUpdaterBayes.h>
 #include <factory/PlanningFactory.h>
 
-const bool WorldMDP::useCaching = true;
-
 WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, bool usePreySymmetry):
   rng(rng),
   model(model),
@@ -17,6 +15,7 @@ WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> mod
 
 void WorldMDP::setPreyPos(const Point2D &preyPos) {
   this->preyPos = preyPos;
+  //std::cout << "setPreyPos(" << preyPos << ")" << std::endl;
 }
 
 void WorldMDP::setState(const State_t &state) {
@@ -26,6 +25,7 @@ void WorldMDP::setState(const State_t &state) {
   obs.positions.resize(STATE_SIZE);
   getPositionsFromState(state,model->getDims(),obs.positions,preyPos,usePreySymmetry);
   obs.absPrey = this->preyPos;
+  //std::cout << "setState(" << state << "): " << this->preyPos << " " << obs << std::endl;
   setState(obs);
 
   //std::vector<Point2D> positions(STATE_SIZE);
@@ -120,27 +120,24 @@ void WorldMDP::addAgents(const std::vector<AgentModel> &agentModels, const std::
 }
   
 void WorldMDP::learnControllers(const Observation &prevObs, const Observation &currentObs) {
-  Observation absPrevObs(prevObs);
-  Observation absCurrentObs(currentObs);
-  absPrevObs.uncenterPrey(getDims());
-  absCurrentObs.uncenterPrey(getDims());
-
-  for (unsigned int i = 0; i < controller->agents.size(); i++) {
-    controller->agents[i]->learn(absPrevObs,absCurrentObs,i);
-  }
-    //for (unsigned int j = 0; j < models[i].size(); j++) {
-      //models[i][j]->learn(absPrevObs,absCurrentObs,j);
-    //}
-  //}
+  controller->learnControllers(prevObs,currentObs);
 }
   
 boost::shared_ptr<WorldMDP> WorldMDP::clone() const {
   boost::shared_ptr<AgentDummy> newAdhocAgent;
   boost::shared_ptr<World> newController = controller->clone(adhocAgent,newAdhocAgent);
-  boost::shared_ptr<WorldMDP> mdp(new WorldMDP(rng,newController->getModel(),newController,newAdhocAgent,usePreySymmetry));
+  boost::shared_ptr<WorldMDP> mdp(new WorldMDP(*this));
+  mdp->model = newController->getModel();
+  mdp->controller = newController;
+  mdp->adhocAgent = newAdhocAgent;
   return mdp;
 }
 
 void WorldMDP::setAdhocAgent(boost::shared_ptr<AgentDummy> adhocAgent) {
   this->adhocAgent = adhocAgent;
+}
+  
+void WorldMDP::setCaching(bool cachingEnabled) {
+  controller->setCaching(cachingEnabled);
+  controller->setUncachedAgent(adhocAgent);
 }

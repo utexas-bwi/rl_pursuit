@@ -13,6 +13,7 @@ Modified: 2011-10-27
 */
 
 #include <boost/shared_ptr.hpp>
+#include <boost/unordered_map.hpp>
 #include <common/DefaultMap.h>
 #include <common/Point2D.h>
 #include <common/RNG.h>
@@ -29,6 +30,11 @@ struct WorldStepOutcome {
   Action::Type agentDummyAction;
 };
 
+struct ObservationComp {
+  bool operator() (const Observation& lhs, const Observation& rhs) const;
+};
+std::size_t hash_value(const Observation &o);
+
 class World {
 public:
   World (boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> world, double actionNoise, bool centerPrey);
@@ -36,8 +42,9 @@ public:
   void generateObservation(Observation &obs);
   void step();
   void step(boost::shared_ptr<std::vector<Action::Type> > actions);
-  void step(std::vector<boost::shared_ptr<Agent> > &agents);
-  void step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents);
+  void setUncachedAgent(boost::shared_ptr<Agent> agent);
+  //void step(std::vector<boost::shared_ptr<Agent> > &agents);
+  //void step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents);
   void randomizePositions();
   void restartAgents();
   bool addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition=false);
@@ -52,16 +59,25 @@ public:
   
   boost::shared_ptr<World> clone() const;
   virtual boost::shared_ptr<World> clone(const boost::shared_ptr<AgentDummy> &oldAdhocAgent, boost::shared_ptr<AgentDummy> &newAdhocAgent) const;
+  void setCaching(bool cachingEnabled);
+  void resetCache() {
+    actionCache = boost::shared_ptr<ActionCache>(new ActionCache());
+  }
+  void learnControllers(const Observation &prevObs, const Observation &currentObs);
 
 protected:
   boost::shared_ptr<RNG> rng;
   boost::shared_ptr<WorldModel> world;
   const Point2D dims;
-public:
   std::vector<boost::shared_ptr<Agent> > agents;
   double actionNoise;
   bool centerPrey;
-protected:
+  bool cachingEnabled;
+  int uncachedAgentInd;
+
+  //typedef std::map<Observation,std::vector<ActionProbs>,ObservationComp> ActionCache;
+  typedef boost::unordered_map<Observation,std::vector<ActionProbs> > ActionCache;
+  boost::shared_ptr<ActionCache> actionCache;
 
 protected:
   void handleCollisions(const std::vector<Point2D> &requestedPositions);

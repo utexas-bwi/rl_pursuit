@@ -152,17 +152,22 @@ int main(int argc, const char *argv[])
           break;
         }
         //double t = getTime();
-        world->step(actions);
         if (displayObsQ) {
           world->generateObservation(obs);
           //std::cout << obs << " " << getTime() - t << std::endl;
           std::cout << obs << std::endl;
         }
+        world->step(actions);
         if (outputDTCSVQ) {
           world->generateObservation(obs);
           outputDT->saveStep(trial,numSteps[trial][episode],obs,*actions);
         } // end output dt csv
       } // while the episode lasts
+      if (displayObsQ) {
+        world->generateObservation(obs);
+        //std::cout << obs << " " << getTime() - t << std::endl;
+        std::cout << obs << std::endl;
+      }
       if (displayStepsPerEpisodeQ)
         std::cout << std::setw(3) << numSteps[trial][episode] << " " << std::flush;
     }

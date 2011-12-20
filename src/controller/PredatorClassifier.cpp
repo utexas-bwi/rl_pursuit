@@ -69,3 +69,7 @@ void PredatorClassifier::learn(const Observation &prevObs, const Observation &cu
     //std::cout << *dt << std::endl;
     //std::cout << "*************************************" << std::endl;
 }
+  
+void PredatorClassifier::minimalStep(const Observation &obs) {
+  featureExtractor.updateHistory(obs,stepHistory);
+}
