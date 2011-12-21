@@ -53,8 +53,10 @@ void assignTeammateAwareDesiredDests(const Point2D &dims, const Observation &obs
   Point2D possibleDests[NUM_DESTS];
   int minDists[NUM_PREDATORS];
   unsigned int minInds[NUM_PREDATORS];
-  for (unsigned int pred = 0; pred < NUM_PREDATORS; pred++)
+  for (unsigned int pred = 0; pred < NUM_PREDATORS; pred++) {
     minDists[pred] = 999999;
+    minInds[pred] = 0;
+  }
   
 
   Point2D dest;
