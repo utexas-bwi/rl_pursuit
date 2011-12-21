@@ -284,8 +284,8 @@ class Options(object):
     self.addOption('desc',desc,x)
     self.setupAgent('prey',prey,x)
     self.setupAgent('predator',pred,x)
-    self.addOption('foreachStudent',False,p)
-    self.addOption('includeCurrentStudent',True,p)
+    self.addOption('foreachStudent',False,x)
+    self.addOption('includeCurrentStudent',True,x)
     x.setExpanded(False)
     self.tree.models[x] = True
     return x
