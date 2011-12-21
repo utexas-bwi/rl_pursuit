@@ -4,15 +4,15 @@ import os
 from createDT import main as createDT
 from common import parseArgs, getSelectedStudents, makeDirs, readStudents, makeTemp, writeData
 
-def processStudent(base,dest,i,header,studentData,treeOptions,stayWeight):
+def processStudent(base,dest,i,header,studentData,treeOptions,stayWeight,useWeka):
   filename = makeTemp('.arff')
   try:
     writeData(header,studentData,filename,i)
-    createDT(filename,base,dest,stayWeight,treeOptions)
+    createDT(filename,base,dest,stayWeight,treeOptions,useWeka)
   finally:
     os.remove(filename)
 
-def main(base,suffix,stayWeight,treeOptions,students):
+def main(base,suffix,stayWeight,treeOptions,students,useWeka):
   makeDirs(base,False)
   header,studentData = readStudents(base,students)
   for i,student in enumerate(students):
@@ -23,7 +23,7 @@ def main(base,suffix,stayWeight,treeOptions,students):
     print '-------------------'
     print student
     print '-------------------'
-    processStudent(base,dest,i,header,studentData,treeOptions,stayWeight)
+    processStudent(base,dest,i,header,studentData,treeOptions,stayWeight,useWeka)
 
 if __name__ == '__main__':
   usage = 'createLeaveOneOutDTs.py base [suffix] [-- treeOptions ...]'
@@ -35,4 +35,4 @@ if __name__ == '__main__':
     suffix = ''
   stayWeight = None
   students = getSelectedStudents(includeStudents=options.includeStudents,excludeStudents=options.excludeStudents)
-  main(base,suffix,stayWeight,treeOptions,students)
+  main(base,suffix,stayWeight,treeOptions,students,options.useWeka)
