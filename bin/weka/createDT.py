@@ -3,7 +3,7 @@
 import subprocess, os
 from addARFFWeights import addARFFWeights
 
-from common import getFilename,makeTemp,parseArgs,BIN_PATH,DESC,UNWEIGHTED,WEIGHTED
+from common import getFilename,makeTemp,parseArgs,makeDirs,BIN_PATH,DESC,UNWEIGHTED,WEIGHTED
 
 def wekaCommandPrefix():
   return ['java','-cp',os.path.join(BIN_PATH,'weka.jar')]
@@ -73,10 +73,12 @@ def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False):
     os.remove(tmpData)
 
 if __name__ == '__main__':
-  usage = '%prog [options] inFile basename [-- treeOptions]'
-  options,args,treeOptions = parseArgs(usage=usage,numArgs=2,studentOptions=False)
+  usage = '%prog [options] inFile base name [-- treeOptions]'
+  options,args,treeOptions = parseArgs(usage=usage,numArgs=3,studentOptions=False)
   inFile = args[0]
-  basename = args[1]
+  base = args[1]
+  name = args[2]
   stayWeight = None
 
-  main(inFile,basename,stayWeight,treeOptions,options.useWeka)
+  makeDirs(base,printWarning=False)
+  main(inFile,base,name,stayWeight,treeOptions,options.useWeka)
