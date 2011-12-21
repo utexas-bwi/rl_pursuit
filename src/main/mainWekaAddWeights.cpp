@@ -18,7 +18,7 @@ int main(int argc, const char *argv[]) {
   const char *arffFile = argv[2];
   
   // read in the original tree
-  WekaParser parser(wekaFile,5,false);
+  WekaParser parser(wekaFile,5);
   boost::shared_ptr<DecisionTree> dt = parser.makeDecisionTree();
   std::cerr << "Parsed original tree" << std::endl;
 
