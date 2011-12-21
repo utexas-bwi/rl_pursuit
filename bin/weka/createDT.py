@@ -3,16 +3,10 @@
 import subprocess, os
 from addARFFWeights import addARFFWeights
 
-BASE_PATH=os.path.join('bin','weka')
-
-def makeTemp(*args,**kwargs):
-  import tempfile
-  fd,temp = tempfile.mkstemp(*args,**kwargs)
-  os.close(fd)
-  return temp
+from common import getFilename,makeTemp,parseArgs,BIN_PATH,DESC,UNWEIGHTED,WEIGHTED
 
 def wekaCommandPrefix():
-  return ['java','-cp',os.path.join(BASE_PATH,'weka.jar')]
+  return ['java','-cp',os.path.join(BIN_PATH,'weka.jar')]
 
 def removeTrialStep(inFile,outFile):
   cmd = wekaCommandPrefix() + ['weka.filters.unsupervised.attribute.Remove','-R','1-2','-i',inFile,'-o',outFile]
@@ -40,7 +34,7 @@ def weightTree(inFile,dataFile,outFile):
     arch = '64'
   else:
     arch = '32'
-  cmd = [os.path.join(BASE_PATH,'addWeights%s' % arch),inFile,dataFile]
+  cmd = [os.path.join(BIN_PATH,'addWeights%s' % arch),inFile,dataFile]
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
 def buildDT(dataFile,outFile,options):
@@ -51,10 +45,10 @@ def buildDT(dataFile,outFile,options):
   cmd = [os.path.join('bin','buildDT%s' % arch),dataFile] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
-def main(inFile,basename,stayWeight=None,treeOptions=[],useWeka=False):
-  descFile = os.path.join('data','dt','desc','%s.desc' % basename)
-  unweightedFile = os.path.join('data','dt','unweighted','%s.weka' % basename)
-  weightedFile = os.path.join('data','dt','weighted','%s.weka' % basename)
+def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False):
+  descFile = getFilename(base,name,DESC)
+  unweightedFile = getFilename(base,name,UNWEIGHTED)
+  weightedFile = getFilename(base,name,WEIGHTED)
 
   # create the temporary files we need
   tmpData = makeTemp('.arff')
@@ -79,23 +73,10 @@ def main(inFile,basename,stayWeight=None,treeOptions=[],useWeka=False):
     os.remove(tmpData)
 
 if __name__ == '__main__':
-  import sys
-  args = sys.argv[1:]
-  usage = 'Usage trainDT.py inFile basename [--weka] [treeOptions ...]'
-  useWeka = False
-  if '--weka' in args:
-    args.remove('--weka')
-    useWeka = True
-  if len(args) < 2:
-    print usage
-    sys.exit(1)
-  if args[0] in ['-h','--help']:
-    print usage
-    sys.exit(0)
-    
+  usage = 'trainDT.py [options] inFile basename [-- treeOptions]'
+  options,args,treeOptions = parseArgs(usage=usage,numArgs=2)
   inFile = args[0]
   basename = args[1]
   stayWeight = None
-  treeOptions = args[2:]
 
-  main(inFile,basename,stayWeight,treeOptions,useWeka)
+  main(inFile,basename,stayWeight,treeOptions,options.useWeka)

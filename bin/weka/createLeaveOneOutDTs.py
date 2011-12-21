@@ -1,63 +1,38 @@
 #!/usr/bin/env python
 
-import os, sys, tempfile, multiprocessing
-from copy import copy
+import os
 from createDT import main as createDT
+from common import parseArgs, getSelectedStudents, makeDirs, readStudents, makeTemp, writeData
 
-def processStudent(student,i,header,lines):
-  fd,filename = tempfile.mkstemp('.arff')
-  f = os.fdopen(fd,'w')
+def processStudent(base,dest,i,header,studentData,treeOptions,stayWeight):
+  filename = makeTemp('.arff')
   try:
+    writeData(header,studentData,filename,i)
+    createDT(filename,base,dest,stayWeight,treeOptions)
+  finally:
+    os.remove(filename)
+
+def main(base,suffix,stayWeight,treeOptions,students):
+  makeDirs(base,False)
+  header,studentData = readStudents(base,students)
+  for i,student in enumerate(students):
+    if len(suffix) > 0:
+      if suffix[0] != '-':
+        suffix = '-' + suffix
+    dest = 'leaveOneOut-%s%s' % (student,suffix)
     print '-------------------'
     print student
     print '-------------------'
-    contents = header + sum(lines[:i] + lines[i+1:],[])
-    f.writelines(contents)
-    f.close()
-    createDT(filename,'leaveOneOut-%s-%s'%(student,dataBasename),stayWeight,treeOptions)
-  finally:
-    f.close()
-    os.remove(filename)
-
-def main(dataBasename,stayWeight,treeOptions):
-  with open('data/students.txt','r') as f:
-    students = list(set(f.read().split()))
-  
-  dataDir = os.path.join('data','dt-train',dataBasename)
-  studentFiles = [os.path.join(dataDir,'%s.arff' % student) for student in students]
-  # make sure all of the student files exist before starting
-  for studentFile in studentFiles:
-    if not(os.path.exists(studentFile)):
-      print >>sys.stderr,'Student file missing: %s' % studentFile
-      sys.exit(1)
-  # read in all of the files
-  lines = []
-  header = None
-  for studentFile in studentFiles:
-    with open(studentFile,'r') as f:
-      temp = f.readlines()
-      ind = temp.index('@data\n') + 1 # get the line where the data starts
-      if header is None:
-        header = temp[:ind]
-      lines.append(temp[ind:])
-  # do it
-  pool = multiprocessing.Pool(processes = 2)
-  for i,student in enumerate(students):
-    #processStudent(student,i,header,lines)
-    pool.apply_async(processStudent,(student,i,header,lines))
-  pool.close()
-  pool.join()
+    processStudent(base,dest,i,header,studentData,treeOptions,stayWeight)
 
 if __name__ == '__main__':
-  usage = 'Usage: createLeaveOneOutDTs.py dataBasename [treeOptions ...]'
-  args = sys.argv[1:]
-  if len(args) < 1:
-    print usage
-    sys.exit(1)
-  if args[0] in ['-h','--help']:
-    print usage
-    sys.exit(0)
-  dataBasename = args[0]
+  usage = 'createLeaveOneOutDTs.py base [suffix] [-- treeOptions ...]'
+  options,args,treeOptions = parseArgs(usage=usage,minArgs=1,maxArgs=2)
+  base = args[0]
+  if len(args) >= 2:
+    suffix = args[1]
+  else:
+    suffix = ''
   stayWeight = None
-  treeOptions = args[1:]
-  main(dataBasename,stayWeight,treeOptions)
+  students = getSelectedStudents(includeStudents=options.includeStudents,excludeStudents=options.excludeStudents)
+  main(base,suffix,stayWeight,treeOptions,students)
