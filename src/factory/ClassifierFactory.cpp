@@ -50,7 +50,7 @@ boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, 
 }
 
 boost::shared_ptr<DecisionTree> createDecisionTreeFromWeka(const std::string &filename) {
-  WekaParser parser(filename,Action::NUM_ACTIONS,true);
+  WekaParser parser(filename,Action::NUM_ACTIONS);
   return parser.makeDecisionTree();
 }
 

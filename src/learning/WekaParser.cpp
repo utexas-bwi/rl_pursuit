@@ -4,10 +4,9 @@
 #include <model/Common.h>
 #include "ArffReader.h"
 
-WekaParser::WekaParser(const std::string &filename, unsigned int numClasses, bool useClassDistributions):
+WekaParser::WekaParser(const std::string &filename, unsigned int numClasses):
   in(filename.c_str()),
-  numClasses(numClasses),
-  useClassDistributions(useClassDistributions)
+  numClasses(numClasses)
 {
   if (!in.good()) {
     std::cerr << "WekaParser: error opening file: " << filename << std::endl;
@@ -139,20 +138,21 @@ void WekaParser::tokenizeLine(Line &line) {
     // read the class
     line.leaf = true;
     line.classDistribution = Classification(numClasses,0);
-    if (useClassDistributions) {
-      for (unsigned int i = 0; i < numClasses; i++) {
-        //std::cout << i << " ";
-        str = readWekaToken(false,true);
-        //std::cout << str << std::endl;
-        line.classDistribution[i] = stringToVal(str,"classification");
-      }
-    } else {
-      str = readWekaToken(false);
-      float val = stringToVal(str,"classification");
-      int ind = (int)(val + 0.5);
-      assert ((ind >= 0) && (ind < (int)numClasses));
-      line.classDistribution[ind] = 1;
-    }
+    readClass(line);
+    //if (useClassDistributions) {
+      //for (unsigned int i = 0; i < numClasses; i++) {
+        ////std::cout << i << " ";
+        //str = readWekaToken(false,true);
+        ////std::cout << str << std::endl;
+        //line.classDistribution[i] = stringToVal(str,"classification");
+      //}
+    //} else {
+      //str = readWekaToken(false);
+      //float val = stringToVal(str,"classification");
+      //int ind = (int)(val + 0.5);
+      //assert ((ind >= 0) && (ind < (int)numClasses));
+      //line.classDistribution[ind] = 1;
+    //}
   } else {
     line.leaf = false;
   }
@@ -253,8 +253,28 @@ float WekaParser::stringToVal(const std::string &str, const std::string &) {
   } catch (boost::bad_lexical_cast) {
     //val = valueMap[name][str];
     //val = valueMap[str];
+    std::cout << "str: " << str << std::endl;
     throw;
   }
   //std::cout << "stringToVal(" << str << "," << name << "): " << val << std::endl;
   return val;
+}
+  
+void WekaParser::readClass(Line &line) {
+  std::string str;
+  std::vector<float> vals;
+  for (unsigned int i = 0; i < numClasses; i++) {
+    str = readWekaToken(false,true);
+    if (str[0] == '(') {
+      assert(vals.size() == 1);
+      int ind = (int)(vals[0] + 0.5);
+      line.classDistribution[ind] = 1;
+      return;
+    } else {
+      vals.push_back(stringToVal(str,"classification"));
+    }
+  }
+  assert(vals.size() == numClasses);
+  for (unsigned int  i = 0; i < numClasses; i++)
+    line.classDistribution[i] = vals[i];
 }

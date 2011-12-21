@@ -30,7 +30,7 @@ public:
     Classification classDistribution;
   };
 
-  WekaParser(const std::string &filename, unsigned int numClasses, bool useClassDistributions=false);
+  WekaParser(const std::string &filename, unsigned int numClasses);
   boost::shared_ptr<DecisionTree> makeDecisionTree();
   
 private:
@@ -41,6 +41,7 @@ private:
   std::string readWekaToken(bool acceptNewline, bool breakOnSpace = false);
   DecisionTree::ComparisonOperator stringToOperator(const std::string &str);
   float stringToVal(const std::string &str, const std::string &name);
+  void readClass(Line &line);
   
 
 private:
@@ -48,7 +49,6 @@ private:
   std::ifstream in;
   //boost::unordered_map<std::string,Features > valueMap;
   unsigned int numClasses;
-  bool useClassDistributions;
   std::vector<Feature> featureTypes;
   std::string classFeature;
 };
