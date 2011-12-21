@@ -73,8 +73,8 @@ def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False):
     os.remove(tmpData)
 
 if __name__ == '__main__':
-  usage = 'trainDT.py [options] inFile basename [-- treeOptions]'
-  options,args,treeOptions = parseArgs(usage=usage,numArgs=2)
+  usage = '%prog [options] inFile basename [-- treeOptions]'
+  options,args,treeOptions = parseArgs(usage=usage,numArgs=2,studentOptions=False)
   inFile = args[0]
   basename = args[1]
   stayWeight = None

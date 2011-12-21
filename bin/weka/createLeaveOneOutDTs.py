@@ -26,7 +26,7 @@ def main(base,suffix,stayWeight,treeOptions,students,useWeka):
     processStudent(base,dest,i,header,studentData,treeOptions,stayWeight,useWeka)
 
 if __name__ == '__main__':
-  usage = 'createLeaveOneOutDTs.py base [suffix] [-- treeOptions ...]'
+  usage = '%prog [options] base [suffix] [-- treeOptions ...]'
   options,args,treeOptions = parseArgs(usage=usage,minArgs=1,maxArgs=2)
   base = args[0]
   if len(args) >= 2:
