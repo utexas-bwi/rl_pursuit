@@ -44,7 +44,7 @@ def getSelectedStudents(filename=DEFAULT_STUDENT_FILENAME,includeStudents=[],exc
 
 def makeDirs(base,printWarning=True):
   for d in FILETYPE_DIRS:
-    path = os.path.join(BASE_DIR,d)
+    path = os.path.join(BASE_DIR,base,d)
     if os.path.exists(path):
       if printWarning:
         print '%s already exists, skipping' % path
