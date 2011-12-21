@@ -21,7 +21,7 @@ public:
 
   virtual ~Classifier() {}
   virtual void addData(const InstancePtr &instance) = 0;
-  virtual void train() = 0;
+  virtual void train(bool incremental=true) = 0;
   virtual void classify(const InstancePtr &instance, Classification &classification) const = 0;
 
   std::ostream& outputHeader(std::ostream &out) const {

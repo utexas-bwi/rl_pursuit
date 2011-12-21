@@ -107,6 +107,11 @@ void DecisionTree::InteriorNode::output(std::ostream &out, unsigned int depth) {
   }
 }
 
+void DecisionTree::InteriorNode::collectInstances(InstanceSetPtr &instances) {
+  for (unsigned int i = 0; i < children.size(); i++)
+    children[i]->collectInstances(instances);
+}
+
 
 ////////////////////
 // LEAF NODE
@@ -251,6 +256,15 @@ void DecisionTree::LeafNode::output(std::ostream &out, unsigned int) {
   out << std::endl;
 }
 
+void DecisionTree::LeafNode::collectInstances(InstanceSetPtr &instances) {
+  if (instances.get() == NULL)
+    instances = InstanceSetPtr(new InstanceSet(*(this->instances)));
+  else {
+    for (unsigned int i = 0; i < this->instances->size(); i++)
+      instances->add((*(this->instances))[i]);
+  }
+}
+
 ////////////////////
 // MAIN FUNCTIONS
 ////////////////////
@@ -279,8 +293,16 @@ void DecisionTree::classify(const InstancePtr &instance, Classification &classif
   root->classify(instance,classification);
 }
 
-void DecisionTree::train() {
-  root->train(root,*this,MAX_DEPTH);
+void DecisionTree::train(bool incremental) {
+  if (incremental)
+    root->train(root,*this,MAX_DEPTH);
+  else {
+    InstanceSetPtr instances;
+    root->collectInstances(instances);
+    assert(instances.get() != NULL);
+    root = NodePtr(new DecisionTree::LeafNode(instances));
+    root->train(root,*this,MAX_DEPTH);
+  }
 }
 
 void DecisionTree::calcGainRatio(const InstanceSetPtr &instances, DecisionTree::Split &split, double I) const {

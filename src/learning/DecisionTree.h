@@ -44,6 +44,7 @@ public:
     virtual void addData(const InstancePtr &instance) = 0;
     virtual void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth) = 0;
     virtual void output(std::ostream &out, unsigned int depth) = 0;
+    virtual void collectInstances(InstanceSetPtr &instances) = 0;
   };
 
   class InteriorNode: public Node {
@@ -54,6 +55,7 @@ public:
     void addData(const InstancePtr &instance);
     void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
     void output(std::ostream &out, unsigned int depth = 0);
+    void collectInstances(InstanceSetPtr &instances);
   private:
     NodePtr getChild(const InstancePtr &instance) const;
   private:
@@ -70,6 +72,7 @@ public:
     void addData(const InstancePtr &instance);
     void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
     void output(std::ostream &out, unsigned int depth = 0);
+    void collectInstances(InstanceSetPtr &instances);
   private:
     bool oneClass() const;
     void trySplittingNode(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
@@ -88,7 +91,7 @@ public:
   
   void addData(const InstancePtr &instance);
   void classify(const InstancePtr &instance, Classification &classification) const;
-  void train();
+  void train(bool incremental=true);
 
 private:
   void calcGainRatio(const InstanceSetPtr &instances, Split &split, double I) const;
