@@ -72,7 +72,7 @@ def writeData(header,studentData,outputFilename,excludeInd=None):
   else:
     data = studentData[:excludeInd] + studentData[excludeInd+1:]
   contents = header + sum(data,[])
-  with open(outputFilename,'r') as f:
+  with open(outputFilename,'w') as f:
     f.writelines(contents)
 
 def makeTemp(*args,**kwargs):
