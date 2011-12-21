@@ -10,13 +10,14 @@ Modified: 2011-12-02
 #include <factory/AgentFactory.h>
 #include <boost/lexical_cast.hpp>
 
-PredatorClassifier::PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name, int trainingPeriod):
+PredatorClassifier::PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name, int trainingPeriod, bool trainIncremental):
   Agent(rng,dims),
   name(name),
   classifier(classifier),
   featureExtractor(dims),
   trainingPeriod(trainingPeriod),
-  trainingCounter(0)
+  trainingCounter(0),
+  trainIncremental(trainIncremental)
 {
   // add the feature agents
   //featureExtractor.addFeatureAgent("GR","GR");
@@ -62,7 +63,7 @@ void PredatorClassifier::learn(const Observation &prevObs, const Observation &cu
   if (trainingCounter >= trainingPeriod) {
     //std::cout << "training" << std::endl;
     trainingCounter = 0;
-    classifier->train();
+    classifier->train(trainIncremental);
   }
     //std::cout << "*************************************" << std::endl;
     //DecisionTree *dt = (DecisionTree*)(classifier.get());

@@ -128,10 +128,11 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     bool outputPenaltyMode = options.get("outputPenaltyMode",false).asBool();
     return ptr(new PredatorSurroundWithPenalties(rng,dims,outputPenaltyMode));
   } else if (NAME_IN_SET("dt","decision","decisiontree","decision-tree","classifier","class")) {
-    int trainingPeriod = options.get("trainingPeriod",-1).asInt();
     std::string filename = options.get("filename","").asString();
+    int trainingPeriod = options.get("trainingPeriod",-1).asInt();
+    bool trainIncremental = options.get("trainIncremental",true).asBool();
     boost::shared_ptr<Classifier> classifier = createClassifier(filename,options);
-    return ptr(new PredatorClassifier(rng,dims,classifier,filename,trainingPeriod));
+    return ptr(new PredatorClassifier(rng,dims,classifier,filename,trainingPeriod,trainIncremental));
   } else if (NAME_IN_SET("student")) {
     std::string student = getStudentForTrial(trialNum,options);
     if ((predatorInd < 0) || (predatorInd >= 4)) {

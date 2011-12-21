@@ -17,7 +17,7 @@ Modified: 2011-12-02
 
 class PredatorClassifier: public Agent {
 public:
-  PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name, int trainingPeriod);
+  PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name, int trainingPeriod, bool trainIncremental);
 
   ActionProbs step(const Observation &obs);
   void restart();
@@ -38,6 +38,7 @@ protected:
   FeatureExtractorHistory learnHistory;
   int trainingPeriod;
   int trainingCounter;
+  bool trainIncremental;
 };
 
 #endif /* end of include guard: PREDATORDECISIONTREE_L0Z40SLR */

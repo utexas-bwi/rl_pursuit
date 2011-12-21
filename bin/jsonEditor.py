@@ -242,7 +242,9 @@ class Options(object):
     a = self.addOption(agent,agentType,parent)
     ao = self.addDependentOption(a,['student','dt','dummy'],[agent + 'Options',''],parent)
     self.addDependentOption(a,'student',['student','data/students.txt'],ao)
-    self.addDependentOption(a,'dt',['filename','data/dt/weighted/studentNewComplete.weka'],ao)
+    self.addDependentOption(a,'dt',['filename','data/dt/ra-20x20-centerPrey-myActionHistory-5000/weighted/common.weka'],ao)
+    self.addDependentOption(a,'dt',['trainingPeriod',-1],ao)
+    self.addDependentOption(a,'dt',['trainIncremental',True],ao)
     self.addDependentOption(a,'dummy',['action',0],ao)
     return a
 
@@ -325,7 +327,7 @@ class ConfigEditor(QtGui.QWidget):
     hbox.addWidget(saveButton)
     
     self.setWindowTitle('Config Editor')
-    self.resize(600,800)
+    self.resize(800,800)
 
 def main(args,inFile,outFile):
   app = QtGui.QApplication(args)
