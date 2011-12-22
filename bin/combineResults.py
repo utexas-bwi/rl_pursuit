@@ -33,6 +33,7 @@ def run(targetBase,sourceDir,expectedNumEpisodes):
   assert(len(filenames) == expectedNumEpisodes)
   if usedModelFiles:
     targetName += '-incomplete'
+    print '  Incomplete, using model output'
   targetCSV = os.path.join(targetBase,'%s.csv'%targetName)
   targetJSON = os.path.join(targetBase,'configs','%s.json'%targetName)
   if os.path.exists(targetCSV):
