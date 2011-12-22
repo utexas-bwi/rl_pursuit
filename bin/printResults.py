@@ -106,13 +106,16 @@ def main(paths,outputCsv,includeStudents,excludeStudents):
   studentInds = getStudentInds('data/students.txt',includeStudents,excludeStudents)
   for i,path in enumerate(paths):
     res = loadResults(path)
-    trials = res[:,0]
-    numSteps = res[:,1:]
-    inds = []
-    for i,trial in enumerate(trials):
-      if trial in studentInds:
-        inds.append(i)
-    numSteps = numSteps[inds,:]
+    if res is None:
+      numSteps = None
+    else:
+      trials = res[:,0]
+      numSteps = res[:,1:]
+      inds = []
+      for i,trial in enumerate(trials):
+        if trial in studentInds:
+          inds.append(i)
+      numSteps = numSteps[inds,:]
     printResults(numSteps,path,outputCsv,i==0)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
