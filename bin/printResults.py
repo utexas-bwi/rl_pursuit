@@ -112,9 +112,9 @@ def main(paths,outputCsv,includeStudents,excludeStudents):
       trials = res[:,0]
       numSteps = res[:,1:]
       inds = []
-      for i,trial in enumerate(trials):
+      for j,trial in enumerate(trials):
         if trial in studentInds:
-          inds.append(i)
+          inds.append(j)
       numSteps = numSteps[inds,:]
     printResults(numSteps,path,outputCsv,i==0)
   #for filenameList in filenames:
