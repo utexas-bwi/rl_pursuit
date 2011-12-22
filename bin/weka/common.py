@@ -81,14 +81,15 @@ def makeTemp(*args,**kwargs):
   os.close(fd)
   return temp
 
-def parseArgs(usage=None,options=[],args=None, minArgs=None, maxArgs=None, numArgs=0, studentOptions=True):
+def parseArgs(usage=None,options=[],args=None, minArgs=None, maxArgs=None, numArgs=0, studentOptions=True,unprocessedArgsAllowed=True,wekaFlag=True):
   import sys
   from optparse import OptionParser
   parser = OptionParser(usage)
   if studentOptions:
     parser.add_option('-i','--include',action='append',dest='includeStudents',default=[],help='output only for specified students',metavar='STUDENT')
     parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
-  parser.add_option('--weka',action='store_true',dest='useWeka',default=False,help='use weka instead of Sam\'s dts')
+  if wekaFlag:
+    parser.add_option('--weka',action='store_true',dest='useWeka',default=False,help='use weka instead of Sam\'s dts')
   for option in options:
     parser.add_option(option)
   if args is None:
@@ -100,13 +101,22 @@ def parseArgs(usage=None,options=[],args=None, minArgs=None, maxArgs=None, numAr
     unprocessedArgs = args[ind+1:]
     args = args[:ind]
 
-  options,args = parser.parse_args(args)
+  resOptions,args = parser.parse_args(args)
 
   if minArgs is None:
     minArgs = numArgs
   if maxArgs is None:
     maxArgs = numArgs
   if not(minArgs <= len(args) <= maxArgs):
+    if minArgs == maxArgs:
+      exp = '%i' % minArgs
+    else:
+      exp = '%i-%i' % (minArgs,maxArgs)
+    print 'Expected %s arguments, received %i' % (exp,len(args))
     parser.parse_args(['--help'])
     sys.exit(1)
-  return options,args,unprocessedArgs
+  if not(unprocessedArgsAllowed) and (len(unprocessedArgs) > 0):
+    print 'Unprocessed args not allowed, get rid of the --'
+    parser.parse_args(['--help'])
+    sys.exit(1)
+  return resOptions,args,unprocessedArgs
