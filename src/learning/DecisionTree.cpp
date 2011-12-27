@@ -289,7 +289,7 @@ void DecisionTree::addData(const InstancePtr &instance) {
   root->addData(instance);
 }
 
-void DecisionTree::classify(const InstancePtr &instance, Classification &classification) const {
+void DecisionTree::classify(const InstancePtr &instance, Classification &classification) {
   root->classify(instance,classification);
 }
 

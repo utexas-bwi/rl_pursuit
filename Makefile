@@ -113,6 +113,11 @@ $(BUILD_DIR)/%.d: $(SOURCE_DIR)/%.cpp
 	sed 's,\(.*\).o:,$(@:.d=.o) $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
+weka: bin/weka/WekaBridge.class
+
+bin/weka/WekaBridge.class: src/learning/WekaBridge.java
+	javac -cp bin/weka/weka.jar -d bin/weka $<
+
 bin/%$(ARCH):
 	@echo "Linking $@"
 	@$(CC) $(FLAGS) $^ $(LINK_FLAGS) -o $@

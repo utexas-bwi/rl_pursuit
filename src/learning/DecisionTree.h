@@ -90,7 +90,7 @@ public:
   void setLearningParams(double minGainRatio = 0.0001, unsigned int minInstancesPerLeaf = 2, int maxDepth = -1);
   
   void addData(const InstancePtr &instance);
-  void classify(const InstancePtr &instance, Classification &classification) const;
+  void classify(const InstancePtr &instance, Classification &classification);
   void train(bool incremental=true);
 
 private:

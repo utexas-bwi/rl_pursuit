@@ -17,17 +17,19 @@ Modified: 2011-12-02
 boost::shared_ptr<Classifier> createClassifier(const std::string &filename, const Json::Value &options) {
   std::string type = options.get("type","dt").asString();
   boost::to_lower(type);
+  std::string dataFilename = options.get("data","").asString();
 
   if (type == "dt") {
-    return createDecisionTree(filename,options);
+    return createDecisionTree(filename,dataFilename,options);
+  } else if (type == "weka") {
+    return createWekaClassifier(filename,dataFilename,options);
   } else {
     std::cerr << "createClassifier: ERROR, unknown type: " << type << std::endl;
     exit(3);
   }
 }
 
-boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const Json::Value &options) {
-  std::string dataFilename = options.get("data","").asString();
+boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::string &dataFilename, const Json::Value &options) {
   double minGainRatio = options.get("minGain",0.0001).asDouble();
   unsigned int minInstancesPerLeaf = options.get("minInstances",2).asUInt();
   int maxDepth = options.get("maxDepth",-1).asInt();
@@ -71,4 +73,13 @@ void addDataToDecisionTree(boost::shared_ptr<DecisionTree> dt, const std::string
   }
   in.close();
   dt->train();
+}
+
+boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &/*filename*/, const std::string &dataFilename, const Json::Value &options) {
+  assert(dataFilename != "");
+  std::ifstream in(dataFilename.c_str());
+  ArffReader arff(in);
+  in.close();
+  std::string wekaOptions = options.get("options","").asString();
+  return boost::shared_ptr<WekaClassifier>(new WekaClassifier(arff.getFeatureTypes(),wekaOptions));
 }
