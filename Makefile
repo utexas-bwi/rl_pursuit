@@ -37,7 +37,7 @@ LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython$(PYTHON_VERSION) -lboost_python -lgfl
 
 include $(TARGET_MAKEFILES)
 
-default: main
+default: main weka
 
 all: $(TARGETS)
 
