@@ -14,11 +14,10 @@ Modified: 2011-12-26
 #include <fcntl.h>
 #include <cstdio>
 
-const std::string WekaClassifier::WEKA_FILE = "java";
-const std::string WekaClassifier::WEKA_CMD = "java -cp bin/weka WekaBridge";
+const std::string WekaClassifier::WEKA_CMD = "java -DWEKA_HOME=./bin/weka/wekafiles -Xmx2G -cp bin/weka:bin/weka/weka.jar WekaBridge";
 
-WekaClassifier::WekaClassifier(const std::vector<Feature> &features, std::string /*wekaOptions*/) :
-  Classifier(features)
+WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts) :
+  Classifier(features,caching)
 {
   // get the temp filenames
   char tmp[] = "/tmp/tmpWekaXXXXXX";
@@ -29,7 +28,6 @@ WekaClassifier::WekaClassifier(const std::vector<Feature> &features, std::string
   // make some fifos
   mkfifo(  toWekaName.c_str(),O_CREAT | O_EXCL | S_IRUSR| S_IWUSR); // open it exclusively
   mkfifo(fromWekaName.c_str(),O_CREAT | O_EXCL | S_IRUSR| S_IWUSR); // open it exclusively
-  std::cout << "DONE CREATING FIFOS" << std::endl;
   
   // fork you
   pid = fork();
@@ -39,10 +37,11 @@ WekaClassifier::WekaClassifier(const std::vector<Feature> &features, std::string
     exit(65);
   } else if (pid == 0) {
     //child
-    //std::string cmd = WEKA_CMD + " " + toWekaName + " " + fromWekaName + " " + wekaOptions;
-    //std::cout << cmd << std::endl;
-    //std::cout << "child" << std::endl << std::flush;
-    execlp(WEKA_FILE.c_str(),"java","-cp","bin/weka:bin/weka/weka.jar","WekaBridge",toWekaName.c_str(),fromWekaName.c_str(),NULL);
+    std::string cmd = WEKA_CMD + " " + toWekaName + " " + fromWekaName + " " + opts;
+    char** cmdArr = splitCommand(cmd);
+    execvp(cmdArr[0],cmdArr);
+    freeCommand(cmdArr);
+    //execlp(WEKA_FILE.c_str(),"java","-cp","bin/weka:bin/weka/weka.jar","WekaBridge",toWekaName.c_str(),fromWekaName.c_str(),NULL);
     exit(0);
     return;
   } else { 
@@ -55,11 +54,14 @@ WekaClassifier::WekaClassifier(const std::vector<Feature> &features, std::string
     //std::cout << "OPENED" << std::endl << std::flush;
 
     writeFeatures();
+    
 
-    InstancePtr inst = InstancePtr(new Instance());
-    inst->weight = 1.0;
-    addData(inst);
-    train();
+    //// TODO REMOVE THIS?
+    //InstancePtr inst = InstancePtr(new Instance());
+    //inst->weight = 1.0;
+    //addData(inst);
+    //train();
+    //out << "save\ntest.weka" << std::endl;
   }
 }
 
@@ -92,16 +94,17 @@ void WekaClassifier::addData(const InstancePtr &instance) {
   writeInstance(instance);
 }
 
-void WekaClassifier::train(bool /*incremental*/) {
+void WekaClassifier::trainInternal(bool /*incremental*/) {
   out << "train" << std::endl;
-  std::cout << "train" << std::endl;
+  //std::cout << "train" << std::endl;
 }
 
-void WekaClassifier::classify(const InstancePtr &instance, Classification &classification) {
+void WekaClassifier::classifyInternal(const InstancePtr &instance, Classification &classification) {
   out << "classify" << std::endl;
   //std::cout << "start classify c++" << std::endl;
   writeInstance(instance);
   classification.clear();
+  classification.resize(numClasses);
   float val;
   while (in.peek() == -1) {
     //int i = in.peek();
@@ -109,23 +112,73 @@ void WekaClassifier::classify(const InstancePtr &instance, Classification &class
     //int j;
     //std::cin >> j;
   }
+  const float EPS = 0.001;
+  bool unclassified = true;
   for (unsigned int i = 0; i < numClasses; i++) {
     in >> val;
     while (!in.good())
       in >> val;
+    if (val > EPS)
+      unclassified = false;
     //std::cout << "peek: " << in.peek() << " good: " << in.good() << std::endl;
     //std::cout << "read: " << val << std::endl;
-    classification.push_back(val);
+    classification[i] = val;
   }
+  if (unclassified) {
+    for (unsigned int i = 0; i < numClasses; i++)
+      classification[i] = 1.0 / numClasses;
+  } 
+  //else {
+    //std::cout << "classified" << std::endl;
+  //}
   //std::cout << "done  classify c++" << std::endl;
 }
 
-void WekaClassifier::writeInstance(const InstancePtr &instance) {
+void WekaClassifier::writeInstance(const InstanceConstPtr &instance) {
   for (unsigned int i = 0; i < features.size(); i++) {
     //std::cout << "out " << i << " " << (*instance)[features[i].name] << std::endl;
-    out << (*instance)[features[i].name] << ",";
+    out << instance->get(features[i].name,0) << ",";
   }
   out << instance->weight << std::endl;
   //std::cout << "weight " << instance->weight << std::endl;
   //std::cout << "writeInstance: " << features.size() << std::endl;
+}
+  
+char** WekaClassifier::splitCommand(const std::string &cmd) {
+  std::vector<std::string> cmdVec;
+  bool escaped = false;
+  unsigned int startInd = 0;
+  for (unsigned int i = 0; i < cmd.size(); i++) {
+    if (escaped) {
+      escaped = false;
+    } else if (cmd[i] == '\\') {
+      escaped = true;
+      continue;
+    } else if (cmd[i] == ' ') {
+      if (startInd != i) { // not just spaces
+        cmdVec.push_back(cmd.substr(startInd,i-startInd));
+      }
+      startInd = i + 1;
+    }
+  }
+  if (startInd != cmd.size())
+    cmdVec.push_back(cmd.substr(startInd,cmd.size() - startInd));
+  char **cmdArr = new char* [cmdVec.size() + 1]; // + 1 for NULL
+  for (unsigned int i = 0; i < cmdVec.size(); i++) {
+    cmdArr[i] = new char[cmdVec[i].size()+1];
+    for (unsigned int j = 0; j < cmdVec[i].size(); j++)
+      cmdArr[i][j] = cmdVec[i][j];
+    cmdArr[i][cmdVec[i].size()] = '\0';
+    std::cout << "cmdArr[" << i << "]='" << cmdArr[i] << "'" << std::endl;
+  }
+  cmdArr[cmdVec.size()] = NULL;
+  return cmdArr;
+}
+
+void WekaClassifier::freeCommand(char **cmdArr) {
+  int i = 0;
+  while (cmdArr[i] != NULL) {
+    delete[] cmdArr[i];
+    i++;
+  }
 }

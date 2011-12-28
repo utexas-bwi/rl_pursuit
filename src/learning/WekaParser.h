@@ -31,7 +31,7 @@ public:
   };
 
   WekaParser(const std::string &filename, unsigned int numClasses);
-  boost::shared_ptr<DecisionTree> makeDecisionTree();
+  boost::shared_ptr<DecisionTree> makeDecisionTree(bool caching);
   
 private:
   boost::shared_ptr<DecisionTree::Node> readDecisionTreeNode(unsigned int lineInd, int currentDepth);

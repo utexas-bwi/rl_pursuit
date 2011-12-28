@@ -85,13 +85,14 @@ public:
 // MAIN FUNCTIONS
 ////////////////////
 public:
-  DecisionTree(const std::vector<Feature> &features, NodePtr root = NodePtr());
+  DecisionTree(const std::vector<Feature> &features, bool caching, NodePtr root = NodePtr());
   
   void setLearningParams(double minGainRatio = 0.0001, unsigned int minInstancesPerLeaf = 2, int maxDepth = -1);
   
   void addData(const InstancePtr &instance);
-  void classify(const InstancePtr &instance, Classification &classification);
-  void train(bool incremental=true);
+protected:
+  void classifyInternal(const InstancePtr &instance, Classification &classification);
+  void trainInternal(bool incremental);
 
 private:
   void calcGainRatio(const InstanceSetPtr &instances, Split &split, double I) const;

@@ -268,8 +268,8 @@ void DecisionTree::LeafNode::collectInstances(InstanceSetPtr &instances) {
 ////////////////////
 // MAIN FUNCTIONS
 ////////////////////
-DecisionTree::DecisionTree(const std::vector<Feature> &features, NodePtr root):
-  Classifier(features),
+DecisionTree::DecisionTree(const std::vector<Feature> &features, bool caching, NodePtr root):
+  Classifier(features,caching),
   root(root)
 {
   if (this->root.get() == NULL) {
@@ -289,11 +289,11 @@ void DecisionTree::addData(const InstancePtr &instance) {
   root->addData(instance);
 }
 
-void DecisionTree::classify(const InstancePtr &instance, Classification &classification) {
+void DecisionTree::classifyInternal(const InstancePtr &instance, Classification &classification) {
   root->classify(instance,classification);
 }
 
-void DecisionTree::train(bool incremental) {
+void DecisionTree::trainInternal(bool incremental) {
   if (incremental)
     root->train(root,*this,MAX_DEPTH);
   else {

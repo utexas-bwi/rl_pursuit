@@ -14,15 +14,20 @@ Modified: 2011-12-26
 
 class WekaClassifier: public Classifier {
 public:
-  WekaClassifier(const std::vector<Feature> &features, std::string wekaOptions);
+  WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts);
   virtual ~WekaClassifier ();
   void addData(const InstancePtr &instance);
-  void train(bool incremental=true);
-  void classify(const InstancePtr &instance, Classification &classification);
+
+protected:
+  void trainInternal(bool incremental);
+  void classifyInternal(const InstancePtr &instance, Classification &classification);
 
 private:
   void writeFeatures();
-  void writeInstance(const InstancePtr &instance);
+  void writeInstance(const InstanceConstPtr &instance);
+
+  char** splitCommand(const std::string &cmd);
+  void freeCommand(char **cmdArr);
 
 private:
   std::string toWekaName;
@@ -31,7 +36,6 @@ private:
   std::ofstream out;
   std::ifstream in;
   pid_t pid;
-  static const std::string WEKA_FILE;
   static const std::string WEKA_CMD;
 };
 

@@ -16,12 +16,12 @@ Modified: 2011-12-02
 #include <learning/WekaClassifier.h>
 
 boost::shared_ptr<Classifier> createClassifier(const std::string &filename, const Json::Value &options);
-boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::string &dataFilename, const Json::Value &options);
-boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::string &dataFilename, double minGainRatio, unsigned int minInstancesPerLeaf, int maxDepth);
-boost::shared_ptr<DecisionTree> createDecisionTreeFromWeka(const std::string &filename);
-boost::shared_ptr<DecisionTree> createBlankDecisionTreeFromArff(const std::string &dataFilename);
+boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::string &dataFilename, bool caching, const Json::Value &options);
+boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::string &dataFilename, bool caching, double minGainRatio, unsigned int minInstancesPerLeaf, int maxDepth);
+boost::shared_ptr<DecisionTree> createDecisionTreeFromWeka(const std::string &filename, bool caching);
+boost::shared_ptr<DecisionTree> createBlankDecisionTreeFromArff(const std::string &dataFilename, bool caching);
 void addDataToDecisionTree(boost::shared_ptr<DecisionTree> dt, const std::string &dataFilename);
 
-boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filename, const std::string &dataFilename, const Json::Value &options);
+boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filename, const std::string &dataFilename, bool caching, const Json::Value &options);
 
 #endif /* end of include guard: CLASSIFIERFACTORY_LSY7J7N1 */

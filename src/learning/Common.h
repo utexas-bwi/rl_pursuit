@@ -22,17 +22,20 @@ typedef std::vector<float> Classification;
 struct Instance {
   Instance();
   void clear();
-  unsigned int size();
+  unsigned int size() const;
   float& operator[](const std::string &key);
   float operator[](const std::string &key) const;
+  float get(const std::string& key, float defaultVal) const;
   
   std::map<std::string,float> data;
   unsigned int label;
   float weight;
+  bool operator==(const Instance &inst) const;
   friend std::ostream& operator<<(std::ostream &out, const Instance &inst);
 };
 
 typedef boost::shared_ptr<Instance> InstancePtr;
+typedef boost::shared_ptr<const Instance> InstanceConstPtr;
  
 struct FloatCmp {
   static const float EPS;

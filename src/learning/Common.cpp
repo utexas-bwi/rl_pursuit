@@ -7,6 +7,7 @@ Modified: 2011-12-01
 */
 
 #include "Common.h"
+#include <cmath>
 
 Instance::Instance():
   label(0),
@@ -20,7 +21,7 @@ void Instance::clear() {
   weight = 0;
 }
 
-unsigned int Instance::size() {
+unsigned int Instance::size() const {
   return data.size();
 }
 
@@ -33,6 +34,25 @@ float Instance::operator[](const std::string &key) const{
   if (it == data.end())
     throw std::out_of_range("Unknown key: " + key);
   return it->second;
+}
+
+float Instance::get(const std::string& key, float defaultVal) const {
+  std::map<std::string,float>::const_iterator it = data.find(key);
+  if (it == data.end())
+    return defaultVal;
+  return it->second;
+}
+
+bool Instance::operator==(const Instance &inst) const {
+  const float EPS = 0.001f;
+  if (size() != inst.size()) {
+    return false;
+  }
+  for (std::map<std::string,float>::const_iterator it = data.begin(); it != data.end(); it++) {
+    if (fabs(it->second - inst[it->first]) > EPS)
+      return false;
+  }
+  return true;
 }
 
 std::ostream& operator<<(std::ostream &out, const Instance &inst) {

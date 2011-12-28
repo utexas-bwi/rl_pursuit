@@ -39,7 +39,7 @@ include $(TARGET_MAKEFILES)
 
 default: main weka
 
-all: $(TARGETS)
+all: $(TARGETS) weka
 
 .PHONY: clean fullcelan fclean $(TARGETS)
 
