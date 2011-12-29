@@ -42,6 +42,7 @@ public class WekaBridge {
       init(memSegName,trainData.numAttributes(),trainData.numClasses());
       // create the classifier
       classifier = (Classifier)Utils.forName(Classifier.class,classifierName,opts);
+      classifier.buildClassifier(trainData);
       // wait for commands
       while (true) {
         commandByte = readCommand(features,weight);
