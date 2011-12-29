@@ -50,7 +50,7 @@ WekaClassifier::~WekaClassifier () {
 }
   
 void WekaClassifier::addData(const InstancePtr &instance) {
-  //std::cout << "adding" << std::endl;
+  //std::cout << "adding " << *instance << std::endl;
   writeInstance(instance);
   *(comm->cmd) = 'a';
   comm->send();
@@ -88,6 +88,7 @@ void WekaClassifier::classifyInternal(const InstancePtr &instance, Classificatio
 
 void WekaClassifier::writeInstance(const InstanceConstPtr &instance) {
   for (unsigned int i = 0; i < features.size(); i++) {
+    //std::cout << i << " " << features[i].name << std::endl;
     comm->features[i] = instance->get(features[i].name,0);
   }
   *(comm->weight) = instance->weight;

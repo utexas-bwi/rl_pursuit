@@ -50,6 +50,10 @@ public class WekaBridge {
           break;
         switch (commandByte) {
           case 't':
+            //System.out.format("TRAINING %d%n",trainData.numInstances());
+            //for (int i = 0; i < trainData.numInstances(); i++) {
+              //System.out.println(trainData.instance(i).toString());
+            //}
             classifier.buildClassifier(trainData);
             break;
           case 'c':
@@ -61,7 +65,10 @@ public class WekaBridge {
             break;
           case 'a':
             inst = new DenseInstance(weight[0],features);
+            //System.out.format("ADDING: %s {%f}%n",inst.toString(),inst.weight());
+            //System.out.format("compat: %b%n",trainData.checkInstance(inst));
             trainData.add(inst);
+            //System.out.format("ADDING2: %s {%f}%n",trainData.instance(0).toString(),trainData.instance(0).weight());
             break;
         }
       }

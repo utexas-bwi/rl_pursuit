@@ -58,6 +58,7 @@ void PredatorClassifier::learn(const Observation &prevObs, const Observation &cu
   Point2D move = getDifferenceToPoint(dims,prevObs.positions[ind],currentObs.positions[ind]);
   InstancePtr instance = featureExtractor.extract(prevObs,learnHistory);
   instance->label = getAction(move);
+  (*instance)["Pred.act"] = instance->label;
   classifier->addData(instance);
   trainingCounter++;
   if (trainingCounter >= trainingPeriod) {
