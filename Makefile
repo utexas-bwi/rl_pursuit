@@ -122,7 +122,7 @@ bin/weka/WekaBridge.class: src/learning/WekaBridge.java
 
 bin/weka/libWekaBridge.so: src/learning/WekaBridge.cpp src/learning/Communicator.cpp
 	@echo "Compling $@"
-	@$(CC) -o $@ -shared -Wl,-soname,libWekaBridge.so  -Iinclude  $< src/learning/Communicator.cpp -static -lc -lboost_thread-mt 
+	@$(CC) -o $@ -shared -fPIC -Wl,-soname,libWekaBridge.so  -Iinclude  $^ -lc -lboost_thread-mt 
 
 bin/%$(ARCH):
 	@echo "Linking $@"
