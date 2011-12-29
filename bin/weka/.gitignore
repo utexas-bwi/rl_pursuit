@@ -1,3 +1,4 @@
 *.pyc
 addWeights*
 *.class
+libWekaBridge.so

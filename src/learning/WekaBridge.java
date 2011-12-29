@@ -2,49 +2,78 @@ import java.io.*;
 import java.util.*;
 import weka.core.*;
 import weka.classifiers.Classifier;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.ByteOrder;
 
 public class WekaBridge {
 	static Classifier classifier;
 
+  static private native void init(String memSegName, int numFeatures, int numClasses);
+  static private native byte readCommand(double[] features,double[] weight);
+  static private native void writeDistr(double[] distr);
+
+
+  static {
+    System.loadLibrary("WekaBridge");
+  }
+
   public static void main(String [] argv) {
 
     try {
-      // load packages
-      weka.core.WekaPackageManager.loadPackages(false, false);
-      // deal with command line options
-      String toWekaName = argv[0];
-      String fromWekaName = argv[1];
+      String memSegName = argv[0];
+      String dataName = argv[1];
       String classifierName = argv[2];
       String[] opts = new String[argv.length-3];
       for (int i = 0; i < opts.length; i++)
         opts[i] = argv[i+3];
+
+      weka.core.WekaPackageManager.loadPackages(false, false);
+      // get the data groups set up
+      Instances trainData = new Instances(new BufferedReader(new FileReader(dataName)));
+      trainData.setClassIndex(trainData.numAttributes()-1);
+      Instances testData = new Instances(trainData,0);
+      // initialize the memory for communication
+      byte commandByte = '\0';
+      double[] features = new double[trainData.numAttributes()];
+      double[] weight = new double[1];
+      double[] distr;
+      Instance inst;
+      init(memSegName,trainData.numAttributes(),trainData.numClasses());
+      // create the classifier
       classifier = (Classifier)Utils.forName(Classifier.class,classifierName,opts);
+      // wait for commands
+      while (true) {
+        commandByte = readCommand(features,weight);
+        if (commandByte == 'e')
+          break;
+        switch (commandByte) {
+          case 't':
+            classifier.buildClassifier(trainData);
+            break;
+          case 'c':
+            inst = new DenseInstance(weight[0],features);
+            testData.add(inst);
+            distr = classifier.distributionForInstance(testData.lastInstance());
+            writeDistr(distr);
+            testData.delete();
+            break;
+          case 'a':
+            inst = new DenseInstance(weight[0],features);
+            trainData.add(inst);
+            break;
+        }
+      }
+
+/*
+      // load packages
+      // deal with command line options
 
       //BufferedReader in = new Buffnew DataInputStream(new FileInputStream(toWekaName));
       BufferedReader in = new BufferedReader(new FileReader(toWekaName));
           //= new BufferedReader(new InputStreamReader(in));
       PrintStream out = new PrintStream(new FileOutputStream(fromWekaName));
       
-      ArrayList<Attribute> features = new ArrayList<Attribute>();
-      String line = in.readLine();
-      while (!line.equals("@data")) {
-        String []res = line.split(",");
-        Attribute attr;
-        if (res.length == 1)
-          attr = new Attribute(res[0]);
-        else {
-          ArrayList<String> vals = new ArrayList<String>();
-          for (int i = 1; i < res.length; i++) {
-            vals.add(res[i]);
-          }
-          attr = new Attribute(res[0],vals);
-        }
-        features.add(attr);
-        line = in.readLine();
-      }
-      Instances trainData = new Instances("train",features,0);
-      trainData.setClassIndex(features.size()-1);
-      Instances testData = new Instances(trainData,0);
       // build an initial classifier
 			classifier.buildClassifier(trainData);
 
@@ -83,6 +112,7 @@ public class WekaBridge {
       in.close();
       out.close();
       return;
+*/
     } catch (Exception e) {
       System.err.println("EXCEPTION:");
       System.err.println(e.toString());

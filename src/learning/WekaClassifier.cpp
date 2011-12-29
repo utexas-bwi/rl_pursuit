@@ -7,28 +7,20 @@ Modified: 2011-12-26
 */
 
 #include "WekaClassifier.h"
+#include "Communicator.h"
 #include <iostream>
 #include <sys/types.h>
-#include <sys/stat.h>
+#include <unistd.h>
 #include <sys/wait.h>
-#include <fcntl.h>
-#include <cstdio>
+#include <boost/lexical_cast.hpp>
 
-const std::string WekaClassifier::WEKA_CMD = "java -DWEKA_HOME=./bin/weka/wekafiles -Xmx2G -cp bin/weka:bin/weka/weka.jar WekaBridge";
+const std::string WekaClassifier::WEKA_CMD = "java -DWEKA_HOME=./bin/weka/wekafiles -Djava.library.path=bin/weka -Xmx2G -cp bin/weka:bin/weka/weka.jar WekaBridge";
 
 WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts) :
   Classifier(features,caching)
 {
-  // get the temp filenames
-  char tmp[] = "/tmp/tmpWekaXXXXXX";
-  tempDir = mkdtemp(tmp);
-  toWekaName = std::string(tempDir + "/to");
-  fromWekaName = std::string(tempDir + "/from");
-
-  // make some fifos
-  mkfifo(  toWekaName.c_str(),O_CREAT | O_EXCL | S_IRUSR| S_IWUSR); // open it exclusively
-  mkfifo(fromWekaName.c_str(),O_CREAT | O_EXCL | S_IRUSR| S_IWUSR); // open it exclusively
-  
+  memSegName = "WEKA_BRIDGE_" + boost::lexical_cast<std::string>(getpid());
+  comm = boost::shared_ptr<Communicator>(new Communicator(memSegName,true,features.size(),numClasses));
   // fork you
   pid = fork();
   if (pid < 0) {
@@ -37,111 +29,68 @@ WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool cachin
     exit(65);
   } else if (pid == 0) {
     //child
-    std::string cmd = WEKA_CMD + " " + toWekaName + " " + fromWekaName + " " + opts;
+    std::string cmd = WEKA_CMD + " " + memSegName + " " + "data/dt/blank.arff" + " " + opts;
     char** cmdArr = splitCommand(cmd);
     execvp(cmdArr[0],cmdArr);
     freeCommand(cmdArr);
-    //execlp(WEKA_FILE.c_str(),"java","-cp","bin/weka:bin/weka/weka.jar","WekaBridge",toWekaName.c_str(),fromWekaName.c_str(),NULL);
     exit(0);
     return;
   } else { 
     //parent
-    //std::cout << "PARENT" << std::endl;
-    //std::cout << "c++ opening " << toWekaName << std::endl;
-    out.open(toWekaName.c_str());
-    //std::cout << "c++ opening " << fromWekaName << std::endl;
-    in.open(fromWekaName.c_str());
-    //std::cout << "OPENED" << std::endl << std::flush;
-
-    writeFeatures();
-    
-
-    //// TODO REMOVE THIS?
-    //InstancePtr inst = InstancePtr(new Instance());
-    //inst->weight = 1.0;
-    //addData(inst);
-    //train();
-    //out << "save\ntest.weka" << std::endl;
   }
+  *(comm->cmd) = '\0';
 }
 
 WekaClassifier::~WekaClassifier () {
-  out.close();
-  in.close();
   // kill the other process hopefully
-  out << "exit" << std::endl;
+  *(comm->cmd) = 'e';
+  comm->send();
   int status;
   wait(&status);
-  // clean up the fifos
-  remove(tempDir.c_str());
 }
   
-void WekaClassifier::writeFeatures() {
-  for (unsigned int i = 0; i < features.size(); i++) {
-    out << features[i].name;
-    if (!features[i].numeric) {
-      for (unsigned j = 0; j < features[i].values.size(); j++)
-        out << "," << features[i].values[j];
-    }
-    out << std::endl;
-  }
-  out << "@data" << std::endl;
-}
-
 void WekaClassifier::addData(const InstancePtr &instance) {
-  out << "add" << std::endl;
-  std::cout << "add" << std::endl;
+  //std::cout << "adding" << std::endl;
   writeInstance(instance);
+  *(comm->cmd) = 'a';
+  comm->send();
+  comm->wait();
 }
 
 void WekaClassifier::trainInternal(bool /*incremental*/) {
-  out << "train" << std::endl;
   //std::cout << "train" << std::endl;
+  *(comm->cmd) = 't';
+  comm->send();
+  comm->wait();
 }
 
 void WekaClassifier::classifyInternal(const InstancePtr &instance, Classification &classification) {
-  out << "classify" << std::endl;
-  //std::cout << "start classify c++" << std::endl;
+  //std::cout << "classifying" << std::endl;
   writeInstance(instance);
-  classification.clear();
+  *(comm->cmd) = 'c';
+  comm->send();
+  //std::cout << "waiting" << std::endl;
+  comm->wait();
   classification.resize(numClasses);
-  float val;
-  while (in.peek() == -1) {
-    //int i = in.peek();
-    //std::cout << i << " " << (i == std::ios_base::eofbit) << " " << (i == std::ios_base::failbit) << std::endl;
-    //int j;
-    //std::cin >> j;
-  }
+  
   const float EPS = 0.001;
   bool unclassified = true;
   for (unsigned int i = 0; i < numClasses; i++) {
-    in >> val;
-    while (!in.good())
-      in >> val;
-    if (val > EPS)
+    classification[i] = comm->classes[i];
+    if (classification[i] > EPS)
       unclassified = false;
-    //std::cout << "peek: " << in.peek() << " good: " << in.good() << std::endl;
-    //std::cout << "read: " << val << std::endl;
-    classification[i] = val;
   }
   if (unclassified) {
     for (unsigned int i = 0; i < numClasses; i++)
       classification[i] = 1.0 / numClasses;
   } 
-  //else {
-    //std::cout << "classified" << std::endl;
-  //}
-  //std::cout << "done  classify c++" << std::endl;
 }
 
 void WekaClassifier::writeInstance(const InstanceConstPtr &instance) {
   for (unsigned int i = 0; i < features.size(); i++) {
-    //std::cout << "out " << i << " " << (*instance)[features[i].name] << std::endl;
-    out << instance->get(features[i].name,0) << ",";
+    comm->features[i] = instance->get(features[i].name,0);
   }
-  out << instance->weight << std::endl;
-  //std::cout << "weight " << instance->weight << std::endl;
-  //std::cout << "writeInstance: " << features.size() << std::endl;
+  *(comm->weight) = instance->weight;
 }
   
 char** WekaClassifier::splitCommand(const std::string &cmd) {
@@ -169,7 +118,6 @@ char** WekaClassifier::splitCommand(const std::string &cmd) {
     for (unsigned int j = 0; j < cmdVec[i].size(); j++)
       cmdArr[i][j] = cmdVec[i][j];
     cmdArr[i][cmdVec[i].size()] = '\0';
-    std::cout << "cmdArr[" << i << "]='" << cmdArr[i] << "'" << std::endl;
   }
   cmdArr[cmdVec.size()] = NULL;
   return cmdArr;

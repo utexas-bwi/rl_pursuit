@@ -25,13 +25,15 @@ TARGETS := $(patsubst $(TARGET_DIR)/%.mk, %, $(TARGET_MAKEFILES))
 # sources
 MODULES := common controller factory learning model planning
 SOURCES := $(wildcard $(patsubst %, $(SOURCE_DIR)/%/*.cpp, $(MODULES)))
+SOURCES := $(filter-out $(SOURCE_DIR)/learning/WekaBridge.cpp,$(SOURCES)) # don't compile weka bridge, it's an abomination and will be handled separately
 SOURCE_STUDENTS := $(wildcard $(SOURCE_DIR)/studentAgents/agents/*/Predator.cpp)
 SOURCE_STUDENTS += $(wildcard $(SOURCE_DIR)/studentAgents/agentsNew/*/cppPredator/MyPredator.cpp)
 SOURCES += $(SOURCE_STUDENTS)
 # objects
 OBJECTS_STUDENT := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(SOURCE_STUDENTS:.cpp=.o))
 # flags
-FLAGS = -W -Wall -Werror -pedantic-errors -O3 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION) -std=c++0x
+FLAGS_NO_STD = -W -Wall -Werror -pedantic-errors -O3 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION)
+FLAGS = $(FLAGS_NO_STD) -std=c++0x
 STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
 LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython$(PYTHON_VERSION) -lboost_python -lgflags
 
@@ -113,11 +115,19 @@ $(BUILD_DIR)/%.d: $(SOURCE_DIR)/%.cpp
 	sed 's,\(.*\).o:,$(@:.d=.o) $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
-weka: bin/weka/WekaBridge.class
+weka: bin/weka/WekaBridge.class bin/weka/libWekaBridge.so
 
 bin/weka/WekaBridge.class: src/learning/WekaBridge.java
 	javac -cp bin/weka/weka.jar -d bin/weka $<
 
+bin/weka/libWekaBridge.so: src/learning/WekaBridge.cpp src/learning/Communicator.cpp
+	@echo "Compling $@"
+	@$(CC) -o $@ -shared -Wl,-soname,libWekaBridge.so  -Iinclude  $< src/learning/Communicator.cpp -static -lc -lboost_thread-mt 
+
 bin/%$(ARCH):
 	@echo "Linking $@"
 	@$(CC) $(FLAGS) $^ $(LINK_FLAGS) -o $@
+
+# Special finicky files:
+$(BUILD_DIR)/learning/WekaClassifier.o: FLAGS = $(FLAGS_NO_STD)
+$(BUILD_DIR)/learning/Communicator.o: FLAGS = $(FLAGS_NO_STD)
