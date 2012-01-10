@@ -64,6 +64,9 @@ else
 endif
 
 # set up the rules
+print_$1:
+	@echo $$($1_SOURCES)
+
 $1: $$(BIN)
 $$(BIN): $$(OBJS)
 $$(BIN): LINK_FLAGS:=$$(LINK_FLAGS_TEMP)
