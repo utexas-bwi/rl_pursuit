@@ -19,6 +19,7 @@ public:
   WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts);
   virtual ~WekaClassifier ();
   void addData(const InstancePtr &instance);
+  virtual void outputDescription(std::ostream &out) const;
 
 protected:
   void trainInternal(bool incremental);

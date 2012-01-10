@@ -35,9 +35,6 @@ public class WekaBridge {
       Instances testData = new Instances(trainData,0);
       // initialize the memory for communication
       byte commandByte = '\0';
-      double[] features = new double[trainData.numAttributes()];
-      double[] weight = new double[1];
-      double[] distr;
       Instance inst;
       init(memSegName,trainData.numAttributes(),trainData.numClasses());
       // create the classifier
@@ -45,6 +42,9 @@ public class WekaBridge {
       classifier.buildClassifier(trainData);
       // wait for commands
       while (true) {
+        double[] features = new double[trainData.numAttributes()];
+        double[] weight = new double[1];
+        double[] distr;
         commandByte = readCommand(features,weight);
         if (commandByte == 'e')
           break;
@@ -67,9 +67,12 @@ public class WekaBridge {
             inst = new DenseInstance(weight[0],features);
             //System.out.format("ADDING: %s {%f}%n",inst.toString(),inst.weight());
             //System.out.format("compat: %b%n",trainData.checkInstance(inst));
+            //System.out.println(trainData.toString());
             trainData.add(inst);
             //System.out.format("ADDING2: %s {%f}%n",trainData.instance(0).toString(),trainData.instance(0).weight());
             break;
+          case 'p':
+            System.out.println(classifier.toString());
         }
       }
 

@@ -52,7 +52,13 @@ void Classifier::classify(const InstancePtr &instance, Classification &classific
       return;
     } 
   }
+  classification.resize(numClasses,0);
   classifyInternal(instance,classification);
   if (caching)
     (*cache)[*instance] = classification;
+}
+  
+std::ostream& operator<<(std::ostream &out, const Classifier &c) {
+  c.outputDescription(out);
+  return out;
 }

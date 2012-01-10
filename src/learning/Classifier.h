@@ -25,6 +25,7 @@ public:
   virtual void addData(const InstancePtr &instance) = 0;
 
   std::ostream& outputHeader(std::ostream &out) const;
+  virtual void outputDescription(std::ostream &out) const = 0;
 
 protected:
   virtual void trainInternal(bool incremental) = 0;
@@ -37,6 +38,9 @@ protected:
   unsigned int numClasses;
   bool caching;
   boost::shared_ptr<ClassificationCache> cache;
+  friend std::ostream& operator<<(std::ostream &out, const Classifier &c);
 };
+
+typedef boost::shared_ptr<Classifier> ClassifierPtr;
 
 #endif /* end of include guard: CLASSIFIER_4OFDPALS */

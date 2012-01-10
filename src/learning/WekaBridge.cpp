@@ -34,6 +34,7 @@ JNIEXPORT jbyte JNICALL Java_WekaBridge_readCommand (JNIEnv *env, jclass , jdoub
   //std::cout << "java received " << cmd << std::endl;
   double *arr;
   switch(cmd) {
+    case 'p':
     case 't':
       *(comm->cmd) = '\0';
       comm->send();

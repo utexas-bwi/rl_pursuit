@@ -25,14 +25,13 @@ InstancePtr ArffReader::next() {
   float val;
   InstancePtr instance(new Instance());
   instance->weight = 1.0;
-  for (unsigned int i = 0; i < featureTypes.size() - 1; i++) {
+  for (unsigned int i = 0; i < featureTypes.size(); i++) {
     in >> val;
     in.ignore(1,',');
     (*instance)[featureTypes[i].name] = val;
   }
   // TODO assuming class is last feature
-  in >> instance->label;
-  in.ignore(1,',');
+  instance->label = (*instance)[featureTypes.back().name];
   // check if there's a weight
   if (in.peek() == '{') {
     in.ignore(1,'{');

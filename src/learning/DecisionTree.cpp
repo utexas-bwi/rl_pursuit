@@ -136,6 +136,7 @@ void DecisionTree::LeafNode::addData(const InstancePtr &instance) {
 }
 
 void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt, int maxDepth) {
+  std::cout << "train dt, maxdepth " << maxDepth << std::endl;
   if (!hasNewData)
     return;
   hasNewData = false;
@@ -379,9 +380,8 @@ void DecisionTree::splitData(const InstanceSetPtr &instances, Split &split) cons
     split.splitVals[1] = split.splitVals[0];
 }
 
-std::ostream& operator<<(std::ostream &out, const DecisionTree &dt) {
-  dt.outputHeader(out);
+void DecisionTree::outputDescription(std::ostream &out) const {
+  outputHeader(out);
   out << std::endl;
-  dt.root->output(out,0);
-  return out;
+  root->output(out,0);
 }

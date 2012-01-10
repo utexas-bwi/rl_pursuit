@@ -90,6 +90,7 @@ public:
   void setLearningParams(double minGainRatio = 0.0001, unsigned int minInstancesPerLeaf = 2, int maxDepth = -1);
   
   void addData(const InstancePtr &instance);
+  virtual void outputDescription(std::ostream &out) const;
 protected:
   void classifyInternal(const InstancePtr &instance, Classification &classification);
   void trainInternal(bool incremental);
@@ -107,7 +108,6 @@ private:
   static const float EPS;
 
   friend class Node;
-  friend std::ostream& operator<<(std::ostream &out, const DecisionTree &dt);
 };
 
 
