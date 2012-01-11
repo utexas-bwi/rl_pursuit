@@ -10,7 +10,7 @@ Modified: 2011-12-29
 #include <cassert>
 #include <iostream>
 
-const unsigned int TrAdaBoost::numBoostingIterations = 2; // TODO
+const unsigned int TrAdaBoost::numBoostingIterations = 10; // TODO
 
 TrAdaBoost::TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner):
   Classifier(features,caching),
@@ -62,18 +62,18 @@ void TrAdaBoost::trainInternal(bool incremental) {
 void TrAdaBoost::classifyInternal(const InstancePtr &instance, Classification &classification) {
   Classification temp;
   float val;
-  std::cout << "classify: " << *instance << std::endl;
+  //std::cout << "classify: " << *instance << std::endl;
   unsigned int startInd = (unsigned int)(numBoostingIterations / 2.0 + 0.5);
-  std::cout << "startInd: " << startInd << " " << classifiers.size() << std::endl;
+  //std::cout << "startInd: " << startInd << " " << classifiers.size() << std::endl;
   for (unsigned int i = startInd; i < classifiers.size(); i++) { // TODO TrAdaBoost says start at ceil(n/2) why?
     classifiers[i].classifier->classify(instance,temp);
-    std::cout << "  classifier " << i << ":";
+    //std::cout << "  classifier " << i << ":";
     for (unsigned int j = 0; j < numClasses; j++) {
-      std::cout << " " << temp[j] << "(" << classifiers[i].betat << "^" << -1 * temp[j] << ")";
+      //std::cout << " " << temp[j] << "(" << classifiers[i].betat << "^" << -1 * temp[j] << ")";
       val = pow(classifiers[i].betat,-1 * temp[j]) - pow(classifiers[i].betat,-0.5);
       classification[j] += val;
     }
-    std::cout << std::endl;
+    //std::cout << std::endl;
   }
   float maxVal = -1;
   int maxInd = -1;
@@ -132,4 +132,6 @@ double TrAdaBoost::calcError(BoostingClassifier &c) {
 
 void TrAdaBoost::outputDescription(std::ostream &out) const {
   out << "TRADABOOST" << std::endl; // TODO
+  for (unsigned int i = 0; i < classifiers.size(); i++)
+    out << *(classifiers[i].classifier) << std::endl;
 }

@@ -182,7 +182,7 @@ void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &
   Split bestSplit;
   bestSplit.gain = -1 * std::numeric_limits<float>::infinity();
 
-  for (unsigned int i = 0; i < dt.features.size(); i++) {
+  for (unsigned int i = 0; i < dt.features.size() - 1; i++) { // TODO -1 because we're assuming class is last feature
     Feature const &feature = dt.features[i];
     if (feature.numeric) {
       FloatSet vals;
