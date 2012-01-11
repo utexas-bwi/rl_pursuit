@@ -122,6 +122,8 @@ DecisionTree::LeafNode::LeafNode(const InstanceSetPtr &instances):
 {
   if (instances->instances.size() > 0)
     hasNewData = true;
+  else
+    hasNewData = false;
 }
 
 void DecisionTree::LeafNode::classify(const InstancePtr &, Classification &classification) const {
