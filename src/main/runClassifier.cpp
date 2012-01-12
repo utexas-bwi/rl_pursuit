@@ -39,6 +39,10 @@ int main(int argc, const char *argv[]) {
   int count;
   for (count = 0; !testReader.isDone(); count++) {
   //for (count = 0; count < 10; count++) {
+    // retraining
+    if ((count > 0) && ((retrainFreq == 0) || ((retrainFreq > 0) && (count % retrainFreq == 0))))
+      classifier->train(false);
+
     InstancePtr instance = testReader.next();
     Classification c;
     classifier->classify(instance,c);
@@ -61,10 +65,7 @@ int main(int argc, const char *argv[]) {
     if (maxInd == (int)instance->label)
       correctCount++;
 
-    // retraining
     classifier->addData(instance);
-    if ((retrainFreq == 0) || ((retrainFreq > 0) && (count % retrainFreq == 0)))
-      classifier->train(false);
   }
   testIn.close();
 

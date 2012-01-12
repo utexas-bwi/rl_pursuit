@@ -94,8 +94,13 @@ boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filena
 
 boost::shared_ptr<DecisionTree> createBoostDT(const std::vector<Feature> &features, bool caching) {
   boost::shared_ptr<DecisionTree> dt(new DecisionTree(features,caching));
-  dt->setLearningParams(0.0001,2,1); // stumpy
+  dt->setLearningParams(0.0001,2,2); // stumpy
   return dt;
+}
+
+boost::shared_ptr<WekaClassifier> createBoostWeka(const std::vector<Feature> &features, bool caching) {
+  std::string wekaOptions = "weka.classifiers.trees.J48";
+  return boost::shared_ptr<WekaClassifier>(new WekaClassifier(features,caching, wekaOptions));
 }
 
 boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options) {
@@ -104,6 +109,7 @@ boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std:
   std::ifstream in(dataFilename.c_str());
   ArffReader arff(in);
   boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,&createBoostDT,maxBoostingIterations));
+  //boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,&createBoostWeka,maxBoostingIterations));
   while (!arff.isDone()) {
     InstancePtr instance = arff.next();
     c->addSourceData(instance);
