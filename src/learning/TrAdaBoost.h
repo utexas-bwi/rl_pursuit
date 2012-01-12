@@ -21,7 +21,7 @@ typedef boost::function< boost::shared_ptr<Classifier> (const std::vector<Featur
 
 class TrAdaBoost: public Classifier {
 public:
-  TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner);
+  TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, unsigned int maxBoostingIterations);
 
   virtual ~TrAdaBoost();
   virtual void addData(const InstancePtr &instance);
@@ -41,7 +41,8 @@ protected:
   InstanceSet sourceData;
   InstanceSet targetData;
   std::vector<float> absError;
-  static const unsigned int numBoostingIterations;
+  unsigned int numBoostingIterations;
+  const unsigned int maxBoostingIterations;
 };
 
 #endif /* end of include guard: TRADABOOST_3BBYLV2Y */

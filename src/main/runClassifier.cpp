@@ -25,7 +25,7 @@ int main(int argc, const char *argv[]) {
   ClassifierPtr classifier = createClassifier(filename,options);
   
   std::cout << "------------------------------------------" << std::endl;
-  std::cout << *classifier << std::endl;
+  //std::cout << *classifier << std::endl;
   //std::cout << *classifier << std::endl;
   if (retrainFreq >= 0)
     std::cout << "Retraining every " << retrainFreq << " steps" << std::endl;
@@ -64,11 +64,11 @@ int main(int argc, const char *argv[]) {
     // retraining
     classifier->addData(instance);
     if ((retrainFreq == 0) || ((retrainFreq > 0) && (count % retrainFreq == 0)))
-      classifier->train();
+      classifier->train(false);
   }
   testIn.close();
 
-  std::cout << *classifier << std::endl;
+  //std::cout << *classifier << std::endl;
   sleep(1); // TODO hack for Weka for now
   std::cout << "------------------------------------------" << std::endl;
 

@@ -58,7 +58,7 @@ void addDataToClassifier(ClassifierPtr classifier, const std::string &dataFilena
     classifier->addData(instance);
   }
   in.close();
-  classifier->train();
+  classifier->train(false);
 }
 
 boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
@@ -98,11 +98,12 @@ boost::shared_ptr<DecisionTree> createBoostDT(const std::vector<Feature> &featur
   return dt;
 }
 
-boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &/*options*/) {
+boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options) {
+  unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   assert(filename == "");
   std::ifstream in(dataFilename.c_str());
   ArffReader arff(in);
-  boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,&createBoostDT));
+  boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,&createBoostDT,maxBoostingIterations));
   while (!arff.isDone()) {
     InstancePtr instance = arff.next();
     c->addSourceData(instance);

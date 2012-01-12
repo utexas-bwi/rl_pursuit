@@ -55,6 +55,7 @@ struct InstanceSet {
   InstancePtr operator[](unsigned int ind) const;
   InstancePtr& operator[](unsigned int ind);
   void getValuesForFeature(const std::string &key, FloatSet &values);
+  void recalculateWeight();
 
   std::vector<InstancePtr> instances;
   float weight;

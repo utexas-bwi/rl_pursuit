@@ -59,6 +59,7 @@ std::ostream& operator<<(std::ostream &out, const Instance &inst) {
   out << "<Instance ";
   for (std::map<std::string,float>::const_iterator it = inst.data.begin(); it != inst.data.end(); it++)
     out << it->first << ":" << it->second << ",";
+  out << "WEIGHT:" << inst.weight;
   out << ">";
   return out;
 }
@@ -118,6 +119,12 @@ void InstanceSet::getValuesForFeature(const std::string &key, FloatSet &values) 
   for (unsigned int i = 0; i < instances.size(); i++) {
     values.insert((*instances[i])[key]);
   }
+}
+
+void InstanceSet::recalculateWeight() {
+  weight = 0;
+  for (unsigned int i = 0; i < instances.size(); i++)
+    weight += instances[i]->weight;
 }
 
 std::ostream& operator<<(std::ostream &out, const Feature &feat) {
