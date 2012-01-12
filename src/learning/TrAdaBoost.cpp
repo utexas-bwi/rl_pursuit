@@ -10,9 +10,10 @@ Modified: 2011-12-29
 #include <cassert>
 #include <iostream>
 
-TrAdaBoost::TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, unsigned int maxBoostingIterations):
+TrAdaBoost::TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
   Classifier(features,caching),
   baseLearner(baseLearner),
+  baseLearnerOptions(baseLearnerOptions),
   sourceData(numClasses),
   targetData(numClasses),
   maxBoostingIterations(maxBoostingIterations)
@@ -42,42 +43,49 @@ void TrAdaBoost::trainInternal(bool incremental) {
 
     BoostingClassifier c;
     //c.classifier = baseLearner(features,caching);
-    c.classifier = baseLearner(features,false); // TODO disabling caching
+    //c.classifier = baseLearner(features,false); // TODO disabling caching
+    c.classifier = baseLearner(features,baseLearnerOptions);
     for (unsigned int i = 0; i < sourceData.size(); i++)
       c.classifier->addData(sourceData[i]);
     for (unsigned int i = 0; i < targetData.size(); i++)
       c.classifier->addData(targetData[i]);
-    std::cout << "SOURCE DATA" << std::endl;
-    for (unsigned int i = 0; i < sourceData.size(); i++)
-      std::cout << "  " << *(sourceData[i]) << std::endl;
-    std::cout << "TARGET DATA" << std::endl;
-    for (unsigned int i = 0; i < targetData.size(); i++)
-      std::cout << "  " << *(targetData[i]) << std::endl;
+    //std::cout << "SOURCE DATA" << std::endl;
+    //for (unsigned int i = 0; i < sourceData.size(); i++)
+      //std::cout << "  " << *(sourceData[i]) << std::endl;
+    //std::cout << "TARGET DATA" << std::endl;
+    //for (unsigned int i = 0; i < targetData.size(); i++)
+      //std::cout << "  " << *(targetData[i]) << std::endl;
 
     c.classifier->train(false);
-    std::cout << *(c.classifier) << std::endl;
+    //std::cout << *(c.classifier) << std::endl;
     double eps = calcError(c);
-    std::cout << "EPS: " << eps << std::endl;
-    //double betat = eps / (1 - eps);
-    double betat = eps / ((1.0 - eps) * (numClasses - 1)); // from SAMME
-    std::cout << "BETAT: " << betat << std::endl;
+    //std::cout << "EPS: " << eps << std::endl;
+    //c.betat = eps / (1 - eps);
+    c.betat = eps / ((1.0 - eps) * (numClasses - 1)); // from SAMME
+    //std::cout << "BETAT: " << c.betat << std::endl;
     assert(sourceData.size() > numBoostingIterations);
     double beta = 1.0 / (1.0 + sqrt(2 * log((double)sourceData.size() / numBoostingIterations)));
-    std::cout << "BETA: " << beta << std::endl;
-    if ((eps < 0.0001) || (1 - eps <= 1.0 / numClasses)) { // already perfect OR not helping
+    //std::cout << "BETA: " << beta << std::endl;
+    if (1 - eps <= 1.0 / numClasses) { // not helping
+      //std::cout << "SHORT CIRCUITING, not helping: " << t << std::endl;
       numBoostingIterations = t;
       break;
     }
+    classifiers.push_back(c);
+    if (eps < 0.0001) {
+      //std::cout << "SHORT CIRCUITING, perfect: " << t << std::endl;
+      numBoostingIterations = t + 1;
+      break;
+    }
+    // reweight data
     for (unsigned int i = 0; i < sourceData.size(); i++)
       sourceData[i]->weight *= pow(beta,absError[i]);
     for (unsigned int i = 0; i < targetData.size(); i++)
-      targetData[i]->weight *= pow(betat,-1 * absError[i + sourceData.size()]);
-    c.betat = betat;
-    classifiers.push_back(c);
+      targetData[i]->weight *= pow(c.betat,-1 * absError[i + sourceData.size()]);
   }
-  std::cout << "POST TRAINING:" << std::endl;
-  for (unsigned int i = 0; i < classifiers.size(); i++)
-    std::cout << *(classifiers[i].classifier) << std::endl;
+  //std::cout << "POST TRAINING:" << std::endl;
+  //for (unsigned int i = 0; i < classifiers.size(); i++)
+    //std::cout << *(classifiers[i].classifier) << std::endl;
 }
 
 void TrAdaBoost::classifyInternal(const InstancePtr &instance, Classification &classification) {
@@ -103,7 +111,7 @@ void TrAdaBoost::classifyInternal(const InstancePtr &instance, Classification &c
     }
     //std::cout << std::endl;
   }
-  float maxVal = -1;
+  float maxVal = -1 * std::numeric_limits<float>::infinity();
   int maxInd = -1;
   //std::cout << "classification: ";
   for (unsigned int i = 0; i < numClasses; i++) {
@@ -115,7 +123,8 @@ void TrAdaBoost::classifyInternal(const InstancePtr &instance, Classification &c
     classification[i] = 0;
   }
   //std::cout << std::endl;
-  //std::cout << "max ind: " << maxInd << std::endl;
+  //std::cout << "max ind: " << maxInd << std::endl << std::flush;
+  assert(maxInd >= 0);
   classification[maxInd] = 1.0;
 }
 
@@ -152,7 +161,7 @@ double TrAdaBoost::calcError(BoostingClassifier &c) {
       inst = targetData[i-sourceData.size()];
     c.classifier->classify(inst,temp);
     absError[i] = fabs(1.0 - temp[inst->label]);
-    std::cout << i << " " << absError[i] << std::endl;
+    //std::cout << i << " " << absError[i] << std::endl;
     //std::cout << *(c.classifier) << std::endl;
     //std::cout << inst->label << " " << inst->weight << " " << absError[i] << " " << temp[inst->label] << std::endl;
   }

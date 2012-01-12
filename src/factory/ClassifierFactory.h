@@ -16,8 +16,13 @@ Modified: 2011-12-02
 class DecisionTree;
 class WekaClassifier;
 class TrAdaBoost;
+class NaiveBayes;
 
+ClassifierPtr createClassifier(const Json::Value &options);
 ClassifierPtr createClassifier(const std::string &filename, const Json::Value &options);
+ClassifierPtr createClassifier(const std::vector<Feature> &features, const Json::Value &options);
+ClassifierPtr createClassifier(const std::string &filename, const std::string &dataFilename, const std::vector<Feature> &features, const Json::Value &options);
+
 void addDataToClassifier(ClassifierPtr classifier, const std::string &dataFilename);
 
 boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);

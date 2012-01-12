@@ -41,7 +41,7 @@ std::ostream& Classifier::outputHeader(std::ostream &out) const {
 void Classifier::train(bool incremental)  {
   if (caching)
     cache->clear();
-  std::cout << "TRAINING " << std::boolalpha << incremental << std::endl;
+  //std::cout << "TRAINING " << std::boolalpha << incremental << std::endl;
   trainInternal(incremental);
 }
 

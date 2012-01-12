@@ -11,7 +11,7 @@ Modified: 2011-12-01
 #include <iostream>
 #include <limits>
 
-#define DEBUG_DT_SPLITS
+#undef DEBUG_DT_SPLITS
 
 //const double DecisionTree::MIN_GAIN_RATIO = 0.0001;
 //const unsigned int DecisionTree::MIN_INSTANCES_PER_LEAF = 2;
@@ -199,7 +199,7 @@ void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &
         split.featureInd = i;
         split.val = (*it + *it2) * 0.5;
         dt.calcGainRatio(instances,split,I);
-        std::cout << "considering split " << feature.name << " " << split.val << " " << split.gain << std::endl;
+        //std::cout << "considering split " << feature.name << " " << split.val << " " << split.gain << std::endl;
         if (split.gain > bestSplit.gain)
           bestSplit = split;
       }
@@ -327,14 +327,14 @@ void DecisionTree::calcGainRatio(const InstanceSetPtr &instances, DecisionTree::
   for (unsigned int i = 0; i < split.instanceSets.size(); i++) {
     //split.instanceSets[i]->normalize();
     ratios[i] = split.instanceSets[i]->weight / instances->weight;
-    std::cout << "  ratios[" << i << "]: " << ratios[i] << " " << split.instanceSets[i]->weight << " " << instances->weight  << std::endl;
+    //std::cout << "  ratios[" << i << "]: " << ratios[i] << " " << split.instanceSets[i]->weight << " " << instances->weight  << std::endl;
     info += ratios[i] * calcIofSet(split.instanceSets[i]); 
   }
   double gain = I - info;
   double splitInfo = calcIofP(ratios);
   double gainRatio = gain / splitInfo;
   split.gain = gainRatio;
-  std::cout << "  " << I << " " << info << " " << gain << " " << splitInfo << " " << gainRatio << std::endl;
+  //std::cout << "  " << I << " " << info << " " << gain << " " << splitInfo << " " << gainRatio << std::endl;
 }
 
 double DecisionTree::calcIofSet(const InstanceSetPtr &instances) const { 
@@ -349,17 +349,17 @@ double DecisionTree::calcIofP(const Classification &Pvals) const {
     if (Pvals[i] > 0) // don't take the log of 0 :)
       I -= Pvals[i] * log(Pvals[i]);
   }
-  std::cout << "    PVALS: ";
-  for (unsigned int j = 0; j < Pvals.size(); j++)
-    std::cout << Pvals[j] << " ";
-  std::cout << "I: " << I << std::endl;
+  //std::cout << "    PVALS: ";
+  //for (unsigned int j = 0; j < Pvals.size(); j++)
+    //std::cout << Pvals[j] << " ";
+  //std::cout << "I: " << I << std::endl;
   return I;
 }
 
 void DecisionTree::splitData(const InstanceSetPtr &instances, Split &split) const {
   Feature const &feature = features[split.featureInd];
 
-  std::cout << "SPLITTING DATA on: " << feature.name << " " << split.val << std::endl;
+  //std::cout << "SPLITTING DATA on: " << feature.name << " " << split.val << std::endl;
   if (feature.numeric) {
     split.splitVals.push_back(split.val);
     split.splitVals.push_back(std::numeric_limits<float>::infinity());
@@ -382,9 +382,9 @@ void DecisionTree::splitData(const InstanceSetPtr &instances, Split &split) cons
       }
     }
   }
-  for (unsigned int i = 0; i < split.splitVals.size(); i++)
-    std::cout << "  " << split.instanceSets[i]->size();
-  std::cout << std::endl;
+  //for (unsigned int i = 0; i < split.splitVals.size(); i++)
+    //std::cout << "  " << split.instanceSets[i]->size();
+  //std::cout << std::endl;
   if (feature.numeric)
     split.splitVals[1] = split.splitVals[0];
 }

@@ -11,17 +11,18 @@ Modified: 2011-12-29
 
 #include "Classifier.h"
 #include <boost/function.hpp>
+#include <json/json.h>
 
 struct BoostingClassifier {
   boost::shared_ptr<Classifier> classifier;
   double betat;
 };
 
-typedef boost::function< boost::shared_ptr<Classifier> (const std::vector<Feature> &features, bool caching)> BaseLearnerGenerator;
+typedef boost::function<ClassifierPtr (const std::vector<Feature> &features, const Json::Value &options)> BaseLearnerGenerator;
 
 class TrAdaBoost: public Classifier {
 public:
-  TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, unsigned int maxBoostingIterations);
+  TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations);
 
   virtual ~TrAdaBoost();
   virtual void addData(const InstancePtr &instance);
@@ -37,6 +38,7 @@ protected:
 
 protected:
   BaseLearnerGenerator baseLearner;
+  Json::Value baseLearnerOptions;
   std::vector<BoostingClassifier> classifiers;
   InstanceSet sourceData;
   InstanceSet targetData;

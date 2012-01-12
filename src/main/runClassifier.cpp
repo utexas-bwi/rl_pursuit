@@ -20,9 +20,8 @@ int main(int argc, const char *argv[]) {
     return 1;
 
   int retrainFreq = options.get("trainingPeriod",-1).asInt();
-  std::string filename = options.get("filename","").asString();
 
-  ClassifierPtr classifier = createClassifier(filename,options);
+  ClassifierPtr classifier = createClassifier(options);
   
   std::cout << "------------------------------------------" << std::endl;
   //std::cout << *classifier << std::endl;
@@ -70,7 +69,7 @@ int main(int argc, const char *argv[]) {
   testIn.close();
 
   //std::cout << *classifier << std::endl;
-  sleep(1); // TODO hack for Weka for now
+  //sleep(1); // TODO hack for Weka for now
   std::cout << "------------------------------------------" << std::endl;
 
   std::cout << "Num Insts   : " << count << std::endl;
