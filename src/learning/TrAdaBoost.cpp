@@ -124,6 +124,13 @@ void TrAdaBoost::classifyInternal(const InstancePtr &instance, Classification &c
   }
   //std::cout << std::endl;
   //std::cout << "max ind: " << maxInd << std::endl << std::flush;
+  if (maxInd < 0) {
+    std::cout << "classification: ";
+    for (unsigned int i = 0; i < numClasses; i++) {
+      std::cout << classification[i] << " ";
+    }
+    std::cout << std::endl;
+  }
   assert(maxInd >= 0);
   classification[maxInd] = 1.0;
 }
