@@ -20,7 +20,7 @@ public:
     std::vector<std::vector<float> > probs; // vals by classes
     // continuous
     std::vector<float> means;
-    std::vector<float> vars;
+    std::vector<float> stdevs;
   };
 
   NaiveBayes(const std::vector<Feature> &features, bool caching);

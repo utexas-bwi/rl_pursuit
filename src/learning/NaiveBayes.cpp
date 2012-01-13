@@ -1,7 +1,9 @@
 #include "NaiveBayes.h"
 #include <iostream>
 
-const float NaiveBayes::ALPHA = 0.1;
+#undef DEBUG_NB
+
+const float NaiveBayes::ALPHA = 0.5;
 
 NaiveBayes::NaiveBayes(const std::vector<Feature> &features, bool caching):
   Classifier(features,caching),
@@ -18,6 +20,28 @@ void NaiveBayes::addData(const InstancePtr &instance) {
 
 void NaiveBayes::outputDescription(std::ostream &out) const {
   out << "Naive Bayes" << std::endl;
+  for (unsigned int i = 0; i < attributes.size(); i++) {
+    out << features[i].name << std::endl;
+    if (attributes[i].numeric) {
+      out << "mean  ";
+      for (unsigned int c = 0; c < numClasses; c++)
+        out << attributes[i].means[c] << " ";
+      out << std::endl;
+      out << "stdev  ";
+      for (unsigned int c = 0; c < numClasses; c++)
+        out << attributes[i].stdevs[c] << " ";
+      out << std::endl;
+    } else {
+      for (unsigned int j = 0; j < attributes[i].probs.size(); j++) {
+        out << features[i].values[j] << "  ";
+        for (unsigned int c = 0; c < numClasses; c++) {
+          out << attributes[i].probs[j][c] << " ";
+        }
+        out << std::endl;
+      }
+    }
+    out << std::endl;
+  }
 }
 
 void NaiveBayes::trainInternal(bool incremental) {
@@ -37,7 +61,7 @@ void NaiveBayes::classifyInternal(const InstancePtr &instance, Classification &c
   for (unsigned int i = 0; i < numClasses; i++)
     classification[i] = 1.0;
 
-  for (unsigned int i = 0; i < features.size() - 1; i++) { // still skipping the last attribute
+  for (unsigned int i = 0; i < attributes.size(); i++) {
     if (attributes[i].numeric)
       predictContinuousAttribute(instance,i,classification);
     else
@@ -49,15 +73,18 @@ void NaiveBayes::classifyInternal(const InstancePtr &instance, Classification &c
     total += classification[i];
   for (unsigned int i = 0; i < numClasses; i++)
     classification[i] /= total;
-
+#ifdef DEBUG_NB
   std::cout << "FINAL: ";
   for (unsigned int i = 0; i < numClasses; i++)
     std::cout << classification[i] << " ";
   std::cout << std::endl;
+#endif
 }
 
 void NaiveBayes::learnDiscreteAttribute(const Feature &feature) {
+#ifdef DEBUG_NB
   std::cout << "learn " << feature.name << std::endl;
+#endif
   Attribute attr;
   // just calculate the fraction with each val 
   attr.numeric = false;
@@ -89,6 +116,7 @@ void NaiveBayes::learnDiscreteAttribute(const Feature &feature) {
       attr.probs[j][c] /= valueWeights[j];
   }
 
+#ifdef DEBUG_NB
   std::cout << "  probs:" << std::endl;
   for (unsigned int j = 0; j < feature.values.size(); j++) {
     std::cout << "  ";
@@ -97,16 +125,19 @@ void NaiveBayes::learnDiscreteAttribute(const Feature &feature) {
     }
     std::cout << std::endl;
   }
+#endif
 
   attributes.push_back(attr);
 }
 
 void NaiveBayes::learnContinuousAttribute(const Feature &feature) {
+#ifdef DEBUG_NB
   std::cout << "learn " << feature.name << std::endl;
+#endif
   Attribute attr;
   attr.numeric = true;
   attr.means.resize(numClasses,0);
-  attr.vars.resize(numClasses,0);
+  attr.stdevs.resize(numClasses,0);
   
   std::vector<float> weights(numClasses,0);
   // get mean of data for each class
@@ -116,33 +147,42 @@ void NaiveBayes::learnContinuousAttribute(const Feature &feature) {
   }
   for (unsigned int c = 0; c < numClasses; c++)
     attr.means[c] /= weights[c];
+#ifdef DEBUG_NB
   std::cout << "  means: ";
   for (unsigned int c = 0; c < numClasses; c++)
     std::cout << attr.means[c] << " ";
   std::cout << std::endl;
+#endif
 
   // calculate the variance
   float val;
+  std::vector<float> counts(numClasses,0);
   for (unsigned int i = 0; i < data.size(); i++) {
     val = (*data[i])[feature.name] - attr.means[data[i]->label];
-    attr.vars[data[i]->label] += data[i]->weight * val * val;
+    attr.stdevs[data[i]->label] += data[i]->weight * val * val;
+    counts[data[i]->label] += data[i]->weight;
   }
-  //for (unsigned int c = 0; c < numClasses; c++)
-    //attr.vars[c] += ALPHA;
-
-  for (unsigned int c = 0; c < numClasses; c++) {
-    if (attr.vars[c] < 0.01)
-      attr.vars[c] = 0.01;
-  }
-  std::cout << "  vars: ";
+  // make in stdev instead of variance
   for (unsigned int c = 0; c < numClasses; c++)
-    std::cout << attr.vars[c] << " ";
+    attr.stdevs[c] = sqrt(attr.stdevs[c] / counts[c]);
+  // if only one value, settle on 1/6 (arbitrarily, taken from weka)
+  for (unsigned int c = 0; c < numClasses; c++)
+    if (attr.stdevs[c] < 1e-10)
+      attr.stdevs[c] = 1.0 / 6.0;
+
+#ifdef DEBUG_NB
+  std::cout << "  stdevs: ";
+  for (unsigned int c = 0; c < numClasses; c++)
+    std::cout << attr.stdevs[c] << " ";
   std::cout << std::endl;
+#endif
   attributes.push_back(attr);
 }
 
 void NaiveBayes::predictDiscreteAttribute(const InstancePtr &instance, unsigned int attrInd, Classification &c) {
+#ifdef DEBUG_NB
   std::cout << "predict discrete " << features[attrInd].name << std::endl;
+#endif
   int valueInd = -1;
   for (unsigned int i = 0; i < features[attrInd].values.size(); i++) {
     if (fabs((*instance)[features[attrInd].name] - features[attrInd].values[i]) < 0.01) {
@@ -151,26 +191,38 @@ void NaiveBayes::predictDiscreteAttribute(const InstancePtr &instance, unsigned 
     }
   }
   assert(valueInd >= 0);
+#ifdef DEBUG_NB
   std::cout << "  " << features[attrInd].values.size() << " " << valueInd << std::endl << std::flush;
   std::cout << "  ";
+#endif
   for (unsigned int i = 0; i < numClasses; i++) {
     float x = attributes[attrInd].probs[valueInd][i];
     c[i] *= x;
+#ifdef DEBUG_NB
     std::cout << x << " ";
+#endif
   }
+#ifdef DEBUG_NB
   std::cout << std::endl;
+#endif
 }
 
 void NaiveBayes::predictContinuousAttribute(const InstancePtr &instance, unsigned int attrInd, Classification &c) {
+#ifdef DEBUG_NB
   std::cout << "predict continuous " << features[attrInd].name << std::endl;
   std::cout << "  ";
+#endif
   for (unsigned int i = 0; i < numClasses; i++) {
     //float val = ((*instance)[features[attrInd].name] - attributes[attrInd].means[i]);
     //float x = 1 / sqrt(2 * M_PI * attributes[attrInd].vars[i]) * exp(- val * val / (2 * attributes[attrInd].vars[i]));
-    float val = (((*instance)[features[attrInd].name] - attributes[attrInd].means[i])) / sqrt(attributes[attrInd].vars[i]);
+    float val = (((*instance)[features[attrInd].name] - attributes[attrInd].means[i])) / attributes[attrInd].stdevs[i];
     float x = 1 / sqrt(2 * M_PI) * exp(-0.5 * val * val);
     c[i] *= x;
+#ifdef DEBUG_NB
     std::cout << x << " ";
+#endif
   }
+#ifdef DEBUG_NB
   std::cout << std::endl;
+#endif
 }

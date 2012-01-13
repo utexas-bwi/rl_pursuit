@@ -24,8 +24,7 @@ int main(int argc, const char *argv[]) {
   ClassifierPtr classifier = createClassifier(options);
   
   std::cout << "------------------------------------------" << std::endl;
-  //std::cout << *classifier << std::endl;
-  //std::cout << *classifier << std::endl;
+  std::cout << *classifier << std::endl;
   if (retrainFreq >= 0)
     std::cout << "Retraining every " << retrainFreq << " steps" << std::endl;
   else
