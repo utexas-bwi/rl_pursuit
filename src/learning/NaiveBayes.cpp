@@ -58,8 +58,10 @@ void NaiveBayes::trainInternal(bool incremental) {
 
 void NaiveBayes::classifyInternal(const InstancePtr &instance, Classification &classification) {
   // start with all probs 1.0
+  //for (unsigned int i = 0; i < numClasses; i++)
+    //classification[i] = 1.0;
   for (unsigned int i = 0; i < numClasses; i++)
-    classification[i] = 1.0;
+    classification[i] = 0.0; // for log
 
   for (unsigned int i = 0; i < attributes.size(); i++) {
     if (attributes[i].numeric)
@@ -67,6 +69,27 @@ void NaiveBayes::classifyInternal(const InstancePtr &instance, Classification &c
     else
       predictDiscreteAttribute(instance,i,classification);
   }
+
+  // subtract the minimum log, to get things in a better frame of referencea
+  float maxVal = -std::numeric_limits<float>::infinity();
+  for (unsigned int i = 0; i < numClasses; i++)
+    if (classification[i] > maxVal)
+      maxVal = classification[i];
+  //std::cout << "before: ";
+  //for (unsigned int i = 0; i < numClasses; i++)
+    //std::cout << classification[i] << " ";
+  //std::cout << std::endl;
+  for (unsigned int i = 0; i < numClasses; i++)
+    classification[i] -= maxVal;
+  //std::cout << "maxVal: " << maxVal << std::endl;
+  // convert back from log
+  for (unsigned int i = 0; i < numClasses; i++) {
+    classification[i] = exp(classification[i]);
+    //std::cout << classification[i] << " ";
+  }
+  //std::cout << std::endl;
+
+
   // normalize
   float total = 0;
   for (unsigned int i = 0; i < numClasses; i++)
@@ -110,10 +133,11 @@ void NaiveBayes::learnDiscreteAttribute(const Feature &feature) {
     }
   }
 
-  // normalize
+  // normalize and convert to logs
   for (unsigned int j = 0; j < feature.values.size(); j++) {
     for (unsigned int c = 0; c < numClasses; c++)
-      attr.probs[j][c] /= valueWeights[j];
+      attr.probs[j][c] = log(attr.probs[j][c]) - log(valueWeights[j]);
+      //attr.probs[j][c] /= valueWeights[j];
   }
 
 #ifdef DEBUG_NB
@@ -166,9 +190,12 @@ void NaiveBayes::learnContinuousAttribute(const Feature &feature) {
   for (unsigned int c = 0; c < numClasses; c++)
     attr.stdevs[c] = sqrt(attr.stdevs[c] / counts[c]);
   // if only one value, settle on 1/6 (arbitrarily, taken from weka)
-  for (unsigned int c = 0; c < numClasses; c++)
+  const float MIN_VAL = 1.0 / 6.0;
+  for (unsigned int c = 0; c < numClasses; c++) {
     if (attr.stdevs[c] < 1e-10)
-      attr.stdevs[c] = 1.0 / 6.0;
+    //if (attr.stdevs[c] < MIN_VAL)
+      attr.stdevs[c] = MIN_VAL;
+  }
 
 #ifdef DEBUG_NB
   std::cout << "  stdevs: ";
@@ -197,7 +224,8 @@ void NaiveBayes::predictDiscreteAttribute(const InstancePtr &instance, unsigned 
 #endif
   for (unsigned int i = 0; i < numClasses; i++) {
     float x = attributes[attrInd].probs[valueInd][i];
-    c[i] *= x;
+    //c[i] *= x;
+    c[i] += x; // for log
 #ifdef DEBUG_NB
     std::cout << x << " ";
 #endif
@@ -216,8 +244,10 @@ void NaiveBayes::predictContinuousAttribute(const InstancePtr &instance, unsigne
     //float val = ((*instance)[features[attrInd].name] - attributes[attrInd].means[i]);
     //float x = 1 / sqrt(2 * M_PI * attributes[attrInd].vars[i]) * exp(- val * val / (2 * attributes[attrInd].vars[i]));
     float val = (((*instance)[features[attrInd].name] - attributes[attrInd].means[i])) / attributes[attrInd].stdevs[i];
-    float x = 1 / sqrt(2 * M_PI) * exp(-0.5 * val * val);
-    c[i] *= x;
+    //float x = 1 / sqrt(2 * M_PI) * exp(-0.5 * val * val);
+    //c[i] *= x;
+    float x = log(1 / sqrt(2 * M_PI)) - 0.5 * val * val;
+    c[i] += x; // for log
 #ifdef DEBUG_NB
     std::cout << x << " ";
 #endif
