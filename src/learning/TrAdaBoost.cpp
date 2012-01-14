@@ -38,7 +38,7 @@ void TrAdaBoost::trainInternal(bool incremental) {
   classifiers.clear();
   numBoostingIterations = maxBoostingIterations;
   for (unsigned int t = 0; t < maxBoostingIterations; t++) {
-    std::cout << "TRAINING ITERATION: " << t << std::endl;
+    std::cout << "BOOSTING ITERATION: " << t << std::endl;
     reweightDistribution();
 
     BoostingClassifier c;
@@ -93,8 +93,10 @@ void TrAdaBoost::classifyInternal(const InstancePtr &instance, Classification &c
   float val;
   //std::cout << "classify: " << *instance << std::endl;
   unsigned int startInd = (unsigned int)(numBoostingIterations / 2.0 + 0.5);
+  //if (numBoostingIterations == 1)
+    startInd = 0; // TODO TrAdaBoost says start at ceil(n/2) why?, works better if not ?
   //std::cout << "startInd: " << startInd << " " << classifiers.size() << std::endl;
-  for (unsigned int i = startInd; i < classifiers.size(); i++) { // TODO TrAdaBoost says start at ceil(n/2) why?
+  for (unsigned int i = startInd; i < classifiers.size(); i++) {
     classifiers[i].classifier->classify(instance,temp);
     double betat = classifiers[i].betat;
     if (betat < 0.001) {
@@ -145,10 +147,11 @@ void TrAdaBoost::resetWeights() {
 }
 
 void TrAdaBoost::reweightDistribution() {
+  float origWeight = sourceData.weight + targetData.weight;
   sourceData.recalculateWeight();
   targetData.recalculateWeight();
   float totalWeight = sourceData.weight + targetData.weight;
-  float factor = 1.0 / totalWeight;
+  float factor = origWeight / totalWeight;
   for (unsigned int i = 0; i < sourceData.size(); i++)
     sourceData[i]->weight *= factor;
   sourceData.weight *= factor;
