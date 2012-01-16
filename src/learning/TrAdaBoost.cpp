@@ -41,7 +41,7 @@ void TrAdaBoost::trainInternal(bool incremental) {
     std::cout << "BOOSTING ITERATION: " << t << std::endl;
     reweightDistribution();
 
-    BoostingClassifier c;
+    BoostingClassifierTr c;
     //c.classifier = baseLearner(features,caching);
     //c.classifier = baseLearner(features,false); // TODO disabling caching
     c.classifier = baseLearner(features,baseLearnerOptions);
@@ -160,7 +160,7 @@ void TrAdaBoost::reweightDistribution() {
   targetData.weight *= factor;
 }
   
-double TrAdaBoost::calcError(BoostingClassifier &c) {
+double TrAdaBoost::calcError(BoostingClassifierTr &c) {
   absError.resize(sourceData.size() + targetData.size());
   InstancePtr inst;
   Classification temp;

@@ -1,50 +1,50 @@
-#ifndef TRADABOOST_3BBYLV2Y
-#define TRADABOOST_3BBYLV2Y
+#ifndef ADABOOST_YK4JLNUB
+#define ADABOOST_YK4JLNUB
 
 /*
-File: TrAdaBoost.h
+File: AdaBoost.h
 Author: Samuel Barrett
-Description: Boosting algorithm for transfer learning
-Created:  2011-12-29
-Modified: 2011-12-29
+Description: AdaBoost algorithm, with support for inheritance
+Created:  2012-01-16
+Modified: 2012-01-16
 */
 
 #include "Classifier.h"
 #include <boost/function.hpp>
 #include <json/json.h>
 
-struct BoostingClassifierTr {
+struct BoostingClassifier {
   boost::shared_ptr<Classifier> classifier;
-  double betat;
+  double alpha;
 };
 
 typedef boost::function<ClassifierPtr (const std::vector<Feature> &features, const Json::Value &options)> BaseLearnerGenerator;
 
-class TrAdaBoost: public Classifier {
+class AdaBoost: public Classifier {
 public:
-  TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations);
+  AdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations);
 
-  virtual ~TrAdaBoost();
+  virtual ~AdaBoost();
   virtual void addData(const InstancePtr &instance);
-  virtual void addSourceData(const InstancePtr &instance);
   void outputDescription(std::ostream &out) const;
 
 protected:
   virtual void trainInternal(bool incremental);
   virtual void classifyInternal(const InstancePtr &instance, Classification &classification);
   virtual void resetWeights();
-  virtual void reweightDistribution();
-  virtual double calcError(BoostingClassifierTr &c);
+  virtual void normalizeWeights();
+  virtual void reweightData(double alpha);
+  virtual double calcError(BoostingClassifier &c, unsigned int targetInd);
 
 protected:
   BaseLearnerGenerator baseLearner;
   Json::Value baseLearnerOptions;
-  std::vector<BoostingClassifierTr> classifiers;
-  InstanceSet sourceData;
-  InstanceSet targetData;
+  std::vector<BoostingClassifier> classifiers;
+  InstanceSet data;
   std::vector<float> absError;
   unsigned int numBoostingIterations;
   const unsigned int maxBoostingIterations;
+  unsigned int classifierStartInd;
 };
 
-#endif /* end of include guard: TRADABOOST_3BBYLV2Y */
+#endif /* end of include guard: ADABOOST_YK4JLNUB */

@@ -13,10 +13,12 @@ Modified: 2011-12-28
 
 #include <learning/WekaParser.h>
 #include <learning/ArffReader.h>
+
+#include <learning/AdaBoost.h>
 #include <learning/DecisionTree.h>
 #include <learning/NaiveBayes.h>
-#include <learning/WekaClassifier.h>
 #include <learning/TrAdaBoost.h>
+#include <learning/WekaClassifier.h>
 
 ClassifierPtr createClassifier(const Json::Value &options) {
   std::string filename = options.get("filename","").asString();
@@ -44,29 +46,32 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &i
   bool caching = options.get("caching",false).asBool();
   std::string type = options.get("type","dt").asString();
   boost::to_lower(type);
+  bool train = options.get("initialTrain",true).asBool();
 
   ClassifierPtr classifier;
   
-  if (type == "dt") {
+  if (type == "adaboost") {
+    classifier = createAdaBoost(filename,features,caching,options);
+  } else if (type == "dt") {
     classifier = createDecisionTree(filename,features,caching,options);
-  } else if (type == "weka") {
-    classifier = createWekaClassifier(filename,features,caching,options);
-  } else if (type == "tradaboost") {
-    classifier = createTrAdaBoost(filename,dataFilename,caching,options);
   } else if (type == "nb") {
     classifier = ClassifierPtr(new NaiveBayes(features,caching));
+  } else if (type == "tradaboost") {
+    classifier = createTrAdaBoost(filename,dataFilename,caching,options,train);
+  } else if (type == "weka") {
+    classifier = createWekaClassifier(filename,features,caching,options);
   } else {
     std::cerr << "createClassifier: ERROR, unknown type: " << type << std::endl;
     exit(3);
   }
-
+  
   if (dataFilename != "")
-    addDataToClassifier(classifier,dataFilename);
+    addDataToClassifier(classifier,dataFilename,train);
 
   return classifier;
 }
 
-void addDataToClassifier(ClassifierPtr classifier, const std::string &dataFilename) {
+void addDataToClassifier(ClassifierPtr classifier, const std::string &dataFilename, bool train) {
   std::cout << "Adding data" << std::endl;
   std::ifstream in(dataFilename.c_str());
   ArffReader arff(in);
@@ -75,7 +80,8 @@ void addDataToClassifier(ClassifierPtr classifier, const std::string &dataFilena
     classifier->addData(instance);
   }
   in.close();
-  classifier->train(false);
+  if (train)
+    classifier->train(false);
 }
 
 boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
@@ -120,7 +126,16 @@ boost::shared_ptr<WekaClassifier> createBoostWeka(const std::vector<Feature> &fe
   return boost::shared_ptr<WekaClassifier>(new WekaClassifier(features,caching, wekaOptions));
 }
 
-boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options) {
+boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
+  assert(filename == "");
+  unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
+  ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
+  Json::Value baseLearnerOptions = options["baseLearner"];
+
+  return boost::shared_ptr<AdaBoost>(new AdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
+}
+
+boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options, bool train) {
   unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   assert(filename == "");
   std::ifstream in(dataFilename.c_str());
@@ -135,5 +150,7 @@ boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std:
   }
   in.close();
   dataFilename = ""; // so that create classifier doesn't do any additional training
+  if (train)
+    c->train(false);
   return c;
 }

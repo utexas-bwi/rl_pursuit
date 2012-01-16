@@ -12,6 +12,7 @@ numTargetTrainingInstances = 100
 baseConfig = '''{
   "data": "%s",
   "type": "%s",
+  "initialTrain": false,
   "caching": false
   %s
 }'''
@@ -26,6 +27,8 @@ tradaBoostConfig = '''
 '''
 
 tests = [
+  ['ada-20-nb','adaboost',tradaBoostConfig % (20,'nb','')],
+  ['ada-100-nb','adaboost',tradaBoostConfig % (100,'nb','')],
   ['trada-20-nb','tradaboost',tradaBoostConfig % (20,'nb','')],
   #['trada-20-dt-5','tradaboost',tradaBoostConfig % (20,'dt',',"maxDepth": 5')],
   ['trada-100-nb','tradaboost',tradaBoostConfig % (100,'nb','')],
@@ -68,8 +71,8 @@ for label,typeName,options in tests:
 
   #output = p.communicate()[0]
   #print output
-  fracCorrect.append(re.findall('Frac\s*Correct:.*\(([.0-9]*)\)',output))
-  numCorrect.append(re.findall('Num\s*Correct:.*\(([.0-9]*)\)',output))
+  fracCorrect.append(re.findall('Frac\s*Correct:.*\(([.0-9]*)\)',output)[0])
+  numCorrect.append(re.findall('Num\s*Correct:.*\(([.0-9]*)\)',output)[0])
   print fracCorrect
   print numCorrect
 
