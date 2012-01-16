@@ -134,7 +134,6 @@ boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std:
     c->addSourceData(instance);
   }
   in.close();
-  c->train(false);
   dataFilename = ""; // so that create classifier doesn't do any additional training
   return c;
 }

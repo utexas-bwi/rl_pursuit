@@ -6,12 +6,31 @@
 #include <cassert>
 #include <gflags/gflags.h>
 #include <stdlib.h>
+#include <limits>
 
 double getTime() {
   struct timeval time;
 
   gettimeofday(&time,NULL);
   return time.tv_sec + time.tv_usec / 1000000.0;
+}
+
+unsigned int vectorMaxInd(const std::vector<float> &arr) {
+  float maxVal;
+  unsigned int maxInd = 0;
+  vectorMax(arr,maxVal,maxInd);
+  return maxInd;
+}
+
+
+void vectorMax(const std::vector<float> &arr, float &maxVal, unsigned int &maxInd) {
+  maxVal = -1 * std::numeric_limits<float>::infinity();
+  for (unsigned int i = 0; i < arr.size(); i++) {
+    if (arr[i] > maxVal) {
+      maxVal = arr[i];
+      maxInd = i;
+    }
+  }
 }
 
 // returns the probability of x1 using a softmax with the given factor
