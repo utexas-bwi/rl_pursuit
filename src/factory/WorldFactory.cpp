@@ -66,12 +66,9 @@ void createAgentControllersAndModels(boost::shared_ptr<RNG> rng, const Point2D &
     if (agentModels[agentInd].type == PREY) {
       agent = createAgent(rng->randomUInt(),dims,prey,trialNum,0,preyOptions,options);
     } else if (agentModels[agentInd].type == PREDATOR) {
-      if (sharePredator && (agentPredator.get() != NULL)) {
-        agent = agentPredator;
-      } else {
-        agent = createAgent(rng->randomUInt(),dims,predator,trialNum,predatorInd,predatorOptions,options);
+      agent = createAgent(rng->randomUInt(),dims,predator,trialNum,predatorInd,predatorOptions,options,agentPredator);
+      if (sharePredator)
         agentPredator = agent;
-      }
       predatorInd++;
     } else if (agentModels[agentInd].type == ADHOC) {
       if (adhocAgent.get() != NULL)

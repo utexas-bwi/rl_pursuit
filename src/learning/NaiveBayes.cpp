@@ -44,8 +44,9 @@ void NaiveBayes::outputDescription(std::ostream &out) const {
   }
 }
 
-void NaiveBayes::trainInternal(bool incremental) {
-  assert(!incremental);
+void NaiveBayes::trainInternal(bool /*incremental*/) {
+  // TODO - not incremental
+  //assert(!incremental);
   attributes.clear();
   for (unsigned int featureInd = 0; featureInd < features.size() - 1; featureInd++) { /// -1 to skip the true class
     if (features[featureInd].numeric)

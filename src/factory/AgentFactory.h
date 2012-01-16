@@ -22,8 +22,8 @@ bool getStudentFromFile(const std::string &filename, std::string &student, unsig
 std::string getStudentForTrial(unsigned int trialNum, const Json::Value &options);
 void getAvailableStudents(const std::string &filename, std::set<std::string> &students);
 
-boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions);
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions);
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions);
+boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent = boost::shared_ptr<Agent>());
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent = boost::shared_ptr<Agent>());
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent = boost::shared_ptr<Agent>());
 
 #endif /* end of include guard: AGENTFACTORY_31I9BDGK */

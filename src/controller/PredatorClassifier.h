@@ -29,6 +29,10 @@ public:
     return new PredatorClassifier(*this);
   }
 
+  boost::shared_ptr<Classifier> getClassifier() {
+    return classifier;
+  }
+
 
 protected:
   const std::string name;

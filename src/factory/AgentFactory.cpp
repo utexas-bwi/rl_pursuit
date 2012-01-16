@@ -86,7 +86,7 @@ void getAvailableStudents(const std::string &filename, std::set<std::string> &st
   in.close();
 }
 
-boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent) {
   typedef boost::shared_ptr<Agent> ptr;
   
   boost::to_lower(name);
@@ -131,7 +131,18 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     std::string filename = options.get("filename","").asString();
     int trainingPeriod = options.get("trainingPeriod",-1).asInt();
     bool trainIncremental = options.get("trainIncremental",true).asBool();
-    boost::shared_ptr<Classifier> classifier = createClassifier(filename,options);
+    boost::shared_ptr<Classifier> classifier;
+    if (baseAgent.get() != NULL) {
+      // get the classifier of the base agent, if it's of the correct type
+      boost::shared_ptr<PredatorClassifier> basePred = boost::static_pointer_cast<PredatorClassifier>(baseAgent);
+      if (basePred.get() != NULL) {
+        std::cout << "SHARING CLASSIFIER" << std::endl;
+        classifier = basePred->getClassifier();
+      }
+    }
+    if (classifier.get() == NULL)
+      classifier = createClassifier(filename,options);
+
     return ptr(new PredatorClassifier(rng,dims,classifier,filename,trainingPeriod,trainIncremental));
   } else if (NAME_IN_SET("student")) {
     std::string student = getStudentForTrial(trialNum,options);
@@ -171,17 +182,17 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
   }
 }
 
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent) {
   boost::shared_ptr<RNG> rng(new RNG(randomSeed));
-  return createAgent(rng,dims,name,trialNum,predatorInd,options,rootOptions);
+  return createAgent(rng,dims,name,trialNum,predatorInd,options,rootOptions,baseAgent);
 }
 
-boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions) {
+boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent) {
   std::string name = options.get("behavior","NONE").asString();
   if (name == "NONE") {
     std::cerr << "createAgent: WARNING: no agent type specified, using random" << std::endl;
     name = "random";
   }
 
-  return createAgent(randomSeed,dims,name,trialNum,predatorInd,options,rootOptions);
+  return createAgent(randomSeed,dims,name,trialNum,predatorInd,options,rootOptions,baseAgent);
 }

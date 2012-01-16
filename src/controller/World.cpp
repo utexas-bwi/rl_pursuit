@@ -561,6 +561,8 @@ void World::learnControllers(const Observation &prevObs, const Observation &curr
   absCurrentObs.uncenterPrey(dims);
 
   for (unsigned int i = 0; i < agents.size(); i++) {
+    absPrevObs.myInd = i;
+    absCurrentObs.myInd = i;
     agents[i]->learn(absPrevObs,absCurrentObs,i);
   }
 }
