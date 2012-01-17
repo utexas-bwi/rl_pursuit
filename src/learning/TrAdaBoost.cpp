@@ -64,7 +64,7 @@ void TrAdaBoost::trainInternal(bool incremental) {
     c.betat = eps / ((1.0 - eps) * (numClasses - 1)); // from SAMME
     //std::cout << "BETAT: " << c.betat << std::endl;
     assert(sourceData.size() > numBoostingIterations);
-    double beta = 1.0 / (1.0 + sqrt(2 * log((double)sourceData.size() / numBoostingIterations)));
+    double beta = 1.0 / (1.0 + sqrt(2 * log((double)sourceData.size()) / numBoostingIterations));
     //std::cout << "BETA: " << beta << std::endl;
     if (1 - eps <= 1.0 / numClasses) { // not helping
       //std::cout << "SHORT CIRCUITING, not helping: " << t << std::endl;

@@ -17,7 +17,8 @@ AdaBoost::AdaBoost(const std::vector<Feature> &features, bool caching, BaseLearn
   baseLearnerOptions(baseLearnerOptions),
   data(numClasses),
   maxBoostingIterations(maxBoostingIterations),
-  classifierStartInd(0)
+  classifierStartInd(0),
+  targetDataStart(0)
 {
   assert(baseLearner);
 }
@@ -43,12 +44,12 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
       c.classifier->addData(data[i]);
 
     c.classifier->train(false);
-    double eps = calcError(c,0);
-    c.alpha = log((1.0 - eps) / eps) + log(numClasses - 1.0); // from SAMME
+    double eps = calcError(c);
     if (1 - eps <= 1.0 / numClasses) { // not helping
       //std::cout << "SHORT CIRCUITING, not helping: " << t << std::endl;
       break;
     }
+    c.alpha = log((1.0 - eps) / eps) + log(numClasses - 1.0); // from SAMME
     classifiers.push_back(c);
     if (eps < 0.0001) {
       //std::cout << "SHORT CIRCUITING, perfect: " << t << std::endl;
@@ -94,7 +95,7 @@ void AdaBoost::normalizeWeights() {
   data.weight *= factor;
 }
   
-double AdaBoost::calcError(BoostingClassifier &c, unsigned int targetInd) {
+double AdaBoost::calcError(BoostingClassifier &c) {
   absError.resize(data.size());
   InstancePtr inst;
   Classification temp;
@@ -105,9 +106,11 @@ double AdaBoost::calcError(BoostingClassifier &c, unsigned int targetInd) {
   }
   
   // calculate epsilon
+  if (targetDataStart < 0)
+    return 0.0;
   double weight = 0;
   double eps = 0;
-  for (unsigned int i = targetInd; i < data.size(); i++) {
+  for (unsigned int i = targetDataStart; i < data.size(); i++) {
     eps += data[i]->weight * absError[i];
     weight += data[i]->weight;
   }

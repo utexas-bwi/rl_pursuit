@@ -34,7 +34,7 @@ protected:
   virtual void resetWeights();
   virtual void normalizeWeights();
   virtual void reweightData(double alpha);
-  virtual double calcError(BoostingClassifier &c, unsigned int targetInd);
+  virtual double calcError(BoostingClassifier &c);
 
 protected:
   BaseLearnerGenerator baseLearner;
@@ -45,6 +45,7 @@ protected:
   unsigned int numBoostingIterations;
   const unsigned int maxBoostingIterations;
   unsigned int classifierStartInd;
+  int targetDataStart;
 };
 
 #endif /* end of include guard: ADABOOST_YK4JLNUB */

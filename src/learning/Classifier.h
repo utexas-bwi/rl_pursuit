@@ -23,6 +23,9 @@ public:
   void train(bool incremental=true);
   void classify(const InstancePtr &instance, Classification &classification);
   virtual void addData(const InstancePtr &instance) = 0;
+  virtual void addSourceData(const InstancePtr &instance) {
+    addData(instance); // same unless we're doing transfer
+  }
 
   std::ostream& outputHeader(std::ostream &out) const;
   virtual void outputDescription(std::ostream &out) const = 0;

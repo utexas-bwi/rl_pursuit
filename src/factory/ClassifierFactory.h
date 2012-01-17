@@ -33,6 +33,6 @@ boost::shared_ptr<DecisionTree> createDecisionTreeFromWeka(const std::string &fi
 boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 
 boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
-boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options, bool train);
+boost::shared_ptr<Classifier> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options, bool train);
 
 #endif /* end of include guard: CLASSIFIERFACTORY_LSY7J7N1 */
