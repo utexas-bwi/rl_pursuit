@@ -120,7 +120,6 @@ void DecisionTree::InteriorNode::collectInstances(InstanceSetPtr &instances) {
 DecisionTree::LeafNode::LeafNode(const InstanceSetPtr &instances):
   instances(instances)
 {
-  instances->normalize();
   if (instances->instances.size() > 0)
     hasNewData = true;
   else
@@ -226,6 +225,7 @@ void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &
       op = LESS;
     boost::shared_ptr<InteriorNode> interior(new InteriorNode(op,feature.name));
     for (unsigned int i = 0; i < bestSplit.instanceSets.size(); i++) {
+      bestSplit.instanceSets[i]->normalize();
       NodePtr leaf(new LeafNode(bestSplit.instanceSets[i]));
       interior->addChild(leaf,bestSplit.splitVals[i]);
     }
