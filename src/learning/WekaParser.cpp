@@ -54,8 +54,8 @@ boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned 
     InstanceSetPtr instances(new InstanceSet(numClasses));
     instances->classification = line.classDistribution;
     DecisionTree::NodePtr node(new DecisionTree::LeafNode(instances));
-    //boost::shared_ptr<DecisionTree::Node> node(new DecisionTree::LeafNode(line.classDistribution));
-    //std::cout << "Making leaf: " << node;
+    //std::cout << "Making leaf: ";
+    //node->output(std::cout,0);
     return node;
   }
   
