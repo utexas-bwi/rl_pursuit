@@ -6,10 +6,10 @@ Created:  2011-09-21
 Modified: 2011-10-02
 */
 
-//#define DEBUG_MODELS
+#undef DEBUG_MODELS
 
 #include "ModelUpdaterBayes.h"
-#include <boost/math/special_functions/fpclassify.hpp>
+#include <math.h>
 
 const float ModelUpdaterBayes::MIN_MODEL_PROB = 0.001;
 
@@ -35,8 +35,8 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
 
 #ifdef DEBUG_MODELS
   std::cout << "ORIG PROBS: " << std::endl;
-  for (unsigned int i = 0; i < modelDescriptions.size(); i++)
-    std::cout << "  " << modelDescriptions[i] << ": " << modelProbs[i] << std::endl;
+  for (unsigned int i = 0; i < models.size(); i++)
+    std::cout << "  " << models[i].description << ": " << models[i].prob << std::endl;
 #endif
 
   // calculate the new model probabilities
@@ -59,8 +59,8 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
   removeLowProbabilityModels();
 #ifdef DEBUG_MODELS
   std::cout << "NEW PROBS: " << std::endl;
-  for (unsigned int i = 0; i < modelDescriptions.size(); i++)
-    std::cout << "  " << modelDescriptions[i] << ": " << modelProbs[i] << std::endl;
+  for (unsigned int i = 0; i < models.size(); i++)
+    std::cout << "  " << models[i].description << ": " << models[i].prob << std::endl;
 #endif
 }
 
@@ -115,7 +115,7 @@ double ModelUpdaterBayes::calculateModelProb(unsigned int modelInd, const Observ
 bool ModelUpdaterBayes::allProbsTooLow(const std::vector<double> &newModelProbs) {
   // check for a divide by 0
   for (unsigned int i = 0; i < newModelProbs.size(); i++)
-    if (!boost::math::isfinite(newModelProbs[i]))
+    if (isinf(newModelProbs[i]) || isnan(newModelProbs[i]))
       return true;
   return false;
 }
