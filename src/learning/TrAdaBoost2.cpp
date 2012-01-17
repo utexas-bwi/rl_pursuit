@@ -20,7 +20,7 @@ void TrAdaBoost2::addSourceData(const InstancePtr &instance) {
 void TrAdaBoost2::reweightData(double alpha) {
   assert(targetDataStart >= 0);
   // source data
-  double N = numBoostingIterations;
+  double N = maxBoostingIterations;
   double n = targetDataStart + 1.0; // +1 for 0 indexing
   double beta = 1.0 / (1.0 + sqrt((2.0 / N) * log(n)));
   double sourceAlpha = log(beta);
