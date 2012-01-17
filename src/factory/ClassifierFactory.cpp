@@ -18,7 +18,6 @@ Modified: 2011-12-28
 #include <learning/DecisionTree.h>
 #include <learning/NaiveBayes.h>
 #include <learning/TrAdaBoost.h>
-#include <learning/TrAdaBoost2.h>
 #include <learning/WekaClassifier.h>
 
 ClassifierPtr createClassifier(const Json::Value &options) {
@@ -136,7 +135,7 @@ boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &filename, const st
   return boost::shared_ptr<AdaBoost>(new AdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
 }
 
-boost::shared_ptr<Classifier> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options, bool train) {
+boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options, bool train) {
   unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   assert(filename == "");
   std::ifstream in(dataFilename.c_str());
@@ -144,13 +143,7 @@ boost::shared_ptr<Classifier> createTrAdaBoost(const std::string &filename, std:
   Json::Value baseLearnerOptions = options["baseLearner"];
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
 
-  bool newImpl = options.get("newImpl",false).asBool();
-  boost::shared_ptr<Classifier> c;
-  if (newImpl)
-    c = boost::shared_ptr<TrAdaBoost2>(new TrAdaBoost2(arff.getFeatureTypes(),caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
-  else
-    c = boost::shared_ptr<TrAdaBoost>(new TrAdaBoost(arff.getFeatureTypes(),caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
-  //boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
+  boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
   //boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,&createBoostWeka,maxBoostingIterations));
   while (!arff.isDone()) {
     InstancePtr instance = arff.next();
