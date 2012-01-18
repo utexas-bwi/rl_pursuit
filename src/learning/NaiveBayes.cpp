@@ -165,13 +165,21 @@ void NaiveBayes::learnContinuousAttribute(const Feature &feature) {
   attr.stdevs.resize(numClasses,0);
   
   std::vector<float> weights(numClasses,0);
+  double sharedWeight = 0.0;
+  double sharedMean = 0.0;
+  double sharedStdev = 0.0;
   // get mean of data for each class
   for (unsigned int i = 0; i < data.size(); i++) {
+    double val = data[i]->weight * (*data[i])[feature.name];
     weights[data[i]->label] += data[i]->weight;
-    attr.means[data[i]->label] += data[i]->weight * (*data[i])[feature.name];
+    attr.means[data[i]->label] += val;
+
+    sharedWeight += data[i]->weight;
+    sharedMean += val;
   }
   for (unsigned int c = 0; c < numClasses; c++)
     attr.means[c] /= weights[c];
+  sharedMean /= sharedWeight;
 #ifdef DEBUG_NB
   std::cout << "  means: ";
   for (unsigned int c = 0; c < numClasses; c++)
@@ -181,21 +189,29 @@ void NaiveBayes::learnContinuousAttribute(const Feature &feature) {
 
   // calculate the variance
   float val;
-  std::vector<float> counts(numClasses,0);
+  float sharedVal = 0.0;
   for (unsigned int i = 0; i < data.size(); i++) {
     val = (*data[i])[feature.name] - attr.means[data[i]->label];
     attr.stdevs[data[i]->label] += data[i]->weight * val * val;
-    counts[data[i]->label] += data[i]->weight;
+
+    sharedVal = (*data[i])[feature.name] - sharedMean;
+    sharedStdev += data[i]->weight * sharedVal * sharedVal;
   }
   // make in stdev instead of variance
   for (unsigned int c = 0; c < numClasses; c++)
-    attr.stdevs[c] = sqrt(attr.stdevs[c] / counts[c]);
+    attr.stdevs[c] = sqrt(attr.stdevs[c] / weights[c]);
+  sharedStdev = sqrt(sharedStdev / sharedWeight);
   // if only one value, settle on 1/6 (arbitrarily, taken from weka)
   const float MIN_VAL = 1.0 / 6.0;
   for (unsigned int c = 0; c < numClasses; c++) {
     if (attr.stdevs[c] < 1e-10)
-    //if (attr.stdevs[c] < MIN_VAL)
       attr.stdevs[c] = MIN_VAL;
+    // handle no data
+    if (weights[c] < 1e-10) {
+      //std::cout << "SETTING " << feature.name << " TO " << sharedMean << " " << sharedStdev << std::endl;
+      attr.means[c] = sharedMean;
+      attr.stdevs[c] = sharedStdev;
+    }
   }
 
 #ifdef DEBUG_NB
