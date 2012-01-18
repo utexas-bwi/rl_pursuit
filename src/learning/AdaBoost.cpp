@@ -18,7 +18,8 @@ AdaBoost::AdaBoost(const std::vector<Feature> &features, bool caching, BaseLearn
   data(numClasses),
   maxBoostingIterations(maxBoostingIterations),
   classifierStartInd(0),
-  targetDataStart(0)
+  targetDataStart(0),
+  reweightOnlyTargetData(false)
 {
   assert(baseLearner);
 }
@@ -61,7 +62,14 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
 }
 
 void AdaBoost::reweightData(double alpha) {
-  for (unsigned int i = 0; i < data.size(); i++)
+  unsigned int startInd = 0;
+  if (reweightOnlyTargetData) { 
+    if (targetDataStart >= 0)
+      startInd = targetDataStart;
+    else
+      return;
+  }
+  for (unsigned int i = startInd; i < data.size(); i++)
     data[i]->weight *= exp(alpha * absError[i]);
 }
 
@@ -122,4 +130,8 @@ void AdaBoost::outputDescription(std::ostream &out) const {
   out << "AdaBoost" << std::endl;
   for (unsigned int i = 0; i < classifiers.size(); i++)
     out << *(classifiers[i].classifier) << std::endl;
+}
+  
+void AdaBoost::setReweightOnlyTargetData(bool flag) {
+  reweightOnlyTargetData = flag;
 }

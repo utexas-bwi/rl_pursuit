@@ -27,6 +27,7 @@ public:
   virtual ~AdaBoost();
   virtual void addData(const InstancePtr &instance);
   void outputDescription(std::ostream &out) const;
+  void setReweightOnlyTargetData(bool flag);
 
 protected:
   virtual void trainInternal(bool incremental);
@@ -46,6 +47,7 @@ protected:
   const unsigned int maxBoostingIterations;
   unsigned int classifierStartInd;
   int targetDataStart;
+  bool reweightOnlyTargetData;
 };
 
 #endif /* end of include guard: ADABOOST_YK4JLNUB */
