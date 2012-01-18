@@ -8,6 +8,7 @@ Modified: 2011-12-27
 
 #include "Classifier.h"
 #include <iostream>
+#include <common/Util.h>
 
 std::size_t hash_value(const Instance &i) {
   std::size_t seed = 0;
@@ -20,7 +21,9 @@ std::size_t hash_value(const Instance &i) {
 Classifier::Classifier(const std::vector<Feature> &features, bool caching):
   features(features),
   numClasses(features.back().values.size()),
-  caching(caching)
+  caching(caching),
+  predictSingleClass(false),
+  rng(new RNG(0))
 {
   if (caching) {
     std::cout << "CACHING" << std::endl;
@@ -55,8 +58,20 @@ void Classifier::classify(const InstancePtr &instance, Classification &classific
   }
   classification.resize(numClasses,0);
   classifyInternal(instance,classification);
+  if (predictSingleClass) {
+    unsigned int maxInd = vectorMaxInd(classification);
+    for (unsigned int i = 0; i < classification.size(); i++)
+      classification[i] = 0;
+    classification[maxInd] = 1.0;
+  }
   if (caching)
     (*cache)[*instance] = classification;
+}
+
+void Classifier::setPredictSingleClass(bool flag) {
+  if (flag)
+    std::cout << "SETTING PREDICT SINGLE CLASS" << std::endl;
+  predictSingleClass = flag;
 }
   
 std::ostream& operator<<(std::ostream &out, const Classifier &c) {

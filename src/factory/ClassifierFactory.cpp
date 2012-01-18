@@ -18,6 +18,7 @@ Modified: 2011-12-28
 #include <learning/DecisionTree.h>
 #include <learning/NaiveBayes.h>
 #include <learning/TrAdaBoost.h>
+#include <learning/TrBagg.h>
 #include <learning/WekaClassifier.h>
 
 ClassifierPtr createClassifier(const Json::Value &options) {
@@ -47,6 +48,7 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &i
   std::string type = options.get("type","dt").asString();
   boost::to_lower(type);
   bool train = options.get("initialTrain",true).asBool();
+  bool predictSingleClass = options.get("predictSingleClass",false).asBool();
 
   ClassifierPtr classifier;
   
@@ -57,7 +59,9 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &i
   } else if (type == "nb") {
     classifier = ClassifierPtr(new NaiveBayes(features,caching));
   } else if (type == "tradaboost") {
-    classifier = createTrAdaBoost(filename,dataFilename,caching,options,train);
+    classifier = createTrAdaBoost(filename,features,caching,options);
+  } else if (type == "trbagg") {
+    classifier = createTrBagg(filename,features,caching,options);
   } else if (type == "weka") {
     classifier = createWekaClassifier(filename,features,caching,options);
   } else {
@@ -66,18 +70,19 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &i
   }
   
   if (dataFilename != "")
-    addDataToClassifier(classifier,dataFilename,train);
+    addSourceDataToClassifier(classifier,dataFilename,train);
+  classifier->setPredictSingleClass(predictSingleClass);
 
   return classifier;
 }
 
-void addDataToClassifier(ClassifierPtr classifier, const std::string &dataFilename, bool train) {
+void addSourceDataToClassifier(ClassifierPtr classifier, const std::string &dataFilename, bool train) {
   std::cout << "Adding data" << std::endl;
   std::ifstream in(dataFilename.c_str());
   ArffReader arff(in);
   while (!arff.isDone()) {
     InstancePtr instance = arff.next();
-    classifier->addData(instance);
+    classifier->addSourceData(instance);
   }
   in.close();
   if (train)
@@ -135,23 +140,21 @@ boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &filename, const st
   return boost::shared_ptr<AdaBoost>(new AdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
 }
 
-boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options, bool train) {
-  unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
+boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
   assert(filename == "");
-  std::ifstream in(dataFilename.c_str());
-  ArffReader arff(in);
+  unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   Json::Value baseLearnerOptions = options["baseLearner"];
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
 
-  boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
-  //boost::shared_ptr<TrAdaBoost> c(new TrAdaBoost(arff.getFeatureTypes(),caching,&createBoostWeka,maxBoostingIterations));
-  while (!arff.isDone()) {
-    InstancePtr instance = arff.next();
-    c->addSourceData(instance);
-  }
-  in.close();
-  dataFilename = ""; // so that create classifier doesn't do any additional training
-  if (train)
-    c->train(false);
-  return c;
+  return boost::shared_ptr<TrAdaBoost>(new TrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
+}
+
+boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
+  assert(filename == "");
+  unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
+  Json::Value baseLearnerOptions = options["baseLearner"];
+  Json::Value fallbackLearnerOptions = options["fallbackLearner"];
+  ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
+
+  return boost::shared_ptr<TrBagg>(new TrBagg(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,baseLearner,fallbackLearnerOptions));
 }

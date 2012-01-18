@@ -142,6 +142,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     }
     if (classifier.get() == NULL)
       classifier = createClassifier(filename,options);
+    classifier->setRNG(rng);
 
     return ptr(new PredatorClassifier(rng,dims,classifier,filename,trainingPeriod,trainIncremental));
   } else if (NAME_IN_SET("student")) {

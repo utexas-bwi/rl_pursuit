@@ -17,6 +17,7 @@ class AdaBoost;
 class DecisionTree;
 class NaiveBayes;
 class TrAdaBoost;
+class TrBagg;
 class WekaClassifier;
 
 ClassifierPtr createClassifier(const Json::Value &options);
@@ -24,7 +25,7 @@ ClassifierPtr createClassifier(const std::string &filename, const Json::Value &o
 ClassifierPtr createClassifier(const std::vector<Feature> &features, const Json::Value &options);
 ClassifierPtr createClassifier(const std::string &filename, const std::string &dataFilename, const std::vector<Feature> &features, const Json::Value &options);
 
-void addDataToClassifier(ClassifierPtr classifier, const std::string &dataFilename, bool train = true);
+void addSourceDataToClassifier(ClassifierPtr classifier, const std::string &dataFilename, bool train = true);
 
 boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 boost::shared_ptr<DecisionTree> createDecisionTree(const std::string &filename, const std::vector<Feature> &features, bool caching, double minGainRatio, unsigned int minInstancesPerLeaf, int maxDepth);
@@ -33,6 +34,7 @@ boost::shared_ptr<DecisionTree> createDecisionTreeFromWeka(const std::string &fi
 boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 
 boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
-boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, std::string &dataFilename, bool caching, const Json::Value &options, bool train);
+boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
+boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 
 #endif /* end of include guard: CLASSIFIERFACTORY_LSY7J7N1 */

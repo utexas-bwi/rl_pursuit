@@ -11,6 +11,7 @@ Modified: 2011-12-27
 
 #include <boost/unordered_map.hpp>
 #include "Common.h"
+#include <common/RNG.h>
 
 typedef boost::unordered_map<Instance,Classification> ClassificationCache;
 std::size_t hash_value(const Instance &i);
@@ -29,6 +30,10 @@ public:
 
   std::ostream& outputHeader(std::ostream &out) const;
   virtual void outputDescription(std::ostream &out) const = 0;
+  void setPredictSingleClass(bool flag);
+  void setRNG(boost::shared_ptr<RNG> newRNG) {
+    rng = newRNG;
+  }
 
 protected:
   virtual void trainInternal(bool incremental) = 0;
@@ -41,6 +46,9 @@ protected:
   unsigned int numClasses;
   bool caching;
   boost::shared_ptr<ClassificationCache> cache;
+  bool predictSingleClass;
+  boost::shared_ptr<RNG> rng;
+
   friend std::ostream& operator<<(std::ostream &out, const Classifier &c);
 };
 
