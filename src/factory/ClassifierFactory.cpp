@@ -17,6 +17,7 @@ Modified: 2011-12-28
 #include <learning/AdaBoost.h>
 #include <learning/DecisionTree.h>
 #include <learning/NaiveBayes.h>
+#include <learning/SVM.h>
 #include <learning/TrAdaBoost.h>
 #include <learning/TrBagg.h>
 #include <learning/WekaClassifier.h>
@@ -58,6 +59,8 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &i
     classifier = createDecisionTree(filename,features,caching,options);
   } else if (type == "nb") {
     classifier = ClassifierPtr(new NaiveBayes(features,caching));
+  } else if (type == "svm") {
+    classifier = ClassifierPtr(new SVM(features,caching));
   } else if (type == "tradaboost") {
     classifier = createTrAdaBoost(filename,features,caching,options);
   } else if (type == "trbagg") {
