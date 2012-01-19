@@ -200,7 +200,11 @@ public:
 
 class Kernel: public QMatrix {
 public:
+#ifdef _DENSE_REP
+	Kernel(int l, svm_node * x, const svm_parameter& param);
+#else
 	Kernel(int l, svm_node * const * x, const svm_parameter& param);
+#endif
 	virtual ~Kernel();
 
 	static double k_function(const svm_node *x, const svm_node *y,
@@ -217,7 +221,11 @@ protected:
 	double (Kernel::*kernel_function)(int i, int j) const;
 
 private:
+#ifdef _DENSE_REP
+	svm_node *x;
+#else
 	const svm_node **x;
+#endif
 	double *x_square;
 
 	// svm_parameter
@@ -227,6 +235,10 @@ private:
 	const double coef0;
 
 	static double dot(const svm_node *px, const svm_node *py);
+#ifdef _DENSE_REP
+	static double dot(const svm_node &px, const svm_node &py);
+#endif
+
 	double kernel_linear(int i, int j) const
 	{
 		return dot(x[i],x[j]);
@@ -245,11 +257,19 @@ private:
 	}
 	double kernel_precomputed(int i, int j) const
 	{
+#ifdef _DENSE_REP
+		return (x+i)->values[(int)((x+j)->values[0])];
+#else
 		return x[i][(int)(x[j][0].value)].value;
+#endif
 	}
 };
 
+#ifdef _DENSE_REP
+Kernel::Kernel(int l, svm_node * x_, const svm_parameter& param)
+#else
 Kernel::Kernel(int l, svm_node * const * x_, const svm_parameter& param)
+#endif
 :kernel_type(param.kernel_type), degree(param.degree),
  gamma(param.gamma), coef0(param.coef0)
 {
@@ -290,6 +310,27 @@ Kernel::~Kernel()
 	delete[] x_square;
 }
 
+#ifdef _DENSE_REP
+double Kernel::dot(const svm_node *px, const svm_node *py)
+{
+	double sum = 0;
+
+	int dim = min(px->dim, py->dim);
+	for (int i = 0; i < dim; i++)
+		sum += (px->values)[i] * (py->values)[i];
+	return sum;
+}
+
+double Kernel::dot(const svm_node &px, const svm_node &py)
+{
+	double sum = 0;
+
+	int dim = min(px.dim, py.dim);
+	for (int i = 0; i < dim; i++)
+		sum += px.values[i] * py.values[i];
+	return sum;
+}
+#else
 double Kernel::dot(const svm_node *px, const svm_node *py)
 {
 	double sum = 0;
@@ -311,6 +352,7 @@ double Kernel::dot(const svm_node *px, const svm_node *py)
 	}
 	return sum;
 }
+#endif
 
 double Kernel::k_function(const svm_node *x, const svm_node *y,
 			  const svm_parameter& param)
@@ -324,6 +366,18 @@ double Kernel::k_function(const svm_node *x, const svm_node *y,
 		case RBF:
 		{
 			double sum = 0;
+#ifdef _DENSE_REP
+			int dim = min(x->dim, y->dim), i;
+			for (i = 0; i < dim; i++)
+			{
+				double d = x->values[i] - y->values[i];
+				sum += d*d;
+			}
+			for (; i < x->dim; i++)
+				sum += x->values[i] * x->values[i];
+			for (; i < y->dim; i++)
+				sum += y->values[i] * y->values[i];
+#else
 			while(x->index != -1 && y->index !=-1)
 			{
 				if(x->index == y->index)
@@ -359,13 +413,17 @@ double Kernel::k_function(const svm_node *x, const svm_node *y,
 				sum += y->value * y->value;
 				++y;
 			}
-			
+#endif
 			return exp(-param.gamma*sum);
 		}
 		case SIGMOID:
 			return tanh(param.gamma*dot(x,y)+param.coef0);
 		case PRECOMPUTED:  //x: test (validation), y: SV
+#ifdef _DENSE_REP
+			return x->values[(int)(y->values[0])];
+#else
 			return x[(int)(y->value)].value;
+#endif
 		default:
 			return 0;  // Unreachable 
 	}
@@ -1913,7 +1971,11 @@ static void svm_binary_svc_probability(
 		struct svm_problem subprob;
 
 		subprob.l = prob->l-(end-begin);
+#ifdef _DENSE_REP
+		subprob.x = Malloc(struct svm_node,subprob.l);
+#else
 		subprob.x = Malloc(struct svm_node*,subprob.l);
+#endif
 		subprob.y = Malloc(double,subprob.l);
 			
 		k=0;
@@ -1960,7 +2022,11 @@ static void svm_binary_svc_probability(
 			struct svm_model *submodel = svm_train(&subprob,&subparam);
 			for(j=begin;j<end;j++)
 			{
+#ifdef _DENSE_REP
+				svm_predict_values(submodel,(prob->x+perm[j]),&(dec_values[perm[j]])); 
+#else
 				svm_predict_values(submodel,prob->x[perm[j]],&(dec_values[perm[j]])); 
+#endif
 				// ensure +1 -1 order; reason not using CV subroutine
 				dec_values[perm[j]] *= submodel->label[0];
 			}		
@@ -2075,8 +2141,8 @@ svm_model *svm_train(const svm_problem *prob, const svm_parameter *param)
 	svm_model *model = Malloc(svm_model,1);
 	model->param = *param;
 	model->free_sv = 0;	// XXX
-
-	if(param->svm_type == ONE_CLASS ||
+	
+  if(param->svm_type == ONE_CLASS ||
 	   param->svm_type == EPSILON_SVR ||
 	   param->svm_type == NU_SVR)
 	{
@@ -2104,7 +2170,11 @@ svm_model *svm_train(const svm_problem *prob, const svm_parameter *param)
 		for(i=0;i<prob->l;i++)
 			if(fabs(f.alpha[i]) > 0) ++nSV;
 		model->l = nSV;
+#ifdef _DENSE_REP
+		model->SV = Malloc(svm_node,nSV);
+#else
 		model->SV = Malloc(svm_node *,nSV);
+#endif
 		model->sv_coef[0] = Malloc(double,nSV);
 		int j = 0;
 		for(i=0;i<prob->l;i++)
@@ -2132,7 +2202,11 @@ svm_model *svm_train(const svm_problem *prob, const svm_parameter *param)
 		if(nr_class == 1) 
 			info("WARNING: training data in only one class. See README for details.\n");
 		
+#ifdef _DENSE_REP
+		svm_node *x = Malloc(svm_node,l);
+#else
 		svm_node **x = Malloc(svm_node *,l);
+#endif
 		int i;
 		for(i=0;i<l;i++)
 			x[i] = prob->x[perm[i]];
@@ -2176,7 +2250,11 @@ svm_model *svm_train(const svm_problem *prob, const svm_parameter *param)
 				int si = start[i], sj = start[j];
 				int ci = count[i], cj = count[j];
 				sub_prob.l = ci+cj;
+#ifdef _DENSE_REP
+				sub_prob.x = Malloc(svm_node,sub_prob.l);
+#else
 				sub_prob.x = Malloc(svm_node *,sub_prob.l);
+#endif
 				sub_prob.y = Malloc(double,sub_prob.l);
 				int k;
 				for(k=0;k<ci;k++)
@@ -2252,7 +2330,11 @@ svm_model *svm_train(const svm_problem *prob, const svm_parameter *param)
 		info("Total nSV = %d\n",total_sv);
 
 		model->l = total_sv;
+#ifdef _DENSE_REP
+		model->SV = Malloc(svm_node,total_sv);
+#else
 		model->SV = Malloc(svm_node *,total_sv);
+#endif
 		p = 0;
 		for(i=0;i<l;i++)
 			if(nonzero[i]) model->SV[p++] = x[i];
@@ -2389,7 +2471,11 @@ void svm_cross_validation(const svm_problem *prob, const svm_parameter *param, i
 		struct svm_problem subprob;
 
 		subprob.l = l-(end-begin);
+#ifdef _DENSE_REP
+		subprob.x = Malloc(struct svm_node,subprob.l);
+#else
 		subprob.x = Malloc(struct svm_node*,subprob.l);
+#endif
 		subprob.y = Malloc(double,subprob.l);
 			
 		k=0;
@@ -2411,12 +2497,20 @@ void svm_cross_validation(const svm_problem *prob, const svm_parameter *param, i
 		{
 			double *prob_estimates=Malloc(double,svm_get_nr_class(submodel));
 			for(j=begin;j<end;j++)
+#ifdef _DENSE_REP
+				target[perm[j]] = svm_predict_probability(submodel,(prob->x + perm[j]),prob_estimates);
+#else
 				target[perm[j]] = svm_predict_probability(submodel,prob->x[perm[j]],prob_estimates);
+#endif
 			free(prob_estimates);			
 		}
 		else
 			for(j=begin;j<end;j++)
+#ifdef _DENSE_REP
+				target[perm[j]] = svm_predict(submodel,prob->x+perm[j]);
+#else
 				target[perm[j]] = svm_predict(submodel,prob->x[perm[j]]);
+#endif
 		svm_free_and_destroy_model(&submodel);
 		free(subprob.x);
 		free(subprob.y);
@@ -2464,8 +2558,13 @@ double svm_predict_values(const svm_model *model, const svm_node *x, double* dec
 	{
 		double *sv_coef = model->sv_coef[0];
 		double sum = 0;
+		
 		for(i=0;i<model->l;i++)
+#ifdef _DENSE_REP
+			sum += sv_coef[i] * Kernel::k_function(x,model->SV+i,model->param);
+#else
 			sum += sv_coef[i] * Kernel::k_function(x,model->SV[i],model->param);
+#endif
 		sum -= model->rho[0];
 		*dec_values = sum;
 
@@ -2481,7 +2580,11 @@ double svm_predict_values(const svm_model *model, const svm_node *x, double* dec
 		
 		double *kvalue = Malloc(double,l);
 		for(i=0;i<l;i++)
+#ifdef _DENSE_REP
+			kvalue[i] = Kernel::k_function(x,model->SV+i,model->param);
+#else
 			kvalue[i] = Kernel::k_function(x,model->SV[i],model->param);
+#endif
 
 		int *start = Malloc(int,nr_class);
 		start[0] = 0;
@@ -2659,13 +2762,27 @@ int svm_save_model(const char *model_file_name, const svm_model *model)
 
 	fprintf(fp, "SV\n");
 	const double * const *sv_coef = model->sv_coef;
+#ifdef _DENSE_REP
+	const svm_node *SV = model->SV;
+#else
 	const svm_node * const *SV = model->SV;
+#endif
 
 	for(int i=0;i<l;i++)
 	{
 		for(int j=0;j<nr_class-1;j++)
 			fprintf(fp, "%.16g ",sv_coef[j][i]);
 
+#ifdef _DENSE_REP
+		const svm_node *p = (SV + i);
+
+		if(param.kernel_type == PRECOMPUTED)
+			fprintf(fp,"0:%d ",(int)(p->values[0]));
+		else
+			for (int j = 0; j < p->dim; j++)
+				if (p->values[j] != 0.0)
+					fprintf(fp,"%d:%.8g ",j, p->values[j]);
+#else
 		const svm_node *p = SV[i];
 
 		if(param.kernel_type == PRECOMPUTED)
@@ -2676,6 +2793,7 @@ int svm_save_model(const char *model_file_name, const svm_model *model)
 				fprintf(fp,"%d:%.8g ",p->index,p->value);
 				p++;
 			}
+#endif
 		fprintf(fp, "\n");
 	}
 	if (ferror(fp) != 0 || fclose(fp) != 0) return -1;
@@ -2841,6 +2959,24 @@ svm_model *svm_load_model(const char *model_file_name)
 	line = Malloc(char,max_line_len);
 	char *p,*endptr,*idx,*val;
 
+#ifdef _DENSE_REP
+	int max_index = 1;
+	// read the max dimension of all vectors
+	while(readline(fp) != NULL)
+	{
+		char *p;
+		p = strrchr(line, ':');
+		if(p != NULL)
+		{			
+			while(*p != ' ' && *p != '\t' && p > line)
+				p--;
+			if(p > line)
+				max_index = (int) strtol(p,&endptr,10) + 1;
+		}		
+		if(max_index > elements)
+			elements = max_index;
+	}
+#else
 	while(readline(fp)!=NULL)
 	{
 		p = strtok(line,":");
@@ -2854,6 +2990,7 @@ svm_model *svm_load_model(const char *model_file_name)
 	}
 	elements += model->l;
 
+#endif
 	fseek(fp,pos,SEEK_SET);
 
 	int m = model->nr_class - 1;
@@ -2862,10 +2999,44 @@ svm_model *svm_load_model(const char *model_file_name)
 	int i;
 	for(i=0;i<m;i++)
 		model->sv_coef[i] = Malloc(double,l);
+
+#ifdef _DENSE_REP
+	int index;
+	model->SV = Malloc(svm_node,l);
+
+	for(i=0;i<l;i++)
+	{
+		readline(fp);
+
+		model->SV[i].values = Malloc(double, elements);
+		model->SV[i].dim = 0;
+
+		p = strtok(line, " \t");
+		model->sv_coef[0][i] = strtod(p,&endptr);
+		for(int k=1;k<m;k++)
+		{
+			p = strtok(NULL, " \t");
+			model->sv_coef[k][i] = strtod(p,&endptr);
+		}
+
+		int *d = &(model->SV[i].dim);
+		while(1)
+		{
+			idx = strtok(NULL, ":");
+			val = strtok(NULL, " \t");
+
+			if(val == NULL)
+				break;
+			index = (int) strtol(idx,&endptr,10);
+			while (*d < index)
+				model->SV[i].values[(*d)++] = 0.0;
+			model->SV[i].values[(*d)++] = strtod(val,&endptr);
+		}
+	}
+#else
 	model->SV = Malloc(svm_node*,l);
 	svm_node *x_space = NULL;
 	if(l>0) x_space = Malloc(svm_node,elements);
-
 	int j=0;
 	for(i=0;i<l;i++)
 	{
@@ -2894,6 +3065,7 @@ svm_model *svm_load_model(const char *model_file_name)
 		}
 		x_space[j++].index = -1;
 	}
+#endif
 	free(line);
 
 	if (ferror(fp) != 0 || fclose(fp) != 0)
@@ -2906,7 +3078,12 @@ svm_model *svm_load_model(const char *model_file_name)
 void svm_free_model_content(svm_model* model_ptr)
 {
 	if(model_ptr->free_sv && model_ptr->l > 0 && model_ptr->SV != NULL)
+#ifdef _DENSE_REP
+	for (int i = 0; i < model_ptr->l; i++)
+		free (model_ptr->SV[i].values);
+#else
 		free((void *)(model_ptr->SV[0]));
+#endif
 	if(model_ptr->sv_coef)
 	{
 		for(int i=0;i<model_ptr->nr_class-1;i++)

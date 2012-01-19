@@ -20,13 +20,21 @@ protected:
   virtual void classifyInternal(const InstancePtr &instance, Classification &classification);
   void setNode(const InstancePtr &instance, libsvm::svm_node &node);
 
+  void scaleInstance(libsvm::svm_node &instance);
+  void setScaling();
+
 protected:
   static const int MAX_NUM_INSTANCES = 700000;
-  int numInstances;
-  double labels[MAX_NUM_INSTANCES];
-  libsvm::svm_node *instances[MAX_NUM_INSTANCES];
-  libsvm::svm_model model;
+  libsvm::svm_problem prob;
+  libsvm::svm_model *model;
   libsvm::svm_parameter param;
+  libsvm::svm_node node;
+
+  std::vector<float> minVals;
+  std::vector<float> maxVals;
+  
+  std::vector<float> currentMinVals;
+  std::vector<float> currentMaxVals;
 };
 
 #endif /* end of include guard: SVM_7RSYDUQP */
