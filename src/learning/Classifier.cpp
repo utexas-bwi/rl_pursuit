@@ -56,7 +56,9 @@ void Classifier::classify(const InstancePtr &instance, Classification &classific
       return;
     } 
   }
-  classification.resize(numClasses,0);
+  classification.resize(numClasses);
+  for (unsigned int i = 0; i < classification.size(); i++)
+    classification[i] = 0.0;
   classifyInternal(instance,classification);
   if (predictSingleClass) {
     unsigned int maxInd = vectorMaxInd(classification);
