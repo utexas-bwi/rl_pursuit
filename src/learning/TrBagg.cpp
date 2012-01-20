@@ -45,7 +45,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
   // LEARNING PHASE
   for (unsigned int n = 0; n < maxBoostingIterations; n++) {
     //if (n % 10 == 0)
-      //std::cout << "BOOSTING ITERATION: " << n << std::endl;
+      std::cout << "BOOSTING ITERATION: " << n << std::endl;
     BoostingClassifier c;
     c.classifier = baseLearner(features,baseLearnerOptions);
     // sample data set with replacements
@@ -75,8 +75,10 @@ void TrBagg::trainInternal(bool /*incremental*/) {
   // create the fallback model
   BoostingClassifier fallbackModel;
   fallbackModel.classifier = fallbackLearner(features,fallbackLearnerOptions);
-  for (int i = targetDataStart; i < (int)data.size(); i++)
-    fallbackModel.classifier->addData(data[i]);
+  if (targetDataStart >= 0)  {
+    for (int i = targetDataStart; i < (int)data.size(); i++)
+      fallbackModel.classifier->addData(data[i]);
+  }
   calcErrorOfClassifier(fallbackModel);
   // add the fallback model to the beginning of the list
   classifiers.insert(classifiers.begin(),fallbackModel);
