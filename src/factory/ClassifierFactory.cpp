@@ -16,6 +16,7 @@ Modified: 2011-12-28
 
 #include <learning/AdaBoost.h>
 #include <learning/DecisionTree.h>
+#include <learning/LinearSVM.h>
 #include <learning/NaiveBayes.h>
 #include <learning/SVM.h>
 #include <learning/TrAdaBoost.h>
@@ -57,6 +58,9 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &i
     classifier = createAdaBoost(filename,features,caching,options);
   } else if (type == "dt") {
     classifier = createDecisionTree(filename,features,caching,options);
+  } else if ((type == "lsvm") || (type == "linearsvm")) {
+    unsigned int solverType = options.get("solverType",0).asUInt();
+    classifier = ClassifierPtr(new LinearSVM(features,caching,solverType));
   } else if (type == "nb") {
     classifier = ClassifierPtr(new NaiveBayes(features,caching));
   } else if (type == "svm") {

@@ -1,11 +1,11 @@
-#include "SVM.h"
+#include "LinearSVM.h"
 #include <iostream>
 
-namespace libsvm {
+namespace liblinear {
 void print_null(const char *) {}
 }
 
-SVM::SVM(const std::vector<Feature> &features, bool caching):
+LinearSVM::LinearSVM(const std::vector<Feature> &features, bool caching, unsigned int solverType):
   Classifier(features,caching),
   //numInstances(0),
   minVals(features.size()-1,std::numeric_limits<float>::infinity()),
@@ -15,33 +15,38 @@ SVM::SVM(const std::vector<Feature> &features, bool caching):
 {
   // setup problem
   prob.l = 0;
-  prob.y = new double[MAX_NUM_INSTANCES];
+  prob.n = features.size() - 1;
+  prob.y = new int[MAX_NUM_INSTANCES];
   prob.W = new double[MAX_NUM_INSTANCES];
-  prob.x = new libsvm::svm_node*[MAX_NUM_INSTANCES];
+  prob.x = new liblinear::svm_node*[MAX_NUM_INSTANCES];
+  prob.bias = -1;
   createNode(&svmInst);
 
-  // defaults taken from svm_train.c
-	param.svm_type = libsvm::C_SVC;
-	param.kernel_type = libsvm::RBF;
-	param.degree = 3;
-	param.gamma = 1.0 / (features.size() - 1);	// 1/num_features
-	param.coef0 = 0;
-	param.nu = 0.5;
-	param.cache_size = 100;
+  // defaults taken from train.c
+  param.solver_type = solverType;
+  //param.solver_type = liblinear::L2R_LR; // 0.609 // REALLY FAST
+  //param.solver_type = liblinear::L2R_L2LOSS_SVC_DUAL; // 0.61
+  //param.solver_type = liblinear::L2R_L2LOSS_SVC; // 0.609 // REALLY FAST
+  //param.solver_type = liblinear::MCSVM_CS; // 0.65
+  //param.solver_type = liblinear::L1R_LR; // 0.609 // REALLY FAST
 	param.C = 1;
-	param.eps = 1e-3;
-	param.p = 0.1;
-	param.shrinking = 1;
-	param.probability = 0;
 	param.nr_weight = 0;
 	param.weight_label = NULL;
 	param.weight = NULL;
+
+  if(param.solver_type == liblinear::L2R_LR || param.solver_type == liblinear::L2R_L2LOSS_SVC)
+    param.eps = 0.01;
+  else if(param.solver_type == liblinear::L2R_L2LOSS_SVC_DUAL || param.solver_type == liblinear::L2R_L1LOSS_SVC_DUAL || param.solver_type == liblinear::MCSVM_CS || param.solver_type == liblinear::L2R_LR_DUAL)
+    param.eps = 0.1;
+  else if(param.solver_type == liblinear::L1R_L2LOSS_SVC || param.solver_type == liblinear::L1R_LR)
+    param.eps = 0.01;
+
   
-  // disable libsvm's printing
-  libsvm::svm_set_print_string_function(libsvm::print_null);
+  // disable liblinear's printing
+  liblinear::set_print_string_function(liblinear::print_null);
 }
 
-SVM::~SVM() {
+LinearSVM::~LinearSVM() {
   delete[] prob.y;
   delete[] prob.W;
   for (int i = 0; i < prob.l; i++)
@@ -49,10 +54,10 @@ SVM::~SVM() {
   delete[] prob.x;
 
   delete[] svmInst;
-  libsvm::svm_free_and_destroy_model(&model);
+  liblinear::free_and_destroy_model(&model);
 }
 
-void SVM::addData(const InstancePtr &instance) {
+void LinearSVM::addData(const InstancePtr &instance) {
   assert(prob.l + 1 < MAX_NUM_INSTANCES);
   createNode(&prob.x[prob.l]);
   setNode(instance,prob.x[prob.l]);
@@ -61,20 +66,20 @@ void SVM::addData(const InstancePtr &instance) {
   prob.l++;
 }
 
-void SVM::outputDescription(std::ostream &out) const {
+void LinearSVM::outputDescription(std::ostream &out) const {
   // TODO
-  out << "SVM" << std::endl;
+  out << "LinearSVM" << std::endl;
 }
 
-void SVM::trainInternal(bool /*incremental*/) {
-  //libsvm::svm_problem prob;
+void LinearSVM::trainInternal(bool /*incremental*/) {
+  //liblinear::svm_problem prob;
   //prob.l = numInstances;
   //prob.y = labels;
   //prob.x = instances;
   //std::cout << "num instances: " << prob.l << std::endl << std::flush;
-  const char *errorMsg = libsvm::svm_check_parameter(&prob,&param);
+  const char *errorMsg = liblinear::check_parameter(&prob,&param);
   if (errorMsg != NULL) {
-    std::cerr << "SVM::trainInternal: ERROR from libsvm: " << errorMsg << std::endl;
+    std::cerr << "LinearSVM::trainInternal: ERROR from liblinear: " << errorMsg << std::endl;
     exit(13);
   }
   //for (int instInd = 0; instInd < prob.l; instInd++) {
@@ -87,18 +92,18 @@ void SVM::trainInternal(bool /*incremental*/) {
 
   //setScaling();
 
-  model = libsvm::svm_train(&prob,&param);
+  model = liblinear::train(&prob,&param);
 }
 
-void SVM::classifyInternal(const InstancePtr &instance, Classification &classification) {
+void LinearSVM::classifyInternal(const InstancePtr &instance, Classification &classification) {
   setNode(instance,svmInst);
   //scaleInstance(node);
-  double label = libsvm::svm_predict(model,svmInst);
+  double label = liblinear::predict(model,svmInst);
   unsigned int intLabel = (int)(label + 0.5);
   classification[intLabel] = 1.0;
 }
 
-void SVM::setNode(const InstancePtr &instance, libsvm::svm_node *nodes) {
+void LinearSVM::setNode(const InstancePtr &instance, liblinear::svm_node *nodes) {
   for (unsigned int i = 0; i < features.size() - 1; i++) {
     nodes[i].index = i+1;
     nodes[i].value = (*instance)[features[i].name];
@@ -111,11 +116,11 @@ void SVM::setNode(const InstancePtr &instance, libsvm::svm_node *nodes) {
   nodes[features.size()-1].value = 0.0;
 }
 
-void SVM::createNode(libsvm::svm_node **nodes) {
-  (*nodes) = new libsvm::svm_node[features.size()]; // +1 -1 = 0
+void LinearSVM::createNode(liblinear::svm_node **nodes) {
+  (*nodes) = new liblinear::svm_node[features.size()]; // +1 -1 = 0
 }
 /*
-void SVM::setScaling() {
+void LinearSVM::setScaling() {
   // TODO
   static bool firstTime = true;
   assert(firstTime);
@@ -135,7 +140,7 @@ void SVM::setScaling() {
     scaleInstance(prob.x[i]);
 }
   
-void SVM::scaleInstance(libsvm::svm_node &instance) {
+void LinearSVM::scaleInstance(liblinear::svm_node &instance) {
   //std::cout << "inst: ";
   for (int i = 1; i < instance.dim; i++) {
     instance.values[i] = (instance.values[i] - currentMinVals[i]) / (currentMaxVals[i] - currentMinVals[i]);
