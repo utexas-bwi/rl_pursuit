@@ -3,29 +3,12 @@
 
 #define LIBSVM_VERSION 311
 
-#define _DENSE_REP
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern int libsvm_version;
 
-#ifdef _DENSE_REP
-struct svm_node
-{
-	int dim;
-	double *values;
-};
-
-struct svm_problem
-{
-	int l;
-	double *y;
-	struct svm_node *x;
-};
-
-#else
 struct svm_node
 {
 	int index;
@@ -37,8 +20,8 @@ struct svm_problem
 	int l;
 	double *y;
 	struct svm_node **x;
+	double *W; /* instance weight */
 };
-#endif
 
 enum { C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR };	/* svm_type */
 enum { LINEAR, POLY, RBF, SIGMOID, PRECOMPUTED }; /* kernel_type */
@@ -72,11 +55,7 @@ struct svm_model
 	struct svm_parameter param;	/* parameter */
 	int nr_class;		/* number of classes, = 2 in regression/one class svm */
 	int l;			/* total #SV */
-#ifdef _DENSE_REP
-	struct svm_node *SV;		/* SVs (SV[l]) */
-#else
 	struct svm_node **SV;		/* SVs (SV[l]) */
-#endif
 	double **sv_coef;	/* coefficients for SVs in decision functions (sv_coef[k-1][l]) */
 	double *rho;		/* constants in decision functions (rho[k*(k-1)/2]) */
 	double *probA;		/* pariwise probability information */
