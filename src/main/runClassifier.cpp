@@ -61,7 +61,7 @@ int main(int argc, const char *argv[]) {
   testIn.close();
 
   std::cout << "------------------------------------------" << std::endl;
-  std::cout << "Training Ints: " << numTrainingInstances << std::endl;
+  std::cout << "Target Training Insts: " << numTrainingInstances << std::endl;
   std::cout << "Testing Insts: " << count << std::endl;
   std::cout << "Frac  Correct: " << correct << "(" << correct / count << ")" << std::endl;
   std::cout << "Num   Correct: " << correctCount << "(" << correctCount / (float)count << ")" << std::endl;
