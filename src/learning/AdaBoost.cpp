@@ -46,14 +46,15 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
 
     c.classifier->train(false);
     double eps = calcError(c);
+    std::cout << "  EPS: " << eps << std::endl;
     if (1 - eps <= 1.0 / numClasses) { // not helping
-      //std::cout << "SHORT CIRCUITING, not helping: " << t << std::endl;
+      std::cout << "SHORT CIRCUITING, not helping: " << t << std::endl;
       break;
     }
     c.alpha = log((1.0 - eps) / eps) + log(numClasses - 1.0); // from SAMME
     classifiers.push_back(c);
     if (eps < 0.0001) {
-      //std::cout << "SHORT CIRCUITING, perfect: " << t << std::endl;
+      std::cout << "SHORT CIRCUITING, perfect: " << t << std::endl;
       break;
     }
     // reweight data
