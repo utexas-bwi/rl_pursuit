@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-import subprocess, re, os
+import subprocess, re
 
 inTrainData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/AnatolyBroitman.arff'
 #inTrainData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/combined.arff'
 blankData = 'data/dt/blank.arff'
 inTestData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/DrorBanin.arff'
+#inTestData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/AnatolyBroitman.arff'
 trainData = 'temp/classifierTestsTrain.arff'
 testData = 'temp/classifierTestsTest.arff'
 configName = 'temp/classifierTests.json'
@@ -40,7 +41,11 @@ tests = [
   #['ada-20-nb','adaboost',boostConfig % (20,'nb','')],
   #['ada-100-nb','adaboost',boostConfig % (100,'nb','')],
   #['trada-20-nb','tradaboost',boostConfig % (20,'nb','')],
+  #['ada-20-svm','adaboost',boostConfig % (20,'svm','')],
+  #['trada-20-svm','tradaboost',boostConfig % (20,'svm','')],
   #['trbagg-20-nb','trbagg',trbaggConfig % (20,'nb','','dt',',"maxDepth": 1')],
+  #['trbagg-200-svm','trbagg',trbaggConfig % (200,'svm','','dt',',"maxDepth": 1')],
+  #['trbagg-1000-dt','trbagg',trbaggConfig % (1000,'dt',',"maxDepth": 5','dt',',"maxDepth": 1')],
   #['trbagg-100-nb','trbagg',trbaggConfig % (100,'nb','','dt',',"maxDepth": 1')],
   #['trbagg-1000-nb','trbagg',trbaggConfig % (1000,'nb','','dt',',"maxDepth": 1')],
   #['trbagg-10000-nb','trbagg',trbaggConfig % (10000,'nb','','dt',',"maxDepth": 1')],
@@ -48,14 +53,20 @@ tests = [
   #['trada-20-dt-5','tradaboost',boostConfig % (20,'dt',',"maxDepth": 5')],
   #['trada-100-nb','tradaboost',boostConfig % (100,'nb','')],
   #['trada-100-dt-5','tradaboost',boostConfig % (100,'dt',',"maxDepth": 5')],
-  ['nb','nb',''],
-  ['svm','svm',''],
+  #['nb','nb',''],
+  #['svm','svm',''],
+  #['lsvm','lsvm',''],
+  ['trada-20-lsvm','tradaboost',boostConfig % (20,'lsvm','')],
+  #['trbagg-200-lsvm','trbagg',trbaggConfig % (200,'lsvm','','nb','')],
   #['dt-inf','dt',''],
   #['dt-5','dt','"maxDepth": 5'],
   #['dt-10','dt','"maxDepth": 10'],
   #['weka-nb','weka','"options": "weka.classifiers.bayes.NaiveBayes"'],
   #['weka-j48','weka','"options": "weka.classifiers.trees.J48"'],
 ]
+
+#for i in range(8):
+  #tests.append(['lsvm-%i' % i,'lsvm','"solverType": %i' % i])
 
 from weka.createDT import removeTrialStep
 
@@ -89,6 +100,8 @@ for useSourceData in [True]:
       temp = p.stdout.readline()
       output += temp
       print temp,
+    if p.poll() != 0:
+      print 'ERROR RUNNING: %s' % (' '.join(cmd))
     temp = p.stdout.readline()
     output += temp
     print temp,
