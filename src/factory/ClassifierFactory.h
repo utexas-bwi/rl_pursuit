@@ -18,6 +18,7 @@ class DecisionTree;
 class NaiveBayes;
 class TrAdaBoost;
 class TrBagg;
+class TwoStageTrAdaBoost;
 class WekaClassifier;
 
 ClassifierPtr createClassifier(const Json::Value &options);
@@ -33,8 +34,8 @@ boost::shared_ptr<DecisionTree> createDecisionTreeFromWeka(const std::string &fi
 
 boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 
-boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
-boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
+boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &type, const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
+boost::shared_ptr<TwoStageTrAdaBoost> createTwoStageTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 
 #endif /* end of include guard: CLASSIFIERFACTORY_LSY7J7N1 */

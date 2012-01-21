@@ -13,6 +13,7 @@ protected:
   virtual void reweightData(double alpha);
 
 protected:
+  bool onlySourceData;
 };
 
 #endif /* end of include guard: TRADABOOST_Z5DHQFPW */

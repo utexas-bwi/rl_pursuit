@@ -15,12 +15,14 @@ Modified: 2011-12-28
 #include <learning/ArffReader.h>
 
 #include <learning/AdaBoost.h>
+#include <learning/AdaBoostPrime.h>
 #include <learning/DecisionTree.h>
 #include <learning/LinearSVM.h>
 #include <learning/NaiveBayes.h>
 #include <learning/SVM.h>
 #include <learning/TrAdaBoost.h>
 #include <learning/TrBagg.h>
+#include <learning/TwoStageTrAdaBoost.h>
 #include <learning/WekaClassifier.h>
 
 ClassifierPtr createClassifier(const Json::Value &options) {
@@ -44,8 +46,7 @@ ClassifierPtr createClassifier(const std::vector<Feature> &features, const Json:
   return createClassifier("","",features,options);
 }
 
-ClassifierPtr createClassifier(const std::string &filename, const std::string &inDataFilename, const std::vector<Feature> &features, const Json::Value &options) {
-  std::string dataFilename(inDataFilename); // workaround for TrAdaBoost
+ClassifierPtr createClassifier(const std::string &filename, const std::string &dataFilename, const std::vector<Feature> &features, const Json::Value &options) {
   bool caching = options.get("caching",false).asBool();
   std::string type = options.get("type","dt").asString();
   boost::to_lower(type);
@@ -54,8 +55,8 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &i
 
   ClassifierPtr classifier;
   
-  if (type == "adaboost") {
-    classifier = createAdaBoost(filename,features,caching,options);
+  if ((type == "adaboost") || (type == "tradaboost") || (type == "adaboostprime")) {
+    classifier = createAdaBoost(type,filename,features,caching,options);
   } else if (type == "dt") {
     classifier = createDecisionTree(filename,features,caching,options);
   } else if ((type == "lsvm") || (type == "linearsvm")) {
@@ -65,10 +66,10 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &i
     classifier = ClassifierPtr(new NaiveBayes(features,caching));
   } else if (type == "svm") {
     classifier = ClassifierPtr(new SVM(features,caching));
-  } else if (type == "tradaboost") {
-    classifier = createTrAdaBoost(filename,features,caching,options);
   } else if (type == "trbagg") {
     classifier = createTrBagg(filename,features,caching,options);
+  } else if (type == "twostagetradaboost") {
+    classifier = createTwoStageTrAdaBoost(filename,features,caching,options);
   } else if (type == "weka") {
     classifier = createWekaClassifier(filename,features,caching,options);
   } else {
@@ -138,22 +139,37 @@ boost::shared_ptr<WekaClassifier> createBoostWeka(const std::vector<Feature> &fe
   return boost::shared_ptr<WekaClassifier>(new WekaClassifier(features,caching, wekaOptions));
 }
 
-boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
+boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &type, const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
   assert(filename == "");
   unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
   Json::Value baseLearnerOptions = options["baseLearner"];
 
-  return boost::shared_ptr<AdaBoost>(new AdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
+  boost::shared_ptr<AdaBoost> c;
+
+  if (type == "adaboost")
+    c = boost::shared_ptr<AdaBoost>(new AdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
+  else if (type == "tradaboost")
+    c = boost::shared_ptr<AdaBoost>(new TrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
+  else if (type == "adaboostprime")
+    c = boost::shared_ptr<AdaBoost>(new AdaBoostPrime(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
+  else {
+    std::cerr << "createAdaBoost: ERROR, unknown type: " << type << std::endl;
+    exit(3);
+  }
+  bool verbose = options.get("verbose",true).asBool();
+  c->setVerbose(verbose);
+  return c;
 }
 
-boost::shared_ptr<TrAdaBoost> createTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
+boost::shared_ptr<TwoStageTrAdaBoost> createTwoStageTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
   assert(filename == "");
   unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
+  unsigned int numFolds = options.get("folds",5).asUInt();
   Json::Value baseLearnerOptions = options["baseLearner"];
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
 
-  return boost::shared_ptr<TrAdaBoost>(new TrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations));
+  return boost::shared_ptr<TwoStageTrAdaBoost>(new TwoStageTrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,numFolds));
 }
 
 boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {

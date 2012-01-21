@@ -27,7 +27,9 @@ public:
   virtual ~AdaBoost();
   virtual void addData(const InstancePtr &instance);
   void outputDescription(std::ostream &out) const;
-  void setReweightOnlyTargetData(bool flag);
+  virtual void setVerbose(bool flag) {
+    verbose = flag;
+  }
 
 protected:
   virtual void trainInternal(bool incremental);
@@ -38,16 +40,19 @@ protected:
   virtual double calcError(BoostingClassifier &c);
 
 protected:
+  std::string name;
   BaseLearnerGenerator baseLearner;
   Json::Value baseLearnerOptions;
   std::vector<BoostingClassifier> classifiers;
   InstanceSet data;
   std::vector<float> absError;
-  unsigned int numBoostingIterations;
   const unsigned int maxBoostingIterations;
   unsigned int classifierStartInd;
-  int targetDataStart;
-  bool reweightOnlyTargetData;
+  bool verbose;
+
+  unsigned int endSourceData;
+  unsigned int errorStartInd;
+  unsigned int reweightStartInd;
 };
 
 #endif /* end of include guard: ADABOOST_YK4JLNUB */

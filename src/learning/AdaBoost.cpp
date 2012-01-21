@@ -13,13 +13,16 @@ Modified: 2012-01-16
 
 AdaBoost::AdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
   Classifier(features,caching),
+  name("AdaBoost"),
   baseLearner(baseLearner),
   baseLearnerOptions(baseLearnerOptions),
   data(numClasses),
   maxBoostingIterations(maxBoostingIterations),
   classifierStartInd(0),
-  targetDataStart(0),
-  reweightOnlyTargetData(false)
+  verbose(true),
+  endSourceData(0),
+  errorStartInd(0),
+  reweightStartInd(0)
 {
   assert(baseLearner);
 }
@@ -35,26 +38,33 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
   //assert(!incremental); // NOT handled for now
   resetWeights();
   classifiers.clear();
+  
   for (unsigned int t = 0; t < maxBoostingIterations; t++) {
-    std::cout << "BOOSTING ITERATION: " << t << std::endl;
+    if (verbose)
+      std::cout << "BOOSTING ITERATION: " << t << std::endl;
     normalizeWeights();
 
     BoostingClassifier c;
     c.classifier = baseLearner(features,baseLearnerOptions);
-    for (unsigned int i = 0; i < data.size(); i++)
+    for (unsigned int i = 0; (int)i < endSourceData; i++)
+      c.classifier->addSourceData(data[i]);
+    for (unsigned int i = endSourceData; i < data.size(); i++)
       c.classifier->addData(data[i]);
 
     c.classifier->train(false);
     double eps = calcError(c);
-    std::cout << "  EPS: " << eps << std::endl;
+    if (verbose)
+      std::cout << "  EPS: " << eps << std::endl;
     if (1 - eps <= 1.0 / numClasses) { // not helping
-      std::cout << "SHORT CIRCUITING, not helping: " << t << std::endl;
+      if (verbose)
+        std::cout << "SHORT CIRCUITING, not helping: " << t << std::endl;
       break;
     }
     c.alpha = log((1.0 - eps) / eps) + log(numClasses - 1.0); // from SAMME
     classifiers.push_back(c);
     if (eps < 0.0001) {
-      std::cout << "SHORT CIRCUITING, perfect: " << t << std::endl;
+      if (verbose)
+        std::cout << "SHORT CIRCUITING, perfect: " << t << std::endl;
       break;
     }
     // reweight data
@@ -63,14 +73,7 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
 }
 
 void AdaBoost::reweightData(double alpha) {
-  unsigned int startInd = 0;
-  if (reweightOnlyTargetData) { 
-    if (targetDataStart >= 0)
-      startInd = targetDataStart;
-    else
-      return;
-  }
-  for (unsigned int i = startInd; i < data.size(); i++)
+  for (unsigned int i = reweightStartInd; i < data.size(); i++)
     data[i]->weight *= exp(alpha * absError[i]);
 }
 
@@ -102,6 +105,16 @@ void AdaBoost::normalizeWeights() {
   for (unsigned int i = 0; i < data.size(); i++)
     data[i]->weight *= factor;
   data.weight *= factor;
+
+  if (verbose) {
+    float sourceWeight = 0.0;
+    float targetWeight = 0.0;
+    for (unsigned int i = 0; i < endSourceData; i++)
+      sourceWeight += data[i]->weight;
+    for (unsigned int i = endSourceData; i < data.size(); i++)
+      targetWeight += data[i]->weight;
+    std::cout << "WEIGHTS: " << sourceWeight << " " << targetWeight << std::endl;
+  }
 }
   
 double AdaBoost::calcError(BoostingClassifier &c) {
@@ -115,11 +128,9 @@ double AdaBoost::calcError(BoostingClassifier &c) {
   }
   
   // calculate epsilon
-  if (targetDataStart < 0)
-    return 0.0;
   double weight = 0;
   double eps = 0;
-  for (unsigned int i = targetDataStart; i < data.size(); i++) {
+  for (unsigned int i = errorStartInd; i < data.size(); i++) {
     eps += data[i]->weight * absError[i];
     weight += data[i]->weight;
   }
@@ -128,11 +139,7 @@ double AdaBoost::calcError(BoostingClassifier &c) {
 }
 
 void AdaBoost::outputDescription(std::ostream &out) const {
-  out << "AdaBoost" << std::endl;
+  out << name << std::endl;
   for (unsigned int i = 0; i < classifiers.size(); i++)
     out << *(classifiers[i].classifier) << std::endl;
-}
-  
-void AdaBoost::setReweightOnlyTargetData(bool flag) {
-  reweightOnlyTargetData = flag;
 }
