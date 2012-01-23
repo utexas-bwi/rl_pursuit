@@ -3,10 +3,10 @@
 KERNEL_TYPE=`uname -m`
 if [ $KERNEL_TYPE == "x86_64" ]
 then
-  SUFFIX=64
+  PREFIX=64
 else
-  SUFFIX=32
+  PREFIX=32
 fi
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-$DIR/main$SUFFIX $@
+$DIR/$PREFIX/main $@
