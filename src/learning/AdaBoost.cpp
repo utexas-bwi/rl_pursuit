@@ -47,7 +47,7 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
 
     BoostingClassifier c;
     c.classifier = baseLearner(features,baseLearnerOptions);
-    for (unsigned int i = 0; (int)i < endSourceData; i++)
+    for (unsigned int i = 0; i < endSourceData; i++)
       c.classifier->addSourceData(data[i]);
     for (unsigned int i = endSourceData; i < data.size(); i++)
       c.classifier->addData(data[i]);
