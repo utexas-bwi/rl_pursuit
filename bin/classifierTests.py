@@ -11,6 +11,7 @@ trainData = 'temp/classifierTestsTrain.arff'
 testData = 'temp/classifierTestsTest.arff'
 configName = 'temp/classifierTests.json'
 numTargetTrainingInstances = 100
+ARCH = '32' # TODO
 
 baseConfig = '''{
   "data": "%s",
@@ -37,12 +38,46 @@ trbaggConfig = boostConfig + ''',
   }
 '''
 
+twostagetradaConfig = '''
+  "maxBoostingIterations": %i,
+  "numFolds": %i,
+  "baseLearner": {
+    "type": "adaboostprime",
+    "caching": false,
+    "maxBoostingIterations" : %i,
+    "baseLearner": {
+      "type": "%s",
+      "caching": false
+      %s
+    }
+  }
+'''
+
 tests = [
-  #['ada-20-nb','adaboost',boostConfig % (20,'nb','')],
+  ['weka-nb','weka','"options": "weka.classifiers.bayes.NaiveBayes"'],
+  #['weka-j48','weka','"options": "weka.classifiers.trees.J48"'],
+  ['nb','nb',''],
+  ['svm','svm',''],
+  ['lsvm','lsvm',''],
+  ['ada-20-nb','adaboost',boostConfig % (20,'nb','')],
+  #['ada-20-svm','adaboost',boostConfig % (20,'svm','')],
+  ['ada-20-lsvm','adaboost',boostConfig % (20,'lsvm','')],
+  ['trada-20-nb','tradaboost',boostConfig % (20,'nb','')],
+  #['trada-20-svm','tradaboost',boostConfig % (20,'svm','')],
+  ['trada-20-lsvm','tradaboost',boostConfig % (20,'lsvm','')],
+  ['trbagg-200-nb','trbagg',trbaggConfig % (200,'nb','','dt',',"maxDepth": 1')],
+  #['trbagg-200-svm','trbagg',trbaggConfig % (200,'svm','','dt',',"maxDepth": 1')],
+  ['trbagg-200-lsvm','trbagg',trbaggConfig % (200,'lsvm','','dt',',"maxDepth": 1')],
+  ['twostagetrada-20-nb','twostagetradaboost',boostConfig % (20,'nb','')],
+  #['twostagetrada-20-svm','twostagetradaboost',boostConfig % (20,'svm','')],
+  ['twostagetrada-20-lsvm','twostagetradaboost',boostConfig % (20,'lsvm','')],
+
+
   #['ada-100-nb','adaboost',boostConfig % (100,'nb','')],
   #['trada-20-nb','tradaboost',boostConfig % (20,'nb','')],
   #['ada-20-svm','adaboost',boostConfig % (20,'svm','')],
   #['trada-20-svm','tradaboost',boostConfig % (20,'svm','')],
+  #['trada-20-lsvm','tradaboost',boostConfig % (20,'lsvm','')],
   #['trbagg-20-nb','trbagg',trbaggConfig % (20,'nb','','dt',',"maxDepth": 1')],
   #['trbagg-200-svm','trbagg',trbaggConfig % (200,'svm','','dt',',"maxDepth": 1')],
   #['trbagg-1000-dt','trbagg',trbaggConfig % (1000,'dt',',"maxDepth": 5','dt',',"maxDepth": 1')],
@@ -53,10 +88,11 @@ tests = [
   #['trada-20-dt-5','tradaboost',boostConfig % (20,'dt',',"maxDepth": 5')],
   #['trada-100-nb','tradaboost',boostConfig % (100,'nb','')],
   #['trada-100-dt-5','tradaboost',boostConfig % (100,'dt',',"maxDepth": 5')],
-  #['nb','nb',''],
-  #['svm','svm',''],
-  #['lsvm','lsvm',''],
-  ['trada-20-lsvm','tradaboost',boostConfig % (20,'lsvm','')],
+  #['trada-20-lsvm','tradaboost',boostConfig % (20,'lsvm','')],
+  #['ada-20-lsvm','adaboost',boostConfig % (20,'lsvm','')],
+  #['adaprime-20-lsvm','adaboostprime',boostConfig % (20,'lsvm','')],
+  #['twostagetrada-20-lsvm','twostagetradaboost',boostConfig % (20,'lsvm','')],
+  #['twostagetrada-20-adaboostprime-20-lsvm','twostagetradaboost',twostagetradaConfig % (20,2,20,'lsvm','')],
   #['trbagg-200-lsvm','trbagg',trbaggConfig % (200,'lsvm','','nb','')],
   #['dt-inf','dt',''],
   #['dt-5','dt','"maxDepth": 5'],
@@ -70,6 +106,13 @@ tests = [
 
 from weka.createDT import removeTrialStep
 
+#print '****************************************'
+#print '****************************************'
+#print '****************************************'
+#print 'RE-ENABLE REMOVING TRIAL STEP'
+#print '****************************************'
+#print '****************************************'
+#print '****************************************'
 print 'Removing Trial Step'
 removeTrialStep(inTrainData,trainData)
 removeTrialStep(inTestData,testData)
@@ -93,7 +136,7 @@ for useSourceData in [True]:
     config = baseConfig % (train,typeName,options)
     with open(configName,'w') as f:
       f.write(config)
-    cmd = ['bin/runClassifier32',configName,testData,str(numTargetTrainingInstances)]
+    cmd = ['bin/%s/runClassifier' % ARCH,configName,testData,str(numTargetTrainingInstances)]
     p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
     output = ''
     while p.poll() is None:

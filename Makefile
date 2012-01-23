@@ -22,6 +22,7 @@ TARGET_DIR := targets
 # targets
 TARGET_MAKEFILES := $(wildcard $(TARGET_DIR)/*.mk)
 TARGETS := $(patsubst $(TARGET_DIR)/%.mk, %, $(TARGET_MAKEFILES))
+TEMPLATE_TARGETS := $(filter-out weka, $(TARGETS))
 # sources
 MODULES := common controller factory learning model planning
 SOURCES := $(wildcard $(patsubst %, $(SOURCE_DIR)/%/*.cpp, $(MODULES)))
@@ -37,11 +38,11 @@ FLAGS = $(FLAGS_NO_STD) -std=c++0x
 STUDENT_FLAGS = -I$(SOURCE_DIR) -I$(INCLUDE_DIR)
 LINK_FLAGS = -L$(LIBS_DIR) -ljson -lpython$(PYTHON_VERSION) -lboost_python -lgflags -llinear -lblas
 
+default: all
+
 include $(TARGET_MAKEFILES)
 
-default: main
-
-all: $(TARGETS) weka
+all: $(TARGETS)
 
 .PHONY: clean fullclean fclean $(TARGETS)
 
@@ -51,9 +52,9 @@ override OBJS := $$(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o,$$($1_SOURCES
 
 # get the binary, defaulting to the name
 ifeq ($$(strip $$($1_BIN)),)
-	override BIN := $$(patsubst %, bin/%$(ARCH), $1)
+	override BIN := $$(patsubst %, bin/$(ARCH)/%, $1)
 else
-	override BIN := $$(patsubst %, bin/%$(ARCH), $$($1_BIN))
+	override BIN := $$(patsubst %, bin/$(ARCH)/%, $$($1_BIN))
 endif
 
 # get the link flags, defaulting to LINK_FLAGS
@@ -75,7 +76,7 @@ OBJECTS := $$(OBJECTS) $$(OBJS)
 override BINS := $$(BINS) $$(BIN)
 endef
 
-$(foreach target,$(TARGETS),$(eval $(call TARGET_template,$(target))))
+$(foreach target,$(TEMPLATE_TARGETS),$(eval $(call TARGET_template,$(target))))
 
 OBJECTS_ALL = $(sort $(OBJECTS))
 
@@ -118,16 +119,7 @@ $(BUILD_DIR)/%.d: $(SOURCE_DIR)/%.cpp
 	sed 's,\(.*\).o:,$(@:.d=.o) $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
-weka: bin/weka/WekaBridge.class bin/weka/libWekaBridge.so
-
-bin/weka/WekaBridge.class: src/learning/WekaBridge.java
-	javac -cp bin/weka/weka.jar -d bin/weka $<
-
-bin/weka/libWekaBridge.so: src/learning/WekaBridge.cpp src/learning/Communicator.cpp
-	@echo "Compling $@"
-	@$(CC) -o $@ -shared -fPIC -Wl,-soname,libWekaBridge.so  -Iinclude  $^ -lc -lboost_thread-mt 
-
-bin/%$(ARCH):
+bin/$(ARCH)/%:
 	@echo "Linking $@"
 	@$(CC) $(FLAGS) $^ $(LINK_FLAGS) -o $@
 
