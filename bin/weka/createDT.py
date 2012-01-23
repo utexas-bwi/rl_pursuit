@@ -3,7 +3,7 @@
 import subprocess, os
 from addARFFWeights import addARFFWeights
 
-from common import getFilename,makeTemp,parseArgs,makeDirs,BIN_PATH,DESC,UNWEIGHTED,WEIGHTED
+from common import getFilename,makeTemp,parseArgs,makeDirs,BIN_PATH,DESC,UNWEIGHTED,WEIGHTED, getArch
 
 def wekaCommandPrefix():
   return ['java','-cp',os.path.join(BIN_PATH,'weka.jar')]
@@ -30,19 +30,11 @@ def extractTree(arffFile,inFile,outFile):
     f.writelines(prefix+lines[startInd:endInd])
 
 def weightTree(inFile,dataFile,outFile):
-  if os.uname()[4] == 'x86_64':
-    arch = '64'
-  else:
-    arch = '32'
-  cmd = [os.path.join(BIN_PATH,'addWeights%s' % arch),inFile,dataFile]
+  cmd = [os.path.join(BIN_PATH,'addWeights%s' % getArch()),inFile,dataFile]
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
 def buildDT(dataFile,outFile,options):
-  if os.uname()[4] == 'x86_64':
-    arch = '64'
-  else:
-    arch = '32'
-  cmd = [os.path.join('bin','buildDT%s' % arch),dataFile] + options
+  cmd = [os.path.join('bin','buildDT%s' % getArch()),dataFile] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
 def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False):

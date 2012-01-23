@@ -120,3 +120,10 @@ def parseArgs(usage=None,options=[],args=None, minArgs=None, maxArgs=None, numAr
     parser.parse_args(['--help'])
     sys.exit(1)
   return resOptions,args,unprocessedArgs
+
+def getArch():
+  import os
+  if os.uname()[4] == 'x86_64':
+    return '64'
+  else:
+    return '32'

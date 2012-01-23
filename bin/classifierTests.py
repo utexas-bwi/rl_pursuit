@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import subprocess, re
+from weka.common import getArch
 
-inTrainData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/AnatolyBroitman.arff'
-#inTrainData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/combined.arff'
+#inTrainData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/AnatolyBroitman.arff'
+inTrainData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/combined.arff'
 blankData = 'data/dt/blank.arff'
 inTestData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/DrorBanin.arff'
 #inTestData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/AnatolyBroitman.arff'
@@ -11,7 +12,6 @@ trainData = 'temp/classifierTestsTrain.arff'
 testData = 'temp/classifierTestsTest.arff'
 configName = 'temp/classifierTests.json'
 numTargetTrainingInstances = 100
-ARCH = '32' # TODO
 
 baseConfig = '''{
   "data": "%s",
@@ -57,7 +57,7 @@ tests = [
   ['weka-nb','weka','"options": "weka.classifiers.bayes.NaiveBayes"'],
   #['weka-j48','weka','"options": "weka.classifiers.trees.J48"'],
   ['nb','nb',''],
-  ['svm','svm',''],
+  #['svm','svm',''],
   ['lsvm','lsvm',''],
   ['ada-20-nb','adaboost',boostConfig % (20,'nb','')],
   #['ada-20-svm','adaboost',boostConfig % (20,'svm','')],
@@ -66,7 +66,7 @@ tests = [
   #['trada-20-svm','tradaboost',boostConfig % (20,'svm','')],
   ['trada-20-lsvm','tradaboost',boostConfig % (20,'lsvm','')],
   ['trbagg-200-nb','trbagg',trbaggConfig % (200,'nb','','dt',',"maxDepth": 1')],
-  #['trbagg-200-svm','trbagg',trbaggConfig % (200,'svm','','dt',',"maxDepth": 1')],
+  ['trbagg-200-svm','trbagg',trbaggConfig % (200,'svm','','dt',',"maxDepth": 1')],
   ['trbagg-200-lsvm','trbagg',trbaggConfig % (200,'lsvm','','dt',',"maxDepth": 1')],
   ['twostagetrada-20-nb','twostagetradaboost',boostConfig % (20,'nb','')],
   #['twostagetrada-20-svm','twostagetradaboost',boostConfig % (20,'svm','')],
@@ -136,7 +136,7 @@ for useSourceData in [True]:
     config = baseConfig % (train,typeName,options)
     with open(configName,'w') as f:
       f.write(config)
-    cmd = ['bin/%s/runClassifier' % ARCH,configName,testData,str(numTargetTrainingInstances)]
+    cmd = ['bin/%s/runClassifier' % getArch(),configName,testData,str(numTargetTrainingInstances)]
     p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
     output = ''
     while p.poll() is None:
