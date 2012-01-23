@@ -72,8 +72,9 @@ void TwoStageTrAdaBoost::reweightData(unsigned int t) {
   float fracTargetWeight = m / (n + m) + (t / ((float)maxBoostingIterations)) * (1 - m / (n + m));
   float fracSourceWeight = 1 - fracTargetWeight;
   // per instance
-  float targetWeight = fracTargetWeight;
-  float sourceWeight = (fracSourceWeight * m) / n;
+  float totalWeight = m / fracTargetWeight;
+  float targetWeight = fracTargetWeight * totalWeight / m;
+  float sourceWeight = (fracSourceWeight * totalWeight) / n;
   //std::cout << "TARGET WEIGHT: " << targetWeight << "  SOURCE WEIGHT: " << sourceWeight << std::endl;
   std::cout << "totalTarget: " << m * targetWeight << "  totalSource: " << n * sourceWeight << std::endl;
   for (unsigned int i = 0; i < sourceData.size(); i++)
