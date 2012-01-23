@@ -45,6 +45,7 @@ protected:
   Json::Value baseLearnerOptions;
   std::vector<BoostingClassifier> classifiers;
   InstanceSet data;
+  std::vector<float> initialWeights;
   std::vector<float> absError;
   const unsigned int maxBoostingIterations;
   unsigned int classifierStartInd;

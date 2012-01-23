@@ -17,12 +17,12 @@ AdaBoostPrime::AdaBoostPrime(const std::vector<Feature> &features, bool caching,
 
 void AdaBoostPrime::addData(const InstancePtr &instance) {
   onlySourceData = false;
-  data.add(instance);
+  AdaBoost::addData(instance);
 }
 
 void AdaBoostPrime::addSourceData(const InstancePtr &instance) {
   assert(onlySourceData);
-  data.add(instance);
+  AdaBoost::addData(instance);
   endSourceData = data.size();
   reweightStartInd = data.size();
 }

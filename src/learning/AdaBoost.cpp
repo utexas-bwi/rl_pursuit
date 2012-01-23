@@ -32,6 +32,7 @@ AdaBoost::~AdaBoost() {
 
 void AdaBoost::addData(const InstancePtr &instance) {
   data.add(instance);
+  initialWeights.push_back(instance->weight);
 }
 
 void AdaBoost::trainInternal(bool /*incremental*/) {
@@ -94,7 +95,7 @@ void AdaBoost::classifyInternal(const InstancePtr &instance, Classification &cla
 
 void AdaBoost::resetWeights() {
   for (unsigned int i = 0; i < data.size(); i++)
-    data[i]->weight = 1.0;
+    data[i]->weight = initialWeights[i];
   data.weight = data.size();
 }
 
@@ -113,6 +114,7 @@ void AdaBoost::normalizeWeights() {
       sourceWeight += data[i]->weight;
     for (unsigned int i = endSourceData; i < data.size(); i++)
       targetWeight += data[i]->weight;
+    std::cout << "Normalizing weights: source: 0 - " << endSourceData << "  target: " << endSourceData << " - " << data.size() << std::endl;
     std::cout << "WEIGHTS: " << sourceWeight << " " << targetWeight << std::endl;
   }
 }
@@ -130,6 +132,8 @@ double AdaBoost::calcError(BoostingClassifier &c) {
   // calculate epsilon
   double weight = 0;
   double eps = 0;
+  if (verbose)
+    std::cout << "CALCULATING error from " << errorStartInd << " to " << data.size() << std::endl;
   for (unsigned int i = errorStartInd; i < data.size(); i++) {
     eps += data[i]->weight * absError[i];
     weight += data[i]->weight;

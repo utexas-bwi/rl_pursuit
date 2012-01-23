@@ -9,12 +9,12 @@ TrAdaBoost::TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseL
 
 void TrAdaBoost::addData(const InstancePtr &instance) {
   onlySourceData = false;
-  data.add(instance);
+  AdaBoost::addData(instance);
 }
 
 void TrAdaBoost::addSourceData(const InstancePtr &instance) {
   assert(onlySourceData);
-  data.add(instance);
+  AdaBoost::addData(instance);
   endSourceData = data.size();
   errorStartInd = data.size();
 }
