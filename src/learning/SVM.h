@@ -25,7 +25,7 @@ protected:
   void setScaling();
 */
 protected:
-  static const int MAX_NUM_INSTANCES = 700000;
+  static const int MAX_NUM_INSTANCES = 630000;
   libsvm::svm_problem prob;
   libsvm::svm_model *model;
   libsvm::svm_parameter param;

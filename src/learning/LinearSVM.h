@@ -29,7 +29,7 @@ protected:
   void setScaling();
 */
 protected:
-  static const int MAX_NUM_INSTANCES = 700000;
+  static const int MAX_NUM_INSTANCES = 630000;
   liblinear::svm_problem prob;
   liblinear::svm_model *model;
   liblinear::svm_parameter param;
