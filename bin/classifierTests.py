@@ -11,7 +11,7 @@ inTestData = 'data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/DrorBanin.a
 trainData = 'temp/classifierTestsTrain.arff'
 testData = 'temp/classifierTestsTest.arff'
 configName = 'temp/classifierTests.json'
-numTargetTrainingInstances = 100
+numTargetTrainingInstances = 10
 
 baseConfig = '''{
   "data": "%s",
@@ -40,7 +40,7 @@ trbaggConfig = boostConfig + ''',
 
 twostagetradaConfig = '''
   "maxBoostingIterations": %i,
-  "numFolds": %i,
+  "folds": %i,
   "baseLearner": {
     "type": "adaboostprime",
     "caching": false,
@@ -54,7 +54,7 @@ twostagetradaConfig = '''
 '''
 
 tests = [
-  ['weka-nb','weka','"options": "weka.classifiers.bayes.NaiveBayes"'],
+  #['weka-nb','weka','"options": "weka.classifiers.bayes.NaiveBayes"'],
   #['weka-j48','weka','"options": "weka.classifiers.trees.J48"'],
   ['nb','nb',''],
   #['svm','svm',''],
@@ -65,12 +65,14 @@ tests = [
   ['trada-20-nb','tradaboost',boostConfig % (20,'nb','')],
   #['trada-20-svm','tradaboost',boostConfig % (20,'svm','')],
   ['trada-20-lsvm','tradaboost',boostConfig % (20,'lsvm','')],
-  ['trbagg-200-nb','trbagg',trbaggConfig % (200,'nb','','dt',',"maxDepth": 1')],
+  #['trbagg-200-nb','trbagg',trbaggConfig % (200,'nb','','dt',',"maxDepth": 1')],
   ['trbagg-200-svm','trbagg',trbaggConfig % (200,'svm','','dt',',"maxDepth": 1')],
-  ['trbagg-200-lsvm','trbagg',trbaggConfig % (200,'lsvm','','dt',',"maxDepth": 1')],
-  ['twostagetrada-20-nb','twostagetradaboost',boostConfig % (20,'nb','')],
+  #['trbagg-200-lsvm','trbagg',trbaggConfig % (200,'lsvm','','dt',',"maxDepth": 1')],
+  #['twostagetrada-20-nb','twostagetradaboost',boostConfig % (20,'nb','')],
   #['twostagetrada-20-svm','twostagetradaboost',boostConfig % (20,'svm','')],
   ['twostagetrada-20-lsvm','twostagetradaboost',boostConfig % (20,'lsvm','')],
+  #['twostagetrada-20-adaboostprime-20-lsvm','twostagetradaboost',twostagetradaConfig % (20,5,20,'lsvm','')],
+  #['twostagetrada-20-adaboostprime-20-nb','twostagetradaboost',twostagetradaConfig % (20,5,20,'nb','')],
 
 
   #['ada-100-nb','adaboost',boostConfig % (100,'nb','')],
@@ -119,8 +121,8 @@ removeTrialStep(inTestData,testData)
 
 fracCorrect = {}
 numCorrect = {}
-#for useSourceData in [False,True]:
-for useSourceData in [True]:
+for useSourceData in [False,True]:
+#for useSourceData in [True]:
   for label,typeName,options in tests:
     print '*********************'
     print typeName,options
