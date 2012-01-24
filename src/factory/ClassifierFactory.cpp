@@ -60,12 +60,14 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &d
   } else if (type == "dt") {
     classifier = createDecisionTree(filename,features,caching,options);
   } else if ((type == "lsvm") || (type == "linearsvm")) {
+    unsigned int maxNumInstances = options.get("maxNumInstances",630000).asUInt();
     unsigned int solverType = options.get("solverType",0).asUInt();
-    classifier = ClassifierPtr(new LinearSVM(features,caching,solverType));
+    classifier = ClassifierPtr(new LinearSVM(features,caching,solverType,maxNumInstances));
   } else if (type == "nb") {
     classifier = ClassifierPtr(new NaiveBayes(features,caching));
   } else if (type == "svm") {
-    classifier = ClassifierPtr(new SVM(features,caching));
+    unsigned int maxNumInstances = options.get("maxNumInstances",630000).asUInt();
+    classifier = ClassifierPtr(new SVM(features,caching,maxNumInstances));
   } else if (type == "trbagg") {
     classifier = createTrBagg(filename,features,caching,options);
   } else if (type == "twostagetradaboost") {
@@ -166,10 +168,11 @@ boost::shared_ptr<TwoStageTrAdaBoost> createTwoStageTrAdaBoost(const std::string
   assert(filename == "");
   unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   unsigned int numFolds = options.get("folds",5).asUInt();
+  int bestT = options.get("bestT",-1).asInt();
   Json::Value baseLearnerOptions = options["baseLearner"];
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
 
-  return boost::shared_ptr<TwoStageTrAdaBoost>(new TwoStageTrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,numFolds));
+  return boost::shared_ptr<TwoStageTrAdaBoost>(new TwoStageTrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,numFolds,bestT));
 }
 
 boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {

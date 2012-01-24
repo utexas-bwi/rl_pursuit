@@ -5,9 +5,9 @@ namespace liblinear {
 void print_null(const char *) {}
 }
 
-LinearSVM::LinearSVM(const std::vector<Feature> &features, bool caching, unsigned int solverType):
+LinearSVM::LinearSVM(const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances):
   Classifier(features,caching),
-  //numInstances(0),
+  MAX_NUM_INSTANCES(maxNumInstances),
   minVals(features.size()-1,std::numeric_limits<float>::infinity()),
   maxVals(features.size()-1,-1 * std::numeric_limits<float>::infinity()),
   currentMinVals(minVals),
@@ -58,7 +58,7 @@ LinearSVM::~LinearSVM() {
 }
 
 void LinearSVM::addData(const InstancePtr &instance) {
-  assert(prob.l + 1 < MAX_NUM_INSTANCES);
+  assert(prob.l + 1 < (int)MAX_NUM_INSTANCES);
   createNode(&prob.x[prob.l]);
   setNode(instance,prob.x[prob.l]);
   prob.y[prob.l] = instance->label;

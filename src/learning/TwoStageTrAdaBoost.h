@@ -13,7 +13,7 @@ Modified: 2012-01-20
 
 class TwoStageTrAdaBoost: public Classifier {
 public:
-  TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds);
+  TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds, int bestT = -1);
   
   virtual void addData(const InstancePtr &instance);
   virtual void addSourceData(const InstancePtr &instance);
@@ -37,6 +37,7 @@ protected:
   ClassifierPtr model;
   const unsigned int maxBoostingIterations;
   const unsigned int numFolds;
+  int savedBestT;
 };
 
 #endif /* end of include guard: TWOSTAGETRADABOOST_7Q4CFB8O */

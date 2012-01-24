@@ -8,14 +8,15 @@ Modified: 2012-01-20
 
 #include "TwoStageTrAdaBoost.h"
   
-TwoStageTrAdaBoost::TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds):
+TwoStageTrAdaBoost::TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds, int bestT):
   Classifier(features,caching),
   baseLearner(baseLearner),
   baseLearnerOptions(baseLearnerOptions),
   sourceData(numClasses),
   targetData(numClasses),
   maxBoostingIterations(maxBoostingIterations),
-  numFolds(numFolds)
+  numFolds(numFolds),
+  savedBestT(bestT)
 {
   assert(baseLearner);
 }
@@ -37,23 +38,28 @@ void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
   assert(targetData.size() > 0); // doesn't make sense otherwise
   std::vector<InstanceSet> foldedTargetData(numFolds,InstanceSet(numClasses));
   createFolds(foldedTargetData);
-
-  ClassifierPtr newModel;
-  float bestError = std::numeric_limits<float>::infinity();
+  
   unsigned int bestT = 0;
-  for (unsigned int t = 1; t <= maxBoostingIterations; t++) {
-    reweightData(t);
-    float error = 0.0;
-    for (unsigned int fold = 0; fold < numFolds; fold++) {
-      newModel = createModel(fold,foldedTargetData);
-      error += calcError(newModel,foldedTargetData[fold]) / numFolds;
+  if (savedBestT <= 0) {
+    ClassifierPtr newModel;
+    float bestError = std::numeric_limits<float>::infinity();
+    for (unsigned int t = 1; t <= maxBoostingIterations; t++) {
+      reweightData(t);
+      float error = 0.0;
+      for (unsigned int fold = 0; fold < numFolds; fold++) {
+        newModel = createModel(fold,foldedTargetData);
+        error += calcError(newModel,foldedTargetData[fold]) / numFolds;
+      }
+      //std::cout << "error: " << error << std::endl;
+      if (error < bestError) {
+        bestError = error;
+        bestT = t;
+        //std::cout << "NEW BEST: " << t << std::endl;
+      }
     }
-    //std::cout << "error: " << error << std::endl;
-    if (error < bestError) {
-      bestError = error;
-      bestT = t;
-      //std::cout << "NEW BEST: " << t << std::endl;
-    }
+  } else {
+    bestT = savedBestT;
+    std::cout << "WARNING: TwoStageTrAdaBoost isn't figuring out the best weighting, just using the one provided" << std::endl;
   }
   // make the real model for the best t
   std::cout << "BEST T: " << bestT << std::endl;
