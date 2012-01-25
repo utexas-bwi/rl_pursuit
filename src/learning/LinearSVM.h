@@ -13,7 +13,7 @@ typedef parameter svm_parameter;
 
 class LinearSVM: public Classifier {
 public:
-  LinearSVM(const std::vector<Feature> &features, bool caching, unsigned int solverType);
+  LinearSVM(const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances);
   virtual ~LinearSVM();
 
   virtual void addData(const InstancePtr &instance);
@@ -29,7 +29,7 @@ protected:
   void setScaling();
 */
 protected:
-  static const int MAX_NUM_INSTANCES = 630000;
+  const unsigned int MAX_NUM_INSTANCES;
   liblinear::svm_problem prob;
   liblinear::svm_model *model;
   liblinear::svm_parameter param;

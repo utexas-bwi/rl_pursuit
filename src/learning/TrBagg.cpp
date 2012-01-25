@@ -42,6 +42,8 @@ void TrBagg::trainInternal(bool /*incremental*/) {
   classifiers.clear();
   int targetSize = data.size() - targetDataStart;
   assert(targetSize > 0);
+  int sampleSize = 1 * targetSize;
+  //int sampleSize = 1000;
   // LEARNING PHASE
   for (unsigned int n = 0; n < maxBoostingIterations; n++) {
     //if (n % 10 == 0)
@@ -50,7 +52,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
     c.classifier = baseLearner(features,baseLearnerOptions);
     // sample data set with replacements
     //std::cout << "TRAINING DATA: " << n << std::endl;
-    for (int i = 0; i < targetSize; i++) {
+    for (int i = 0; i < sampleSize; i++) {
       int32_t ind = rng->randomInt(data.size());
       //std::cout << "  " << ind << " " << *data[ind] << std::endl;
       c.classifier->addData(data[ind]);

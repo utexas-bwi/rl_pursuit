@@ -9,7 +9,7 @@ namespace libsvm {
 
 class SVM: public Classifier {
 public:
-  SVM(const std::vector<Feature> &features, bool caching);
+  SVM(const std::vector<Feature> &features, bool caching, unsigned int maxNumInstances);
   virtual ~SVM();
 
   virtual void addData(const InstancePtr &instance);
@@ -25,7 +25,7 @@ protected:
   void setScaling();
 */
 protected:
-  static const int MAX_NUM_INSTANCES = 630000;
+  const unsigned int MAX_NUM_INSTANCES;
   libsvm::svm_problem prob;
   libsvm::svm_model *model;
   libsvm::svm_parameter param;
