@@ -20,6 +20,8 @@ void NaiveBayes::addData(const InstancePtr &instance) {
 
 void NaiveBayes::outputDescription(std::ostream &out) const {
   out << "Naive Bayes" << std::endl;
+  return;
+/*
   for (unsigned int i = 0; i < attributes.size(); i++) {
     out << features[i].name << std::endl;
     if (attributes[i].numeric) {
@@ -42,6 +44,7 @@ void NaiveBayes::outputDescription(std::ostream &out) const {
     }
     out << std::endl;
   }
+*/
 }
 
 void NaiveBayes::trainInternal(bool /*incremental*/) {

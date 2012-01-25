@@ -40,6 +40,18 @@ void TrBagg::outputDescription(std::ostream &out) const {
   
 void TrBagg::trainInternal(bool /*incremental*/) {
   classifiers.clear();
+  if (targetDataStart < 0) {
+    std::cerr << "WARNING: Trying to train TrBagg with no target data, just falling back on the fallback learner applied to the source data" << std::endl;
+    BoostingClassifier fallbackModel;
+    fallbackModel.classifier = fallbackLearner(features,fallbackLearnerOptions);
+    for (unsigned int i = 0; i < data.size(); i++)
+      fallbackModel.classifier->addData(data[i]);
+    fallbackModel.classifier->train(false);
+    fallbackModel.alpha = 1.0;
+    classifiers.push_back(fallbackModel);
+    return;
+  }
+
   int targetSize = data.size() - targetDataStart;
   assert(targetSize > 0);
   int sampleSize = 1 * targetSize;
@@ -47,7 +59,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
   // LEARNING PHASE
   for (unsigned int n = 0; n < maxBoostingIterations; n++) {
     //if (n % 10 == 0)
-      std::cout << "BOOSTING ITERATION: " << n << std::endl;
+      //std::cout << "BOOSTING ITERATION: " << n << std::endl;
     BoostingClassifier c;
     c.classifier = baseLearner(features,baseLearnerOptions);
     // sample data set with replacements
@@ -81,6 +93,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
     for (int i = targetDataStart; i < (int)data.size(); i++)
       fallbackModel.classifier->addData(data[i]);
   }
+  fallbackModel.classifier->train(false);
   calcErrorOfClassifier(fallbackModel);
   // add the fallback model to the beginning of the list
   classifiers.insert(classifiers.begin(),fallbackModel);
