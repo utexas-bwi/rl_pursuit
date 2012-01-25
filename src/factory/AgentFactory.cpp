@@ -138,6 +138,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       if (basePred.get() != NULL) {
         std::cout << "SHARING CLASSIFIER" << std::endl;
         classifier = basePred->getClassifier();
+        basePred->setPreventTraining(true);
       }
     }
     if (classifier.get() == NULL)

@@ -17,7 +17,8 @@ PredatorClassifier::PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D
   featureExtractor(dims),
   trainingPeriod(trainingPeriod),
   trainingCounter(0),
-  trainIncremental(trainIncremental)
+  trainIncremental(trainIncremental),
+  preventTraining(false)
 {
   // add the feature agents
   //featureExtractor.addFeatureAgent("GR","GR");
@@ -63,6 +64,8 @@ void PredatorClassifier::learn(const Observation &prevObs, const Observation &cu
   instance->label = getAction(move);
   (*instance)["Pred.act"] = instance->label;
   classifier->addData(instance);
+  if (preventTraining)
+    return;
   trainingCounter++;
   if (trainingCounter >= trainingPeriod) {
     //std::cout << "training" << std::endl;
