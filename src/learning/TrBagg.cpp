@@ -51,7 +51,8 @@ void TrBagg::trainInternal(bool /*incremental*/) {
     classifiers.push_back(fallbackModel);
     return;
   }
-
+  
+  //std::cout << "targetDataStart: " << targetDataStart << "  " << "data.size: " << data.size() << std::endl;
   int targetSize = data.size() - targetDataStart;
   assert(targetSize > 0);
   int sampleSize = 1 * targetSize;
@@ -162,8 +163,10 @@ unsigned int TrBagg::selectSize(const std::vector<BoostingClassifier> &classifie
   double bestError = std::numeric_limits<double>::infinity();
   double err;
   for (unsigned int size = 1; size < classifiers.size(); size++) {
+    //std::cout << *(classifiers[size-1].classifier) << std::endl;
     err = calcErrorOfSet(size,classifications);
     //std::cout << size << ": " << err << std::endl;
+    assert(!isnan(err));
     if (err < bestError) {
       bestError = err;
       bestSize = size;
@@ -173,16 +176,15 @@ unsigned int TrBagg::selectSize(const std::vector<BoostingClassifier> &classifie
 }
   
 double TrBagg::calcErrorOfSet(unsigned int size, const std::vector<std::vector<Classification> > &classifications) {
-  int targetSize = data.size() - targetDataStart;
   float factor = 1.0 / size;
   double err = 0.0;
   //std::cout << "  -" << std::endl;
-  for (int dataInd = 0; dataInd < targetSize; dataInd++) {
-    unsigned int &label = data[dataInd + targetDataStart]->label;
+  for (int dataInd = targetDataStart; dataInd < (int)data.size(); dataInd++) {
+    unsigned int &label = data[dataInd]->label;
     err += 1.0; // will reduce by the amount correct in the loop below
     //double temp = err;
     for (unsigned int classifierInd = 0; classifierInd < size; classifierInd++) {
-      err -= factor * classifications[classifierInd][dataInd][label];
+      err -= factor * classifications[classifierInd][dataInd - targetDataStart][label];
     }
     //std::cout << "  " << *data[dataInd+targetSize] << " -> " << temp - err << std::endl;
     //std::cout << "  " << dataInd << " " << err << std::endl;
