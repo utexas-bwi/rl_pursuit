@@ -38,6 +38,11 @@ ClassifierPtr createClassifier(const std::string &filename, const Json::Value &o
     std::vector<std::string> dataFilenames;
     boost::split(dataFilenames, dataFilename, boost::is_any_of(";"));
     std::ifstream in(dataFilenames[0].c_str());
+    if (!in.good()) {
+      std::cerr << "ERROR opening: " << dataFilenames[0] << std::endl;
+      std::cerr << "Taken from: " << dataFilename << std::endl;
+      exit(17);
+    }
     ArffReader arff(in);
     in.close();
     features = arff.getFeatureTypes();

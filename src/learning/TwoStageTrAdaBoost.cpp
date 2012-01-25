@@ -35,7 +35,14 @@ void TwoStageTrAdaBoost::outputDescription(std::ostream &out) const {
 }
 
 void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
-  assert(targetData.size() > 0); // doesn't make sense otherwise
+  if (targetData.size() == 0) {
+    std::cout << "WARNING: TwoStageTrAdaBoost training with no target data, just defaulting to the base learner" << std::endl;
+    model = baseLearner(features,baseLearnerOptions);
+    for (unsigned int i = 0; i < sourceData.size(); i++)
+      model->addSourceData(sourceData[i]);
+    model->train(false);
+    return;
+  }
   std::vector<InstanceSet> foldedTargetData(numFolds,InstanceSet(numClasses));
   createFolds(foldedTargetData);
   
