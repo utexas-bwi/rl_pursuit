@@ -76,7 +76,9 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     bool modelPerStudent = models[i].get("modelPerStudent",false).asBool();
     bool dataPerStudent = models[i].get("dataPerStudent",false).asBool();
     bool includeCurrentStudent = models[i].get("includeCurrentStudent",true).asBool();
-    std::cout << "dataPerStudent: " << std::boolalpha << dataPerStudent << std::endl;
+    std::string pred = models[i].get("predator","UNKNOWN_PRED").asString();
+    if (pred == "classifier")
+      std::cout << "dataPerStudent: " << std::boolalpha << dataPerStudent << std::endl;
 
     std::set<std::string> students;
     if (modelPerStudent) {
