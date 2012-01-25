@@ -240,13 +240,44 @@ class Options(object):
 
   def setupAgent(self,agent,agentType,parent=None):
     a = self.addOption(agent,agentType,parent)
-    ao = self.addDependentOption(a,['student','dt','dummy'],[agent + 'Options',''],parent)
+    ao = self.addDependentOption(a,['student','dt','dummy','classifier'],[agent + 'Options',''],parent)
     self.addDependentOption(a,'student',['student','data/students.txt'],ao)
-    self.addDependentOption(a,'dt',['filename','data/dt/ra-20x20-centerPrey-myActionHistory-5000/weighted/common.weka'],ao)
-    self.addDependentOption(a,'dt',['trainingPeriod',-1],ao)
-    self.addDependentOption(a,'dt',['trainIncremental',True],ao)
+    self.addDependentOption(a,'classifier',['shared',True],ao)
+    self.addDependentOption(a,'classifier',['caching',False],ao)
+    self.addDependentOption(a,'classifier',['dataPerStudent',False],ao)
+    self.addDependentOption(a,'classifier',['modelPerStudent',False],ao)
+    self.addDependentOption(a,'classifier',['includeCurrentStudent',True],ao)
+    self.addDependentOption(a,'classifier',['filename',''],ao)
+    self.addDependentOption(a,'classifier',['data','data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/$(MODEL_STUDENT).weka'],ao)
+    self.addDependentOption(a,'classifier',['trainingPeriod',-1],ao)
+    self.addDependentOption(a,'classifier',['trainIncremental',True],ao)
+    self.setupClassifier(a,ao)
     self.addDependentOption(a,'dummy',['action',0],ao)
     return a
+
+  def setupClassifier(self,a,ao,remainingDepth=2):
+    boosters = ['adaboost','tradaboost','adaboostprime','twostagetradaboost','trbagg']
+
+    if a is None:
+      t = self.addOption('type','dt',ao)
+    else:
+      t = self.addDependentOption(a,'classifier',['type','dt'],ao)
+
+    self.addDependentOption(t,['lsvm','svm'],['maxNumInstances',630000],ao)
+    self.addDependentOption(t,'lsvm',['solverType',0],ao)
+    self.addDependentOption(t,'dt',['maxDepth',-1],ao)
+    self.addDependentOption(t,'dt',['minInstances',2],ao)
+    self.addDependentOption(t,'dt',['minGain',0.0001],ao)
+    self.addDependentOption(t,'weka',['wekaOptions','weka.classifiers.trees.J48'],ao)
+    self.addDependentOption(t,boosters,['maxBoostingIterations',10],ao)
+    self.addDependentOption(t,'twostagetradaboost',['numFolds',5],ao)
+    self.addDependentOption(t,'twostagetradaboost',['bestT',1],ao)
+    base = self.addDependentOption(t,boosters,['baseLearner',''],ao)
+    fallback = self.addDependentOption(t,'trbagg',['fallbackLearner',''],ao)
+    if remainingDepth > 0:
+      self.setupClassifier(None,base,remainingDepth-1)
+      self.setupClassifier(None,fallback,remainingDepth-1)
+
 
   def setupPlanner(self):
     p = self.addDependentOption(self.adhoc,['mcts','uct'],['planner',''])
@@ -278,7 +309,7 @@ class Options(object):
     self.addModel('TA','random','ta')
     self.addModel('GP','random','gp')
     self.addModel('PD','random','pd')
-    self.addModel('DT','random','dt')
+    self.addModel('Classifier','random','classifier')
 
   def addModel(self,desc,prey,pred):
     x = self.addOption(desc,'',self.models)
@@ -286,8 +317,6 @@ class Options(object):
     self.addOption('desc',desc,x)
     self.setupAgent('prey',prey,x)
     self.setupAgent('predator',pred,x)
-    self.addOption('foreachStudent',False,x)
-    self.addOption('includeCurrentStudent',True,x)
     x.setExpanded(False)
     self.tree.models[x] = True
     return x
