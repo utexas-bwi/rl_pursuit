@@ -47,7 +47,6 @@ void ReplaceDataStudent::operator() (Json::Value &value) {
   if (!value.isString())
     return;
   std::string str = value.asString();
-  std::cout << "REPLACE DATA STUDENT: " << str << std::endl;
   size_t pos = str.find(searchStr);
   if (pos == std::string::npos)
     return;
