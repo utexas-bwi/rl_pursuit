@@ -102,8 +102,11 @@ def getStudentInds(path,includeStudents,excludeStudents):
     inds.append(i)
   return inds
 
-def main(paths,outputCsv,includeStudents,excludeStudents):
+def main(paths,outputCsv,includeStudents,excludeStudents,matchNumEpisodes):
   studentInds = getStudentInds('data/students.txt',includeStudents,excludeStudents)
+  numEpisodes = len(studentInds)
+  if matchNumEpisodes:
+    print 'MATCHING number of episodes, via sorting first axis (MIGHT BE WRONG)'
   for i,path in enumerate(paths):
     res = loadResults(path)
     if res is None:
@@ -116,6 +119,10 @@ def main(paths,outputCsv,includeStudents,excludeStudents):
         if trial in studentInds:
           inds.append(j)
       numSteps = numSteps[inds,:]
+    if matchNumEpisodes:
+      numEpisodes = min(numEpisodes,len(numSteps))
+      numSteps.sort(axis=0)
+      numSteps = numSteps[:numEpisodes,:]
     printResults(numSteps,path,outputCsv,i==0)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
@@ -133,8 +140,9 @@ def mainArgs(args):
   parser.add_option('-c','--csv',action='store_true',dest='outputCsv',default=False,help='output in csv format')
   parser.add_option('-i','--include',action='append',dest='includeStudents',default=[],help='output only for specified students',metavar='STUDENT')
   parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
+  parser.add_option('-m','--match',action='store_true',dest='matchNumEpisodes',default=False,help='matches the number of episodes between the results')
   options,args = parser.parse_args(args)
-  return main(args,options.outputCsv,options.includeStudents,options.excludeStudents)
+  return main(args,options.outputCsv,options.includeStudents,options.excludeStudents,options.matchNumEpisodes)
 
 if __name__ == '__main__':
   import sys
