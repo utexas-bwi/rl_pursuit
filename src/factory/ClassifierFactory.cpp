@@ -10,6 +10,7 @@ Modified: 2011-12-28
 #include <iostream>
 #include <cassert>
 #include <boost/algorithm/string.hpp>
+#include <boost/foreach.hpp>
 
 #include <learning/WekaParser.h>
 #include <learning/ArffReader.h>
@@ -34,7 +35,11 @@ ClassifierPtr createClassifier(const std::string &filename, const Json::Value &o
   std::string dataFilename = options.get("data","").asString();
   std::vector<Feature> features;
   if (dataFilename != "") {
-    std::ifstream in(dataFilename.c_str());
+    std::cout << "DATA FILENAME: " << dataFilename << std::endl;
+    std::vector<std::string> dataFilenames;
+    boost::split(dataFilenames, dataFilename, boost::is_any_of(";"));
+    std::ifstream in(dataFilenames[0].c_str());
+    std::cout << "FIRST NAME: " << dataFilenames[0] << std::endl;
     ArffReader arff(in);
     in.close();
     features = arff.getFeatureTypes();
@@ -78,9 +83,19 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &d
     std::cerr << "createClassifier: ERROR, unknown type: " << type << std::endl;
     exit(3);
   }
-  
-  if (dataFilename != "")
-    addSourceDataToClassifier(classifier,dataFilename,train);
+ 
+  if (dataFilename != "") {
+    std::vector<std::string> dataFilenames;
+    boost::split(dataFilenames, dataFilename, boost::is_any_of(";"));
+
+    BOOST_FOREACH(std::string &temp, dataFilenames) {
+      std::cout << "ADDING SOURCE DATA: " << temp << std::endl;
+      addSourceDataToClassifier(classifier,temp,false);
+    }
+    if (train)
+      classifier->train(false);
+      //addSourceDataToClassifier(classifier,dataFilename,train);
+  }
   classifier->setPredictSingleClass(predictSingleClass);
 
   return classifier;

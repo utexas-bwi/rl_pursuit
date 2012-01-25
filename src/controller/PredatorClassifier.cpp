@@ -43,11 +43,14 @@ void PredatorClassifier::restart() {
 }
 
 std::string PredatorClassifier::generateDescription() {
-  std::string msg = "PredatorClassifier: chooses actions using a decision tree read from " + name;
+  std::string msg = "PredatorClassifier: chooses actions using a classifier";
   if (trainingPeriod >= 0)
     msg += " with training period " + boost::lexical_cast<std::string>(trainingPeriod);
   else
     msg += " with no online training";
+  std::stringstream ss;
+  classifier->outputDescription(ss);
+  msg += "\n" + ss.str();
   return msg;
 }
 
