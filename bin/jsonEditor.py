@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt4 import QtGui, QtCore
-import json, re
+import json, re, types
 
 def json_minify(json,strip_space=True):
   # taken from https://github.com/getify/JSON.minify.git
@@ -47,9 +47,12 @@ def json_minify(json,strip_space=True):
 
 class TreeItem(QtGui.QTreeWidgetItem):
   def __init__(self,parent,vals):
-    super(TreeItem, self).__init__(parent,map(str,vals))
+    tempVals = list(vals)
+    if vals[1] is None:
+      tempVals[1] = ''
+    super(TreeItem, self).__init__(parent,map(str,tempVals))
     self.dataType = type(vals[1])
-    if vals[1] != '':
+    if vals[1] != None:
       self.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
     self.setExpanded(True)
 
@@ -134,7 +137,7 @@ class Tree(object):
     if (item in self.models) and not(self.models[item]):
       return
     key = str(item.text(0))
-    if item.text(1) == '':
+    if item.dataType is types.NoneType:
       val[key] = {}
       for i in range(item.childCount()):
         self.populateJson(val[key],item.child(i))
@@ -188,7 +191,7 @@ class Tree(object):
       # handle specially
       return
 
-    if type(val) in [unicode,int,float,bool]:
+    if type(val) in [unicode,int,float,bool,str]:
       item.setText(1,str(val))
       #print 'setting:',key,val
     elif type(val) is dict:
@@ -230,7 +233,7 @@ class Options(object):
     self.setupAgent('predator','student')
 
   def setupVerbosity(self):
-    x = self.addOption('verbosity','')
+    x = self.addOption('verbosity',None)
     self.addOption('description',True,x)
     self.addOption('observation',False,x)
     self.addOption('stepsPerEpisode',False,x)
@@ -240,15 +243,17 @@ class Options(object):
 
   def setupAgent(self,agent,agentType,parent=None):
     a = self.addOption(agent,agentType,parent)
-    ao = self.addDependentOption(a,['student','dt','dummy','classifier'],[agent + 'Options',''],parent)
+    ao = self.addDependentOption(a,['student','dt','dummy','classifier'],[agent + 'Options',None],parent)
+
+    self.addDependentOption(a,'classifier',['dataPerStudent',False],parent)
+    self.addDependentOption(a,'classifier',['modelPerStudent',False],parent)
+    self.addDependentOption(a,'classifier',['includeCurrentStudent',True],parent)
+
     self.addDependentOption(a,'student',['student','data/students.txt'],ao)
     self.addDependentOption(a,'classifier',['shared',True],ao)
     self.addDependentOption(a,'classifier',['caching',False],ao)
-    self.addDependentOption(a,'classifier',['dataPerStudent',False],ao)
-    self.addDependentOption(a,'classifier',['modelPerStudent',False],ao)
-    self.addDependentOption(a,'classifier',['includeCurrentStudent',True],ao)
     self.addDependentOption(a,'classifier',['filename',''],ao)
-    self.addDependentOption(a,'classifier',['data','data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/$(MODEL_STUDENT).weka'],ao)
+    self.addDependentOption(a,'classifier',['data','data/dt/ra-20x20-centerPrey-myActionHistory-5000/train/$(MODEL_STUDENT).arff'],ao)
     self.addDependentOption(a,'classifier',['trainingPeriod',-1],ao)
     self.addDependentOption(a,'classifier',['trainIncremental',True],ao)
     self.setupClassifier(a,ao)
@@ -271,16 +276,16 @@ class Options(object):
     self.addDependentOption(t,'weka',['wekaOptions','weka.classifiers.trees.J48'],ao)
     self.addDependentOption(t,boosters,['maxBoostingIterations',10],ao)
     self.addDependentOption(t,'twostagetradaboost',['numFolds',5],ao)
-    self.addDependentOption(t,'twostagetradaboost',['bestT',1],ao)
-    base = self.addDependentOption(t,boosters,['baseLearner',''],ao)
-    fallback = self.addDependentOption(t,'trbagg',['fallbackLearner',''],ao)
+    self.addDependentOption(t,'twostagetradaboost',['bestT',-1],ao)
+    base = self.addDependentOption(t,boosters,['baseLearner',None],ao)
+    fallback = self.addDependentOption(t,'trbagg',['fallbackLearner',None],ao)
     if remainingDepth > 0:
       self.setupClassifier(None,base,remainingDepth-1)
       self.setupClassifier(None,fallback,remainingDepth-1)
 
 
   def setupPlanner(self):
-    p = self.addDependentOption(self.adhoc,['mcts','uct'],['planner',''])
+    p = self.addDependentOption(self.adhoc,['mcts','uct'],['planner',None])
     self.addOption('silver',False,p)
     self.addOption('weighted',True,p)
     self.addOption('update','polynomial',p)
@@ -301,7 +306,7 @@ class Options(object):
     x = self.addOption('modelOutputFile','',p)
     x.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
 
-    self.models = self.addOption('models','',p)
+    self.models = self.addOption('models',None,p)
     self.setupModels()
 
   def setupModels(self):
@@ -312,7 +317,7 @@ class Options(object):
     self.addModel('Classifier','random','classifier')
 
   def addModel(self,desc,prey,pred):
-    x = self.addOption(desc,'',self.models)
+    x = self.addOption(desc,None,self.models)
     self.addOption('prob',1.0,x)
     self.addOption('desc',desc,x)
     self.setupAgent('prey',prey,x)
