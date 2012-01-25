@@ -9,7 +9,7 @@ Modified: 2011-10-02
 #include "PlanningFactory.h"
 #include <boost/algorithm/string.hpp>
 #include <fstream>
-#include <set>
+#include <boost/foreach.hpp>
 //#include <controller/WorldSilverMDP.h>
 //#include <controller/WorldSilverWeightedMDP.h>
 #include <controller/ModelUpdaterBayes.h>
@@ -37,6 +37,31 @@ boost::shared_ptr<RNG> makeRNG(unsigned int seed) {
   return boost::shared_ptr<RNG>(new RNG(seed));
 }
 
+ReplaceDataStudent::ReplaceDataStudent(const std::string &searchStr, const std::set<std::string> &dataStudents):
+  searchStr(searchStr),
+  dataStudents(dataStudents)
+{
+}
+
+void ReplaceDataStudent::operator() (Json::Value &value) {
+  if (!value.isString())
+    return;
+  std::string str = value.asString();
+  std::cout << "REPLACE DATA STUDENT: " << str << std::endl;
+  size_t pos = str.find(searchStr);
+  if (pos == std::string::npos)
+    return;
+  std::string repl;
+  BOOST_FOREACH(std::string student, dataStudents) {
+    if (repl.size() > 0)
+      repl += ";";
+    std::string temp(str); // need to make copy because replace is in place
+    temp.replace(pos,searchStr.size(),student);
+    repl += temp;
+  }
+  value = Json::Value(repl);
+}
+
 // MODEL UPDATER
 boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType updateType) {
     return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,models,updateType));
@@ -49,10 +74,13 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
   std::string currentStudent = options.get("student","UNKNOWN_STUDENT").asString();
 
   for (unsigned int i = 0; i < models.size(); i++) {
-    bool foreachStudent = models[i].get("foreachStudent",false).asBool();
+    bool modelPerStudent = models[i].get("modelPerStudent",false).asBool();
+    bool dataPerStudent = models[i].get("dataPerStudent",false).asBool();
     bool includeCurrentStudent = models[i].get("includeCurrentStudent",true).asBool();
+    std::cout << "dataPerStudent: " << std::boolalpha << dataPerStudent << std::endl;
+
     std::set<std::string> students;
-    if (foreachStudent) {
+    if (modelPerStudent) {
       getAvailableStudents(options["students"].asString(),students);
       if (!includeCurrentStudent) {
         students.erase(currentStudent);
@@ -60,10 +88,19 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     } else {
       students.insert(currentStudent);
     }
+
+    Json::Value modelOptionsV1(models[i]);
+    if (dataPerStudent) {
+      std::set<std::string> dataStudents;
+      getAvailableStudents(options["students"].asString(),dataStudents);
+      if (!includeCurrentStudent)
+        dataStudents.erase(currentStudent);
+      jsonReplaceStrings(modelOptionsV1,ReplaceDataStudent("$(DATA_STUDENT)",dataStudents));
+    }
     
     // iterate through the considered students
     for (std::set<std::string>::iterator it = students.begin(); it != students.end(); it++) {
-      Json::Value modelOptions(models[i]);
+      Json::Value modelOptions(modelOptionsV1);
       std::map<std::string,std::string> reps;
       reps["$(MODEL_STUDENT)"] = *it;
       jsonReplaceStrings(modelOptions,reps);

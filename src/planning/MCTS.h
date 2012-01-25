@@ -93,7 +93,7 @@ std::string MCTS<State,Action>::generateDescription(unsigned int indentation) {
   ss << prefix << "pruning memory size: " << pruningMemorySize << "\n";
   ss << prefix << "ValueEstimator:\n";
   ss << valueEstimator->generateDescription(indentation+1) << "\n";
-  ss << prefix << "Model:\n";
+  //ss << prefix << "Model:\n";
   //ss << model->generateDescription(indentation+1) << "\n"; // TODO removed during model change
   return ss.str();
 }

@@ -9,6 +9,8 @@ Created:  2011-08-24
 Modified: 2011-12-13
 */
 
+#include <set>
+#include <string>
 #include <boost/shared_ptr.hpp>
 #include <common/RNG.h>
 #include <controller/WorldMDP.h>
@@ -20,6 +22,14 @@ Modified: 2011-12-13
 
 ModelUpdateType getModelUpdateType(std::string type);
 boost::shared_ptr<RNG> makeRNG(unsigned int seed);
+
+struct ReplaceDataStudent {
+  std::string searchStr;
+  std::set<std::string> dataStudents;
+
+  ReplaceDataStudent(const std::string &searchStr, const std::set<std::string> &dataStudents);
+  void operator() (Json::Value &value);
+};
 
 // model updater
 boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType updateType);

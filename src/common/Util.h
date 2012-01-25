@@ -10,6 +10,7 @@ Modified: 2011-12-02
 */
 
 #include <json/json.h>
+#include <boost/function.hpp>
 #include <string>
 #include <vector>
 #include <ostream>
@@ -42,7 +43,9 @@ float softmax(float x1, float x2, float factor); // returns the probability of x
 void softmax(const std::vector<unsigned int> &vals, float factor, std::vector<float> &probs); // fills out probs with the probabilities of the vals using a softmax with the given factor
 
 bool readJson(const std::string &filename, Json::Value &value);
+
 void jsonReplaceStrings(Json::Value &value, const std::map<std::string,std::string> &replacementMap);
+void jsonReplaceStrings(Json::Value &value, boost::function<void (Json::Value &)> replace);
 
 std::string indent(unsigned int indentation);
 
