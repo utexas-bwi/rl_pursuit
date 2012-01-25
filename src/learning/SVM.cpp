@@ -53,7 +53,7 @@ SVM::~SVM() {
 }
 
 void SVM::addData(const InstancePtr &instance) {
-  assert(prob.l + 1 < (int)MAX_NUM_INSTANCES);
+  assert(prob.l < (int)MAX_NUM_INSTANCES);
   createNode(&prob.x[prob.l]);
   setNode(instance,prob.x[prob.l]);
   prob.y[prob.l] = instance->label;
