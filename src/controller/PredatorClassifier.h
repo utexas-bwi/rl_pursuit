@@ -33,6 +33,9 @@ public:
     return classifier;
   }
 
+  void setPreventTraining(bool inPreventTraining) {
+    preventTraining = inPreventTraining;
+  }
 
 protected:
   const std::string name;
@@ -43,6 +46,7 @@ protected:
   int trainingPeriod;
   int trainingCounter;
   bool trainIncremental;
+  bool preventTraining;
 };
 
 #endif /* end of include guard: PREDATORDECISIONTREE_L0Z40SLR */
