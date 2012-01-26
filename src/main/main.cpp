@@ -91,6 +91,7 @@ int main(int argc, const char *argv[])
   bool displayStepsPerTrialQ = options["verbosity"].get("stepsPerTrial",true).asBool();
   std::string saveFilename = options["save"].get("results","").asString();
   bool saveResultsQ = (saveFilename != "");
+  bool randomizeSeedQ = options.get("randomizeSeed",false).asBool();
 
   // get the output DT information
   unsigned int outputDTSteps = options["verbosity"].get("dtsteps",0).asUInt();
@@ -109,7 +110,11 @@ int main(int argc, const char *argv[])
   unsigned int randomSeed;
   for (int trial = 0; trial < numTrials; trial++) {
     trialNum = trial + startTrial;
-    randomSeed = trialNum;
+    if (randomizeSeedQ)
+      randomSeed = getTime() * 1000000 + 1000 * getpid() + trialNum; // hopefully random enough
+    else
+      randomSeed = trialNum;
+    //std::cout << "RANDOM SEED: " << randomSeed << std::endl;
 
     Json::Value trialOptions(options);
     replaceOptsTrial(trialOptions,trialNum);
