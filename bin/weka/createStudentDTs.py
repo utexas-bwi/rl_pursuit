@@ -2,18 +2,17 @@
 
 import os
 from createDT import main as createDT
+from common import getStudents, getFilename, TRAIN
 
 def main(basename,stayWeight,treeOptions,useWeka):
-  with open('data/students.txt','r') as f:
-    students = set(f.read().split())
-
-  dataDir = os.path.join('data','dt-train',basename)
+  students = getStudents()
+  
   for student in students:
     print '-------------------'
     print student
     print '-------------------'
-    dataFile = os.path.join(dataDir,'%s.arff'%student)
-    createDT(dataFile,'%s-%s'%(basename,student),stayWeight,treeOptions,useWeka)
+    dataFile = getFilename(basename,student,TRAIN)
+    createDT(dataFile,basename,'only-%s' % student,stayWeight,treeOptions,useWeka)
 
 if __name__ == '__main__':
   import sys

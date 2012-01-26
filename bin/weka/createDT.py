@@ -30,7 +30,7 @@ def extractTree(arffFile,inFile,outFile):
     f.writelines(prefix+lines[startInd:endInd])
 
 def weightTree(inFile,dataFile,outFile):
-  cmd = [os.path.join(BIN_PATH,'addWeights%s' % getArch()),inFile,dataFile]
+  cmd = [os.path.join('bin',str(getArch()),'addWeights'),inFile,dataFile]
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
 def buildDT(dataFile,outFile,options):
