@@ -2,10 +2,10 @@
 
 import os
 from createDT import main as createDT
-from common import getStudents, getFilename, TRAIN
+from common import getUniqueStudents, getFilename, TRAIN
 
 def main(basename,stayWeight,treeOptions,useWeka):
-  students = getStudents()
+  students = getUniqueStudents()
   
   for student in students:
     print '-------------------'

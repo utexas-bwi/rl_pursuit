@@ -3,7 +3,7 @@
 import os, sys, tempfile, multiprocessing
 from copy import copy
 from createDT import main as createDT
-from common import getStudents
+from common import getUniqueStudents
 
 def process(dataBasename,name,lines,stayWeight,treeOptions,useWeka):
   fd,filename = tempfile.mkstemp('.arff')
@@ -27,7 +27,7 @@ def readFile(studentFile):
 
 def main(dataBasename,stayWeight,outliers,treeOptions,useWeka):
   # get the students
-  students = getStudents()
+  students = getUniqueStudents()
   
   dataDir = os.path.join('data','dt-train',dataBasename)
   # get the filenames
