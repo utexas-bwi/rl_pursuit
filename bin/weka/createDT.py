@@ -34,7 +34,7 @@ def weightTree(inFile,dataFile,outFile):
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
 def buildDT(dataFile,outFile,options):
-  cmd = [os.path.join('bin','buildDT%s' % getArch()),dataFile] + options
+  cmd = [os.path.join('bin',str(getArch()),'buildDT'),dataFile] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
 def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False):

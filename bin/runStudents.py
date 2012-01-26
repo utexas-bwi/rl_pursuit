@@ -23,11 +23,11 @@ def combineARFFs(inFiles,outFile):
   out.close()
 
 def main(desc,numTrials,numTrainingSamples):
-  dtTrainDir = 'data/dt-train/%s-%i' % (desc,numTrainingSamples)
+  dtTrainDir = 'data/dt/%s-%i/train' % (desc,numTrainingSamples)
   if not(os.path.exists(dtTrainDir)):
-    os.mkdir(dtTrainDir)
+    os.makedirs(dtTrainDir)
 
-  with open('data/students.txt','r') as f:
+  with open('data/newStudentsComplete.txt','r') as f:
     students = set(f.read().split())
 
   with open('configs/student_output.json','r') as f:
