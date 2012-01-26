@@ -4,7 +4,8 @@ import numpy, os
 
 BASE_DIR = os.path.join('data','dt')
 BIN_PATH = os.path.join('bin','weka')
-DEFAULT_STUDENT_FILENAME = os.path.join('data','students.txt')
+DEFAULT_STUDENT_FILENAME = os.path.join('data','newStudentsComplete.txt')
+#DEFAULT_STUDENT_FILENAME = os.path.join('data','students.txt')
 
 # filetypes
 TRAIN      = 0
