@@ -39,7 +39,7 @@ public class WekaBridge {
       init(memSegName,trainData.numAttributes(),trainData.numClasses());
       // create the classifier
       classifier = (Classifier)Utils.forName(Classifier.class,classifierName,opts);
-      classifier.buildClassifier(trainData);
+      //classifier.buildClassifier(trainData);
       // wait for commands
       while (true) {
         double[] features = new double[trainData.numAttributes()];
@@ -65,7 +65,7 @@ public class WekaBridge {
             break;
           case 'a':
             inst = new DenseInstance(weight[0],features);
-            //System.out.format("ADDING: %s {%f}%n",inst.toString(),inst.weight());
+            //System.err.format("ADDING: %s {%f}%n",inst.toString(),inst.weight());
             //System.out.format("compat: %b%n",trainData.checkInstance(inst));
             //System.out.println(trainData.toString());
             trainData.add(inst);
