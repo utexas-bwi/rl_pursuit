@@ -390,7 +390,7 @@ void DecisionTree::splitData(const InstanceSetPtr &instances, Split &split) cons
 }
 
 void DecisionTree::outputDescription(std::ostream &out) const {
-  //outputHeader(out);
-  //out << std::endl;
+  outputHeader(out);
+  out << std::endl;
   root->output(out,0);
 }
