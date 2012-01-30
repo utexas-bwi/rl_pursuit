@@ -96,23 +96,40 @@ void WekaClassifier::writeInstance(const InstanceConstPtr &instance) {
   
 char** WekaClassifier::splitCommand(const std::string &cmd) {
   std::vector<std::string> cmdVec;
-  bool escaped = false;
-  unsigned int startInd = 0;
+  //std::cout << "splitting cmd: " << cmd << std::endl;
+  //bool escaped = false;
+  bool quoted = false;
+  //unsigned int startInd = 0;
+  std::string str;
   for (unsigned int i = 0; i < cmd.size(); i++) {
-    if (escaped) {
-      escaped = false;
-    } else if (cmd[i] == '\\') {
-      escaped = true;
-      continue;
-    } else if (cmd[i] == ' ') {
-      if (startInd != i) { // not just spaces
-        cmdVec.push_back(cmd.substr(startInd,i-startInd));
+    //if (escaped) {
+      //escaped = false;
+    //} else if (cmd[i] == '\\') {
+      //escaped = true;
+      //continue;
+    //} else if (cmd[i] == '"') {
+      //quoted = !quoted;
+    //} else if ((cmd[i] == ' ') && !quoted) {
+      //if (!str.empty()) { // not just spaces
+        //cmdVec.push_back(str);
+      //}
+      //str.clear();
+    //}
+    if (cmd[i] == '"') {
+      quoted = !quoted;
+    } else if ((cmd[i] == ' ') && !quoted) {
+      if (!str.empty()) { // not just spaces
+        cmdVec.push_back(str);
       }
-      startInd = i + 1;
+      str.clear();
+    } else {
+      str += cmd[i];
     }
   }
-  if (startInd != cmd.size())
-    cmdVec.push_back(cmd.substr(startInd,cmd.size() - startInd));
+  //if (startInd != cmd.size())
+    //cmdVec.push_back(cmd.substr(startInd,cmd.size() - startInd));
+  if (!str.empty())
+    cmdVec.push_back(str);
   char **cmdArr = new char* [cmdVec.size() + 1]; // + 1 for NULL
   for (unsigned int i = 0; i < cmdVec.size(); i++) {
     cmdArr[i] = new char[cmdVec[i].size()+1];

@@ -12,6 +12,7 @@ public class WekaBridge {
   static private native void init(String memSegName, int numFeatures, int numClasses);
   static private native byte readCommand(double[] features,double[] weight);
   static private native void writeDistr(double[] distr);
+  static private native void send();
 
 
   static {
@@ -25,8 +26,9 @@ public class WekaBridge {
       String dataName = argv[1];
       String classifierName = argv[2];
       String[] opts = new String[argv.length-3];
-      for (int i = 0; i < opts.length; i++)
+      for (int i = 0; i < opts.length; i++) {
         opts[i] = argv[i+3];
+      }
 
       weka.core.WekaPackageManager.loadPackages(false, false);
       // get the data groups set up
@@ -73,7 +75,9 @@ public class WekaBridge {
             break;
           case 'p':
             System.out.println(classifier.toString());
+            break;
         }
+        send();
       }
 
 /*

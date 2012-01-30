@@ -34,11 +34,11 @@ JNIEXPORT jbyte JNICALL Java_WekaBridge_readCommand (JNIEnv *env, jclass , jdoub
   //std::cout << "java received " << cmd << std::endl;
   double *arr;
   switch(cmd) {
-    case 'p':
-    case 't':
-      *(comm->cmd) = '\0';
-      comm->send();
-      break;
+    //case 'p':
+    //case 't':
+      //*(comm->cmd) = '\0';
+      //comm->send();
+      //break;
     case 'c':
     case 'a':
       arr = env->GetDoubleArrayElements(features,NULL);
@@ -50,9 +50,9 @@ JNIEXPORT jbyte JNICALL Java_WekaBridge_readCommand (JNIEnv *env, jclass , jdoub
       arr[0] = *(comm->weight);
       env->ReleaseDoubleArrayElements(weight, arr, 0);
 
-      if (cmd != 'c')
-        *(comm->cmd) = '\0';
-        comm->send();
+      //if (cmd != 'c')
+        //*(comm->cmd) = '\0';
+        //comm->send();
       // don't send for classify until we've written the results
       break;
     default:
@@ -70,6 +70,10 @@ JNIEXPORT void JNICALL Java_WekaBridge_writeDistr (JNIEnv *env, jclass obj, jdou
   for (unsigned int i = 0; i < NUM_CLASSES; i++)
     comm->classes[i] = arr[i];
   env->ReleaseDoubleArrayElements(distr, arr, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL Java_WekaBridge_send (JNIEnv *env, jclass obj) {
   *(comm->cmd) = '\0';
   comm->send();
 }
