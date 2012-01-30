@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-import os
 from createDT import main as createDT
 from common import getUniqueStudents, getFilename, TRAIN
 
-def main(basename,stayWeight,treeOptions,useWeka):
+def main(basename,stayWeight,treeOptions,useWeka,studentInd):
   students = getUniqueStudents()
   
-  for student in students:
+  for i,student in enumerate(students):
+    if studentInd is not None:
+      if i != studentInd:
+        continue
     print '-------------------'
     print student
     print '-------------------'
@@ -16,12 +18,17 @@ def main(basename,stayWeight,treeOptions,useWeka):
 
 if __name__ == '__main__':
   import sys
-  usage = 'Usage: createStudentDTs.py basename [--weka] [treeOptions ...]'
+  usage = 'Usage: createStudentDTs.py basename [--weka] [-s studentInd] [treeOptions ...]'
   args = sys.argv[1:]
   useWeka = False
+  studentInd = None
   if '--weka' in args:
     args.remove('--weka')
     useWeka = True
+  if '-s' in args:
+    ind = args.index('-s')
+    studentInd = int(args[ind+1])
+    args = args[:ind] + args[ind+2:]
   if len(args) < 1:
     print usage
     sys.exit(1)
@@ -31,4 +38,4 @@ if __name__ == '__main__':
   basename = args[0]
   stayWeight = None
   treeOptions = args[1:]
-  main(basename ,stayWeight,treeOptions,useWeka)
+  main(basename ,stayWeight,treeOptions,useWeka,studentInd)
