@@ -34,7 +34,10 @@ int main(int argc, const char *argv[]) {
     InstancePtr instance = testReader.next();
     classifier->addData(instance);
   }
+  double startTime = getTime();
   classifier->train(false);
+  double trainingTime = getTime() - startTime;
+  std::cout << "Training time: " << trainingTime << std::endl;
   
   std::cout << "------------------------------------------" << std::endl;
   std::cout << *classifier << std::endl;
@@ -65,6 +68,7 @@ int main(int argc, const char *argv[]) {
   std::cout << "Testing Insts: " << count << std::endl;
   std::cout << "Frac  Correct: " << correct << "(" << correct / count << ")" << std::endl;
   std::cout << "Num   Correct: " << correctCount << "(" << correctCount / (float)count << ")" << std::endl;
+  std::cout << "Training time: " << trainingTime << std::endl;
 
   return 0;
 }
