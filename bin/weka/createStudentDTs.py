@@ -18,15 +18,15 @@ def main(basename,stayWeight,treeOptions,useWeka,studentInd):
 
 if __name__ == '__main__':
   import sys
-  usage = 'Usage: createStudentDTs.py basename [--weka] [-s studentInd] [treeOptions ...]'
+  usage = 'Usage: createStudentDTs.py basename [--weka] [--only studentInd] [treeOptions ...]'
   args = sys.argv[1:]
   useWeka = False
   studentInd = None
   if '--weka' in args:
     args.remove('--weka')
     useWeka = True
-  if '-s' in args:
-    ind = args.index('-s')
+  if '--only' in args:
+    ind = args.index('--only')
     studentInd = int(args[ind+1])
     args = args[:ind] + args[ind+2:]
   if len(args) < 1:
