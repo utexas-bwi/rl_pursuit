@@ -49,9 +49,9 @@ std::string PredatorClassifier::generateDescription() {
     msg += " with training period " + boost::lexical_cast<std::string>(trainingPeriod);
   else
     msg += " with no online training";
-  std::stringstream ss;
-  classifier->outputDescription(ss);
-  msg += "\n" + ss.str();
+  //std::stringstream ss;
+  //classifier->outputDescription(ss);
+  //msg += "\n" + ss.str();
   return msg;
 }
 
