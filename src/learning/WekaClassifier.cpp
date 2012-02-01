@@ -15,11 +15,13 @@ Modified: 2011-12-26
 #include <boost/lexical_cast.hpp>
 
 const std::string WekaClassifier::WEKA_CMD = std::string("java -DWEKA_HOME=./bin/weka/wekafiles -Djava.library.path=bin/") + COMPILE_ARCH + " -Xmx2G -cp bin/weka:bin/weka/weka.jar WekaBridge";
+int WekaClassifier::classifierCount = 0;
 
 WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts) :
   Classifier(features,caching)
 {
-  memSegName = "WEKA_BRIDGE_" + boost::lexical_cast<std::string>(getpid());
+  classifierCount++;
+  memSegName = "WEKA_BRIDGE_" + boost::lexical_cast<std::string>(getpid()) + "_" + boost::lexical_cast<std::string>(classifierCount);
   comm = boost::shared_ptr<Communicator>(new Communicator(memSegName,true,features.size(),numClasses));
   // fork you
   pid = fork();

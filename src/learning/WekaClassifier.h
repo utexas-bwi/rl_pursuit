@@ -37,6 +37,8 @@ private:
   
   std::string memSegName;
   boost::shared_ptr<Communicator> comm;
+  
+  static int classifierCount;
 };
 
 #endif /* end of include guard: WEKACLASSIFIER_L3XSCUUE */
