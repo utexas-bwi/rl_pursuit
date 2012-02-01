@@ -52,6 +52,7 @@ public:
 
 private:
   float probs[Action::NUM_MOVES];
+  friend std::ostream& operator<<(std::ostream &out, const ActionProbs &action);
 };
 
 Point2D wrapPoint(const Point2D &dims, Point2D pos);

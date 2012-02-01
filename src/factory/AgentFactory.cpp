@@ -6,6 +6,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <controller/AgentPerturbation.h>
 #include <controller/AgentRandom.h>
 #include <controller/AgentDummy.h>
 #include <controller/PredatorClassifier.h>
@@ -105,8 +106,26 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
   else if (NAME_IN_SET("dummy")) {
     Action::Type action = (Action::Type)options.get("action",Action::NOOP).asInt();
     return ptr(new AgentDummy(rng,dims,action));
-  }
-  else if (NAME_IN_SET("mixed")) {
+  } else if (NAME_IN_SET("perturb","perturbation")) {
+    AgentPerturbation::Perturbation perturbation;
+    std::string type = options.get("type","").asString();
+    if (type == "noop")
+      perturbation.type = AgentPerturbation::NOOP;
+    else if (nameInSet(type,"rand","random",NULL))
+      perturbation.type = AgentPerturbation::RANDOM;
+    else {
+      std::cerr << "createAgent: ERROR: Unknown perturbation type: " << type << std::endl;
+      exit(56);
+    }
+    perturbation.amount = options.get("amount",-1).asDouble();
+    if ((perturbation.amount < 0) || (perturbation.amount > 1.0)) {
+      std::cerr << "createAgent: ERROR: Invalid perturbation amount: " << perturbation.amount << std::endl;
+      exit(57);
+    }
+    std::string baseAgentName = options.get("base","").asString();
+    ptr origAgent = createAgent(rng,dims,baseAgentName,trialNum,predatorInd,options["baseOptions"],rootOptions,baseAgent);
+    return ptr(new AgentPerturbation(rng,dims,origAgent,perturbation));
+  } else if (NAME_IN_SET("mixed")) {
     Json::Value types = options["types"];
     std::string typeName;
     if (types.size() > 0) {

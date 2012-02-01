@@ -78,6 +78,17 @@ Action::Type ActionProbs::maxAction() {
   return (Action::Type)maxAction;
 }
 
+std::ostream& operator<<(std::ostream &out, const ActionProbs &action) {
+  out << "ActionProbs(";
+  for (int i = 0; i < Action::NUM_MOVES; i++) {
+    if (i != 0)
+      out << ",";
+    out << action.probs[i];
+  }
+  out << ")";
+  return out;
+}
+
 Point2D wrapPoint(const Point2D &dims, Point2D pos) {
   while (pos.x > dims.x)
     pos.x -= dims.x;

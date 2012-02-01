@@ -269,7 +269,7 @@ void replaceOptsTrial(Json::Value &options, unsigned int trialNum) {
   std::map<std::string,std::string> reps;
   reps["$(TRIALNUM)"] = boost::lexical_cast<std::string>(trialNum);
   Json::Value const &val = options["predatorOptions"];
-  if (!val.isNull()) {
+  if (!val.isNull() && !val["student"].isNull()) {
     std::string student = getStudentForTrial(trialNum,val);
     reps["$(STUDENT)"] = student;
   }
