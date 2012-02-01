@@ -23,7 +23,7 @@ public:
   void restart();
   std::string generateDescription();
   void learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind);
-  void minimalStep(const Observation &obs);
+  //void minimalStep(const Observation &obs);
   
   PredatorClassifier* clone() {
     return new PredatorClassifier(*this);

@@ -28,7 +28,7 @@ public:
   virtual std::string generateLongDescription(unsigned int indentation = 0);
   virtual Agent* clone() = 0;
   virtual void learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind);
-  virtual void minimalStep(const Observation &/*obs*/) {}
+  //virtual void minimalStep(const Observation &[>obs<]) {}
 
 protected:
   boost::shared_ptr<RNG> rng;

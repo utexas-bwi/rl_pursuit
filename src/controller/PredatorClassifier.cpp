@@ -78,6 +78,6 @@ void PredatorClassifier::learn(const Observation &prevObs, const Observation &cu
     //std::cout << "*************************************" << std::endl;
 }
   
-void PredatorClassifier::minimalStep(const Observation &obs) {
-  featureExtractor.updateHistory(obs,stepHistory);
-}
+//void PredatorClassifier::minimalStep(const Observation &obs) {
+  //featureExtractor.updateHistory(obs,stepHistory);
+//}
