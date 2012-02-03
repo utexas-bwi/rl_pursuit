@@ -144,6 +144,13 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     boost::shared_ptr<std::ostream> out(new std::ofstream(modelOutput.c_str()));
     ptr->enableOutput(out);
   }
+  // optionally enable precision output
+  std::string modelPrecisionOutput = options.get("modelPrecisionOutputFile","").asString();
+  if (modelOutput != "") {
+    std::cout << "ENABLING PRECISION OUTPUT: " << modelPrecisionOutput << std::endl;
+    boost::shared_ptr<std::ostream> outPrecision(new std::ofstream(modelPrecisionOutput.c_str()));
+    ptr->enablePrecisionOutput(outPrecision);
+  }
   return ptr;
 }
 

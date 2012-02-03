@@ -251,10 +251,12 @@ void World::getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr ag
   }
 }
 
-double World::getOutcomeProbApprox(Observation prevObs, const Observation &currentObs) { //, std::vector<boost::shared_ptr<Agent> > &agents) {
+double World::getOutcomeProbApprox(Observation prevObs, const Observation &currentObs, std::vector<double> &agentProbs) { //, std::vector<boost::shared_ptr<Agent> > &agents) {
   double modelProb = 1.0;
   ActionProbs actionProbs;
   Point2D requestedPosition;
+
+  agentProbs.resize(agents.size());
   
   Observation absPrevObs(prevObs);
   Observation absCurrentObs(currentObs);
@@ -270,7 +272,9 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
 
     actionProbs = getAgentAction(agentInd,agents[agentInd],prevObs);
     assert(actionProbs.checkTotal());
-    double agentProb = 0.0;
+    //double agentProb = 0.0;
+    double &agentProb = agentProbs[agentInd];
+    agentProb = 0.0;
     for (unsigned int action = 0; action < Action::NUM_ACTIONS; action++) {
       double prob = actionProbs[(Action::Type)action];
       if (prob == 0)

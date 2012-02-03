@@ -22,8 +22,8 @@ ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vect
 void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
   //std::cout << "  " << prevObs << " " << lastAction << std::endl;
   //std::cout << "  " << currentObs << std::endl;
-  // done if we're down to 1 model
-  if (models.size() == 1)
+  // done if we're down to 1 model and not outputting the precision of models
+  if ((models.size() == 1) && (precisionOutputStream.get() == NULL))
     return;
   // done if we're not doing updates
   if (modelUpdateType == NO_MODEL_UPDATES)
@@ -85,6 +85,8 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
   double modelProb;
   double loss;
   double eta = 0.5; // eta must be <= 0.5
+  if (precisionOutputStream.get() != NULL)
+    (*precisionOutputStream) << "-----" << std::endl;
   for (unsigned int i = 0; i < models.size(); i++) {
     modelProb = calculateModelProb(i,prevObs,lastAction,currentObs);
     switch(modelUpdateType) {
@@ -107,7 +109,16 @@ double ModelUpdaterBayes::calculateModelProb(unsigned int modelInd, const Observ
   //boost::shared_ptr<WorldMDP> mdp = models[modelInd].mdp;
   //(*(models[modelInd].mdp));
   //mdp->setAgents(model);
-  double prob = mdp->getOutcomeProb(prevObs,lastAction,currentObs);
+  std::vector<double> agentProbs;
+  double prob = mdp->getOutcomeProb(prevObs,lastAction,currentObs,agentProbs);
+  if (precisionOutputStream.get() != NULL) {
+    std::ostream &out = *precisionOutputStream;
+    out << models[modelInd].description;
+    for (unsigned int i = 0; i < agentProbs.size(); i++) {
+      out << "," << agentProbs[i];
+    }
+    out << std::endl;
+  }
   //std::cout << "    CALCULATE MODEL PROB FOR " << modelInd << " = " << prob << std::endl;
   return prob;
 }

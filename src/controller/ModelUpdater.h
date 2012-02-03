@@ -46,6 +46,9 @@ public:
   void enableOutput(const boost::shared_ptr<std::ostream> &outputStream);
   void disableOutput();
   void output();
+  
+  void enablePrecisionOutput(const boost::shared_ptr<std::ostream> &outputStream);
+  void disablePrecisionOutput();
 
 protected:
   virtual unsigned int selectModelInd(const State_t &state) = 0;
@@ -57,6 +60,7 @@ protected:
   std::vector<ModelInfo> models;
   std::vector<bool> modelStillUsed;
   boost::shared_ptr<std::ostream> outputStream;
+  boost::shared_ptr<std::ostream> precisionOutputStream;
 };
 
 #endif /* end of include guard: MODELUPDATER_82ED5P8 */

@@ -96,9 +96,9 @@ void WorldMDP::loadAgents() {
   setAgents(savedModel);
 }
 */
-double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs) { //,std::vector<boost::shared_ptr<Agent> > &agents) {
+double WorldMDP::getOutcomeProb(const Observation &prevObs, Action::Type adhocAction, const Observation &currentObs, std::vector<double> &agentProbs) {
   adhocAgent->setAction(adhocAction);
-  double probApprox = controller->getOutcomeProbApprox(prevObs,currentObs);//,agents);
+  double probApprox = controller->getOutcomeProbApprox(prevObs,currentObs,agentProbs);
   //double probExact = controller->getOutcomeProb(prevObs,currentObs);
   //std::cout << "probs: " << probApprox << " " << probExact << std::endl;
   return probApprox;

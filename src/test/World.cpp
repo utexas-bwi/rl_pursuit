@@ -42,7 +42,8 @@ public:
       agents[i]->setAction(actions[i]);
     }
     prevObs.preyInd = currentObs.preyInd = 0;
-    return world->getOutcomeProbApprox(prevObs,currentObs);//,abstractAgents);
+    std::vector<double> agentProbs;
+    return world->getOutcomeProbApprox(prevObs,currentObs,agentProbs);//,abstractAgents);
   }
 
 protected:

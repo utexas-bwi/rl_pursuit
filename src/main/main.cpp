@@ -92,7 +92,6 @@ int main(int argc, const char *argv[])
   std::string saveFilename = options["save"].get("results","").asString();
   bool saveResultsQ = (saveFilename != "");
   bool randomizeSeedQ = options.get("randomizeSeed",false).asBool();
-  bool testPredictionAccuracyQ = options.get("testPredictionAccuracy",false).asBool();
 
   // get the output DT information
   unsigned int outputDTSteps = options["verbosity"].get("dtsteps",0).asUInt();
@@ -127,11 +126,9 @@ int main(int argc, const char *argv[])
     if (trial == 0) {
       if (displayDescriptionQ)
         std::cout << world->generateDescription() << std::endl;
-      // set up the actions if required
-      if (outputDTCSVQ || testPredictionAccuracyQ) {
-        actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
-      }
       if (outputDTCSVQ) {
+        // set up the actions
+        actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
         // create models for the DT csv output if required
         std::vector<std::string> modelNames;
         //modelNames.push_back("GR");
@@ -168,16 +165,11 @@ int main(int argc, const char *argv[])
           std::cerr << "TRIAL " << trial << " EPISODE " << episode << " TOO LONG" << std::endl;
           break;
         }
-        //double t = getTime();
         if (displayObsQ) {
           world->generateObservation(obs);
-          //std::cout << obs << " " << getTime() - t << std::endl;
           std::cout << obs << std::endl;
         }
         world->step(actions);
-        //if (testPredictionAccuracyQ) {
-          //world->testPredictionAccuracy(actions);
-        //}
         if (outputDTCSVQ){
           world->generateObservation(obs);  // should follow world->step so that we can extract the observed actions of the previous step
           outputDT->saveStep(trial,numSteps[trial][episode],obs,*actions);
@@ -185,7 +177,6 @@ int main(int argc, const char *argv[])
       } // while the episode lasts
       if (displayObsQ) {
         world->generateObservation(obs);
-        //std::cout << obs << " " << getTime() - t << std::endl;
         std::cout << obs << std::endl;
       }
       if (displayStepsPerEpisodeQ)

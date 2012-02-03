@@ -9,7 +9,7 @@ File: World.h
 Author: Samuel Barrett
 Description: the controller for the world
 Created:  2011-08-22
-Modified: 2011-10-27
+Modified: 2012-02-02
 */
 
 #include <boost/shared_ptr.hpp>
@@ -53,7 +53,7 @@ public:
 
   std::string generateDescription(unsigned int indentation = 0);
   double getOutcomeProb(Observation prevObs,const Observation &currentObs);
-  double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs);//, std::vector<boost::shared_ptr<Agent> > &agents);
+  double getOutcomeProbApprox(Observation prevObs,const Observation &currentObs, std::vector<double> &agentProbs);//, std::vector<boost::shared_ptr<Agent> > &agents);
   void getPossibleOutcomesApprox(std::vector<AgentPtr> &agents, AgentPtr agentDummy, std::vector<std::vector<WorldStepOutcome> > &outcomesByAction);
   void printAgents();
   
@@ -64,6 +64,8 @@ public:
     //actionCache = boost::shared_ptr<ActionCache>(new ActionCache());
   //}
   void learnControllers(const Observation &prevObs, const Observation &currentObs);
+
+  void testPredictionAccuracy(boost::shared_ptr<std::vector<Action::Type> > actions);
 
 protected:
   boost::shared_ptr<RNG> rng;

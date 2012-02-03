@@ -172,3 +172,11 @@ void ModelUpdater::output() {
   out << "}";
   out << std::endl;
 }
+
+void ModelUpdater::enablePrecisionOutput(const boost::shared_ptr<std::ostream> &outputStream) {
+  this->precisionOutputStream = outputStream;
+}
+
+void ModelUpdater::disablePrecisionOutput() {
+  precisionOutputStream.reset();
+}
