@@ -78,7 +78,7 @@ void OutputDT::saveStep(unsigned int trialNum, unsigned int numSteps, const Obse
   if (useDesiredActions)
     assert(desiredActions.size() == obs.positions.size());
 
-  if (numSteps <= 1) {
+  if (numSteps < 1) {
     histories.clear();
     histories.resize(numPredators);
   } else {

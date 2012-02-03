@@ -3,7 +3,7 @@ File: main.cpp
 Author: Samuel Barrett
 Description: tests using json for creating the world
 Created:  2011-08-24
-Modified: 2011-08-24
+Modified: 2012-02-02
 */
 
 #include <string>
@@ -92,6 +92,7 @@ int main(int argc, const char *argv[])
   std::string saveFilename = options["save"].get("results","").asString();
   bool saveResultsQ = (saveFilename != "");
   bool randomizeSeedQ = options.get("randomizeSeed",false).asBool();
+  bool testPredictionAccuracyQ = options.get("testPredictionAccuracy",false).asBool();
 
   // get the output DT information
   unsigned int outputDTSteps = options["verbosity"].get("dtsteps",0).asUInt();
@@ -122,18 +123,26 @@ int main(int argc, const char *argv[])
     boost::shared_ptr<World> world = createWorldAgents(randomSeed,trialNum,trialOptions);
     boost::shared_ptr<const WorldModel> model = world->getModel();
 
-    // create models for the DT csv output if required
-    std::vector<std::string> modelNames;
-    if (outputDTCSVQ) {
-      if (trial == 0) {
+    // INITIALIZATION
+    if (trial == 0) {
+      if (displayDescriptionQ)
+        std::cout << world->generateDescription() << std::endl;
+      // set up the actions if required
+      if (outputDTCSVQ || testPredictionAccuracyQ) {
+        actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
+      }
+      if (outputDTCSVQ) {
+        // create models for the DT csv output if required
+        std::vector<std::string> modelNames;
         //modelNames.push_back("GR");
         //modelNames.push_back("TA");
         //modelNames.push_back("GP");
         //modelNames.push_back("PD");
         outputDT = boost::shared_ptr<OutputDT>(new OutputDT(outputDTFilename,model->getDims(),model->getNumAgents()-1,modelNames,true,false,outputDTSteps));
-        actions = boost::shared_ptr<std::vector<Action::Type> >(new std::vector<Action::Type>(model->getNumAgents()));
       }
+    }
 
+    if (outputDTCSVQ) {
       if (outputDT->hasCollectedSufficientData()) {
         std::cout << "WARNING: collected sufficient data, stopping with " << trial << " trials" << std::endl;
         numSteps.resize(trial);
@@ -141,8 +150,6 @@ int main(int argc, const char *argv[])
       }
     }
     
-    if ((trial == 0) && (displayDescriptionQ))
-      std::cout << world->generateDescription() << std::endl;
     
     if (displayStepsPerTrialQ)
       std::cout << "trial " << std::setw(2) << trialNum << ": " << std::flush;
@@ -150,6 +157,11 @@ int main(int argc, const char *argv[])
     for (unsigned int episode = 0; episode < numEpisodes; episode++) {
       world->randomizePositions();
       world->restartAgents();
+      if (outputDTCSVQ) {
+        // for the first step, add the observation, since it keeps a history of 1
+        world->generateObservation(obs);
+        outputDT->saveStep(trial,numSteps[trial][episode],obs,*actions);
+      }
       while (!model->isPreyCaptured()) {
         numSteps[trial][episode]++;
         if (numSteps[trial][episode] > 10000) {
@@ -163,10 +175,13 @@ int main(int argc, const char *argv[])
           std::cout << obs << std::endl;
         }
         world->step(actions);
-        if (outputDTCSVQ) {
-          world->generateObservation(obs);
+        //if (testPredictionAccuracyQ) {
+          //world->testPredictionAccuracy(actions);
+        //}
+        if (outputDTCSVQ){
+          world->generateObservation(obs);  // should follow world->step so that we can extract the observed actions of the previous step
           outputDT->saveStep(trial,numSteps[trial][episode],obs,*actions);
-        } // end output dt csv
+        }
       } // while the episode lasts
       if (displayObsQ) {
         world->generateObservation(obs);
