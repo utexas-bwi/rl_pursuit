@@ -119,7 +119,7 @@ void getPerturbationFromFile(unsigned int trialNum, int predatorInd, const std::
     for (unsigned int j = 0; j < NUM_PREDATORS; j++) {
       in >> typeStr;
       in >> amount;
-      std::cout << typeStr << " " << amount << std::endl;
+      //std::cout << typeStr << " " << amount << std::endl;
       if (!in.good()) {
         std::cerr << "getPerturbation: ERROR: file ended too soon for: " << filename << " " << trialNum << " " << predatorInd << std::endl;
         exit(58);
