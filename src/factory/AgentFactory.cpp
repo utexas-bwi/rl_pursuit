@@ -87,6 +87,55 @@ void getAvailableStudents(const std::string &filename, std::set<std::string> &st
   in.close();
 }
 
+AgentPerturbation::Perturbation getPerturbation(unsigned int trialNum, int predatorInd, const Json::Value &options) {
+  AgentPerturbation::Perturbation perturbation;
+  std::string type;
+  std::string filename = options.get("filename","").asString();
+  if (filename.size() > 0) {
+    getPerturbationFromFile(trialNum,predatorInd,filename,perturbation.amount,type);
+  } else {
+    type = options.get("type","").asString();
+    perturbation.amount = options.get("amount",-1).asDouble();
+  }
+  if (type == "noop")
+    perturbation.type = AgentPerturbation::NOOP;
+  else if (nameInSet(type,"rand","random",NULL))
+    perturbation.type = AgentPerturbation::RANDOM;
+  else {
+    std::cerr << "getPerturbation: ERROR: Unknown perturbation type: " << type << std::endl;
+    exit(56);
+  }
+  if ((perturbation.amount < 0) || (perturbation.amount > 1.0)) {
+    std::cerr << "getPerturbation: ERROR: Invalid perturbation amount: " << perturbation.amount << std::endl;
+    exit(57);
+  }
+  return perturbation;
+}
+
+void getPerturbationFromFile(unsigned int trialNum, int predatorInd, const std::string &filename, float &amount, std::string &typeStr) {
+  std::ifstream in(filename.c_str());
+  unsigned int NUM_PREDATORS = 4;
+  for (unsigned int i = 0; i < trialNum + 1; i++) {
+    for (unsigned int j = 0; j < NUM_PREDATORS; j++) {
+      in >> typeStr;
+      in >> amount;
+      std::cout << typeStr << " " << amount << std::endl;
+      if (!in.good()) {
+        std::cerr << "getPerturbation: ERROR: file ended too soon for: " << filename << " " << trialNum << " " << predatorInd << std::endl;
+        exit(58);
+      }
+      if ((int)j == predatorInd) {
+        in.close();
+        return;
+      }
+    }
+  }
+  in.close();
+
+  std::cerr << "getPerturbationFromFile: ERROR: HOW DID I GET HERE: " << filename << " " << trialNum << " " << predatorInd << std::endl;
+  exit(59);
+}
+
 boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent) {
   typedef boost::shared_ptr<Agent> ptr;
   
@@ -107,21 +156,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     Action::Type action = (Action::Type)options.get("action",Action::NOOP).asInt();
     return ptr(new AgentDummy(rng,dims,action));
   } else if (NAME_IN_SET("perturb","perturbation")) {
-    AgentPerturbation::Perturbation perturbation;
-    std::string type = options.get("type","").asString();
-    if (type == "noop")
-      perturbation.type = AgentPerturbation::NOOP;
-    else if (nameInSet(type,"rand","random",NULL))
-      perturbation.type = AgentPerturbation::RANDOM;
-    else {
-      std::cerr << "createAgent: ERROR: Unknown perturbation type: " << type << std::endl;
-      exit(56);
-    }
-    perturbation.amount = options.get("amount",-1).asDouble();
-    if ((perturbation.amount < 0) || (perturbation.amount > 1.0)) {
-      std::cerr << "createAgent: ERROR: Invalid perturbation amount: " << perturbation.amount << std::endl;
-      exit(57);
-    }
+    AgentPerturbation::Perturbation perturbation = getPerturbation(trialNum,predatorInd,options);
     std::string baseAgentName = options.get("base","").asString();
     ptr origAgent = createAgent(rng,dims,baseAgentName,trialNum,predatorInd,options["baseOptions"],rootOptions,baseAgent);
     return ptr(new AgentPerturbation(rng,dims,origAgent,perturbation));
