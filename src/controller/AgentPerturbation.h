@@ -30,9 +30,7 @@ public:
   std::string generateDescription();
   std::string generateLongDescription(unsigned int indentation = 0);
 
-  AgentPerturbation* clone() {
-    return new AgentPerturbation(*this);
-  }
+  AgentPerturbation* clone();
 
   void learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind);
 

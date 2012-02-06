@@ -51,6 +51,12 @@ std::string AgentPerturbation::generateDescription() {
 std::string AgentPerturbation::generateLongDescription(unsigned int indentation) {
   return indent(indentation) + generatePrefix() + "\n" + agent->generateLongDescription(indentation + 1);
 }
+  
+AgentPerturbation* AgentPerturbation::clone() {
+  AgentPerturbation *copy = new AgentPerturbation(*this);
+  copy->agent = boost::shared_ptr<Agent>(agent->clone());
+  return copy;
+}
 
 void AgentPerturbation::learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind) {
   agent->learn(prevObs,currentObs,ind);
