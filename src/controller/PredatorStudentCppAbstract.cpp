@@ -49,14 +49,14 @@ void PredatorStudentCppAbstract::differenceToPosition(int pos1[2], int pos2[2], 
 
 void PredatorStudentCppAbstract::projectPosition(int pos[2]) {
   for (int i = 0; i < 2; i++) {
-    if (pos[i] > dims[i])
+    if (pos[i] >= dims[i])
       pos[i] -= dims[i];
     else if (pos[i] < 0)
       pos[i] += dims[i];
   }
 }
 
-void PredatorStudentCppAbstract::movePosition(int pos[2], int move[2], int result[2]) {
+void PredatorStudentCppAbstract::movePosition(const int pos[2], const int move[2], int result[2]) {
   for (int i = 0; i < 2; i++)
     result[i] = pos[i] + move[i];
   projectPosition(result);

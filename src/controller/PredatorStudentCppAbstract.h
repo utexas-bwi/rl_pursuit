@@ -24,7 +24,7 @@ public:
 
   void differenceToPosition(int pos1[2], int pos2[2], int diff[2]); // calculates the difference (dx,dy) between points, taking the torus into account, putting the result in diff
   void projectPosition(int pos[2]); // moves the position into the grid by wrapping around the torus
-  void movePosition(int pos[2], int move[2], int result[2]); // applies a move to a position, wrapping around the torus, putting the result in result
+  void movePosition(const int pos[2], const int move[2], int result[2]); // applies a move to a position, wrapping around the torus, putting the result in result
 };
 
 #endif /* end of include guard: PREDATOR_ONRMEGUW */
