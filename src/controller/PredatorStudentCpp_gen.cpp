@@ -10,6 +10,7 @@
 #include <studentAgents/agents/yosef_digilov/Predator.h>
 #include <studentAgents/agents/yura_last/Predator.h>
 #include <studentAgents/agentsNew/AyalWeissman/cppPredator/MyPredator.h>
+#include <studentAgents/agentsNew/BorisKodel/cppPredator/MyPredator.h>
 #include <studentAgents/agentsNew/DrorBanin/cppPredator/MyPredator.h>
 #include <studentAgents/agentsNew/EranTwili/cppPredator/MyPredator.h>
 #include <studentAgents/agentsNew/ItaiSchwartz/cppPredator/MyPredator.h>
@@ -42,6 +43,8 @@ bool PredatorStudentCpp::handlesStudent(const std::string &name) {
   if (name == "yura_last")
     return true;
   if (name == "AyalWeissman")
+    return true;
+  if (name == "BorisKodel")
     return true;
   if (name == "DrorBanin")
     return true;
@@ -269,6 +272,24 @@ void PredatorStudentCpp::createPredator(const std::string &name, unsigned int pr
     }
     else if (predatorInd == 3) {
       predatorNew = boost::shared_ptr<PredatorStudentCppAbstract>(new STUDENT_PREDATOR_AyalWeissman::MyPredator(dims));
+      return;
+    }
+  }
+  else if (name == "BorisKodel") {
+    if (predatorInd == 0) {
+      predatorNew = boost::shared_ptr<PredatorStudentCppAbstract>(new STUDENT_PREDATOR_BorisKodel::MyPredator(dims));
+      return;
+    }
+    else if (predatorInd == 1) {
+      predatorNew = boost::shared_ptr<PredatorStudentCppAbstract>(new STUDENT_PREDATOR_BorisKodel::MyPredator(dims));
+      return;
+    }
+    else if (predatorInd == 2) {
+      predatorNew = boost::shared_ptr<PredatorStudentCppAbstract>(new STUDENT_PREDATOR_BorisKodel::MyPredator(dims));
+      return;
+    }
+    else if (predatorInd == 3) {
+      predatorNew = boost::shared_ptr<PredatorStudentCppAbstract>(new STUDENT_PREDATOR_BorisKodel::MyPredator(dims));
       return;
     }
   }
