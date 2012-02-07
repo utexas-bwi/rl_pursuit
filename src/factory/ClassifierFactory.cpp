@@ -46,6 +46,15 @@ ClassifierPtr createClassifier(const std::string &filename, const Json::Value &o
     ArffReader arff(in);
     in.close();
     features = arff.getFeatureTypes();
+    // remove Trial and Step if they're included
+    unsigned int i = 0;
+    while (i < features.size()) {
+      if ((features[i].name == "Trial") || (features[i].name == "Step")) {
+        features.erase(features.begin() + i);
+      } else {
+        i++;
+      }
+    }
   }
   return createClassifier(filename,dataFilename,features,options);
 }
