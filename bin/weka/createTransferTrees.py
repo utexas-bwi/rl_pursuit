@@ -31,8 +31,8 @@ def main(targetDir,sourceDir,prefix,studentInd):
     print student
     print '-------------------'
     cmd = ['bin/%s/boostTest' % getArch(),jsonFile,student,studentFile,targetDir,sourceDir]
-    descFile = os.path.join(sourceDir,'desc',prefix + '-' + student + '.desc')
-    resultFile = os.path.join(sourceDir,'weighted',prefix + '-' + student + '.weka')
+    descFile = os.path.join(targetDir,'desc',prefix + '-' + student + '.desc')
+    resultFile = os.path.join(targetDir,'weighted',prefix + '-' + student + '.weka')
     subprocess.check_call(cmd,stdout=open(descFile,'w'))
     extractTree(descFile,resultFile)
 
