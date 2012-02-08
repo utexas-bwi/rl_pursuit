@@ -39,7 +39,7 @@ def buildDT(dataFile,outFile,options):
 
 def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False):
   descFile = getFilename(base,name,DESC)
-  unweightedFile = getFilename(base,name,UNWEIGHTED)
+  #unweightedFile = getFilename(base,name,UNWEIGHTED)
   weightedFile = getFilename(base,name,WEIGHTED)
 
   # create the temporary files we need
@@ -54,9 +54,11 @@ def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False):
       print 'Running weka to create initial tree'
       createTree(tmpData,descFile,treeOptions)
       print 'Extracting tree from weka output'
-      extractTree(tmpData,descFile,unweightedFile)
-      print 'Adding class weights to tree'
-      weightTree(unweightedFile,tmpData,weightedFile)
+      # NOTE: changed weka to output class distributions, no longer need to add my own weights
+      extractTree(tmpData,descFile,weightedFile)
+      #extractTree(tmpData,descFile,unweightedFile)
+      #print 'Adding class weights to tree'
+      #weightTree(unweightedFile,tmpData,weightedFile)
     else:
       print 'Running buildDT to create a weighted tree'
       buildDT(tmpData,weightedFile,treeOptions)
