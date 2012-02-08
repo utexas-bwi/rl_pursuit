@@ -59,7 +59,7 @@ if __name__ == '__main__':
     ind = args.index('--only')
     studentInd = int(args[ind+1])
     args = args[:ind] + args[ind+2:]
-  if len(args) != 2:
+  if len(args) != 3:
     print usage
     sys.exit(1)
   targetDir = args[0]
