@@ -13,7 +13,8 @@ def removeTrialStep(inFile,outFile):
   subprocess.check_call(cmd)
 
 def createTree(inFile,outFile,options):
-  cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
+  #cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
+  cmd = wekaCommandPrefix() + ['-Xmx4096m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
 def extractTree(arffFile,inFile,outFile):
