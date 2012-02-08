@@ -35,6 +35,8 @@ void TwoStageTrAdaBoost::outputDescription(std::ostream &out) const {
 }
 
 void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
+  std::cout << "Num Source Instances: " << sourceData.size() << std::endl;
+  std::cout << "Num Target Instances: " << targetData.size() << std::endl;
   if (targetData.size() == 0) {
     std::cout << "WARNING: TwoStageTrAdaBoost training with no target data, just defaulting to the base learner" << std::endl;
     model = baseLearner(features,baseLearnerOptions);
@@ -92,8 +94,10 @@ void TwoStageTrAdaBoost::reweightData(unsigned int t) {
   std::cout << "totalTarget: " << m * targetWeight << "  totalSource: " << n * sourceWeight << std::endl;
   for (unsigned int i = 0; i < sourceData.size(); i++)
     sourceData[i]->weight = sourceWeight;
+  sourceData.weight = n * sourceWeight;
   for (unsigned int i = 0; i < targetData.size(); i++)
     targetData[i]->weight = targetWeight;
+  targetData.weight = m *  targetWeight;
 }
 
 double TwoStageTrAdaBoost::calcError(ClassifierPtr newModel, InstanceSet &data) {
@@ -116,8 +120,11 @@ void TwoStageTrAdaBoost::createFolds(std::vector<InstanceSet> &folds) {
 
 ClassifierPtr TwoStageTrAdaBoost::createModel(int fold, std::vector<InstanceSet> &folds) {
   ClassifierPtr newModel = baseLearner(features,baseLearnerOptions);
-  for (unsigned int i = 0; i < sourceData.size(); i++)
-    newModel->addSourceData(sourceData[i]);
+  if (sourceData.weight > 0) {
+    std::cout << "adding source: " << sourceData.weight << std::endl;
+    for (unsigned int i = 0; i < sourceData.size(); i++)
+      newModel->addSourceData(sourceData[i]);
+  }
   for (unsigned int i = 0; i < numFolds; i++) {
     if ((int)i == fold)
       continue;
