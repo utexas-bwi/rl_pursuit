@@ -1,16 +1,16 @@
 #include <iostream>
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include <gflags/gflags.h>
 #include <factory/ClassifierFactory.h>
 #include <common/Util.h>
 #include <learning/ArffReader.h>
 
-int main(int argc, const char *argv[]) {
-  std::string usage = "Usage: runClassifier optionFile testFile numTrainingInstances";
-  if (argc != 4) {
-    std::cout << usage << std::endl;
-    return 1;
-  }
+DEFINE_bool(train,true,"Train after adding data");
+
+int main(int argc, char *argv[]) {
+  std::string usage = "Usage: runClassifier [options] optionFile testFile numTrainingInstances";
+  parseCommandLineArgs(&argc,&argv,usage,3,3);
 
   std::string optionFile = argv[1];
   std::string testFile   = argv[2];
@@ -34,10 +34,13 @@ int main(int argc, const char *argv[]) {
     InstancePtr instance = testReader.next();
     classifier->addData(instance);
   }
-  double startTime = getTime();
-  classifier->train(false);
-  double trainingTime = getTime() - startTime;
-  std::cout << "Training time: " << trainingTime << std::endl;
+  double trainingTime = 0.0;
+  if (FLAGS_train) {
+    double startTime = getTime();
+    classifier->train(false);
+    trainingTime = getTime() - startTime;
+    std::cout << "Training time: " << trainingTime << std::endl;
+  }
   
   std::cout << "------------------------------------------" << std::endl;
   std::cout << *classifier << std::endl;
