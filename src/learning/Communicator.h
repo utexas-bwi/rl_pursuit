@@ -28,11 +28,14 @@ protected:
   boost::interprocess::interprocess_condition *cond;
   unsigned int numFeatures;
   unsigned int numClasses;
+
 public:
+  static const int MSG_SIZE;
   float *features;
   float *classes;
   char *cmd;
   float *weight;
+  char *msg;
 };
 
 #endif /* end of include guard: COMMUNICATOR_5AAH7E5U */

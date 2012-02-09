@@ -13,6 +13,7 @@ public class WekaBridge {
   static private native byte readCommand(double[] features,double[] weight);
   static private native void writeDistr(double[] distr);
   static private native void send();
+  static private native String readMsg();
 
 
   static {
@@ -75,6 +76,10 @@ public class WekaBridge {
             break;
           case 'p':
             System.out.println(classifier.toString());
+            break;
+          case 'w':
+            String msg = readMsg();
+            System.out.println(msg);
             break;
         }
         send();

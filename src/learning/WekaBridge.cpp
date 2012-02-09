@@ -21,7 +21,8 @@ JNIEXPORT void JNICALL Java_WekaBridge_init(JNIEnv *env, jobject , jstring memSe
   comm = boost::shared_ptr<Communicator>(new Communicator(str,false,NUM_FEATURES,NUM_FEATURES));
   FIRST_TIME = true;
 
-  delete[] str;
+  //delete[] str;
+  env->ReleaseStringUTFChars(memSegName,str);
   return;
 }
 
@@ -76,4 +77,9 @@ extern "C"
 JNIEXPORT void JNICALL Java_WekaBridge_send (JNIEnv *env, jclass obj) {
   *(comm->cmd) = '\0';
   comm->send();
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL Java_WekaBridge_readMsg (JNIEnv *env, jclass obj) {
+  return env->NewStringUTF(comm->msg);
 }

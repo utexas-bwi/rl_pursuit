@@ -57,6 +57,11 @@ void WekaClassifier::addData(const InstancePtr &instance) {
   *(comm->cmd) = 'a';
   comm->send();
   comm->wait();
+
+  //strcpy(comm->msg,"TESTING THIS OUT");
+  //*(comm->cmd) = 'w';
+  //comm->send();
+  //comm->wait();
 }
 
 void WekaClassifier::trainInternal(bool /*incremental*/) {
