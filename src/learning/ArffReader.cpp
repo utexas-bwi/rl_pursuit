@@ -15,7 +15,8 @@ ArffReader::ArffReader(std::ifstream &in):
 {
   assert(in.good());
   readHeader();
-  assert(in.good());
+  //assert(!in.fail());
+  //assert(in.good());
 }
   
 ArffReader::~ArffReader() {
@@ -102,9 +103,15 @@ void ArffReader::readHeader() {
     std::getline(in,str);
     header += str + '\n';
   }
-  // check if there's an additional blank line
-  std::streampos prevPos = in.tellg();
-  std::getline(in,str);
-  if (str != "")
-    in.seekg(prevPos);
+  // check if there's an additional blank lines
+  while (true) {
+    std::streampos prevPos = in.tellg();
+    std::getline(in,str);
+    if (str != "") {
+      in.seekg(prevPos);
+      break;
+    }
+    if (in.eof())
+      break;
+  }
 }
