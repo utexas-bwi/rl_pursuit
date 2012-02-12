@@ -4,25 +4,9 @@ import subprocess, os
 from common import getUniqueStudents, getArch
 
 studentFile = 'data/newStudents29.txt'
-jsonFile = 'classifierTransfer.json'
-
-jsonContents = '''{
-  "initialTrain": false,
-  "type": "dt",
-  "caching": false,
-  "options": "weka.classifiers.trees.REPTree",
-  "maxBoostingIterations": 10,
-  "baseLearner": {
-    "type": "weka",
-    "options": "weka.classifiers.trees.REPTree",
-    "caching": false
-  }
-}
-'''
+sourceData = 4000
 
 def main(targetDir,sourceDir,prefix,studentInd):
-  with open(jsonFile,'w') as f:
-    f.write(jsonContents)
   students = getUniqueStudents(studentFile)
   for i,student in enumerate(students):
     if (studentInd is not None) and (i != studentInd):
@@ -30,7 +14,7 @@ def main(targetDir,sourceDir,prefix,studentInd):
     print '-------------------'
     print student
     print '-------------------'
-    cmd = ['bin/%s/boostTest' % getArch(),jsonFile,student,studentFile,targetDir,sourceDir]
+    cmd = ['bin/%s/boostTest' % getArch(),student,studentFile,targetDir,sourceDir,str(sourceData)]
     descFile = os.path.join(targetDir,'desc',prefix + '-' + student + '.desc')
     resultFile = os.path.join(targetDir,'weighted',prefix + '-' + student + '.weka')
     subprocess.check_call(cmd,stdout=open(descFile,'w'))
