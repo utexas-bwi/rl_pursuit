@@ -17,6 +17,9 @@ public:
   
   virtual void addData(const InstancePtr &instance);
   virtual void addSourceData(const InstancePtr &instance);
+  virtual void addFixedData(const InstancePtr &instance);
+  virtual void clearSourceData();
+  virtual float getBestSourceInstanceWeight();
 
   virtual void outputDescription(std::ostream &out) const;
 
@@ -34,10 +37,12 @@ protected:
   Json::Value baseLearnerOptions;
   InstanceSet sourceData;
   InstanceSet targetData;
+  InstanceSet fixedData;
   ClassifierPtr model;
   const unsigned int maxBoostingIterations;
   const unsigned int numFolds;
   int savedBestT;
+  float bestSourceInstanceWeight;
 };
 
 #endif /* end of include guard: TWOSTAGETRADABOOST_7Q4CFB8O */

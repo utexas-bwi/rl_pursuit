@@ -14,9 +14,11 @@ TwoStageTrAdaBoost::TwoStageTrAdaBoost(const std::vector<Feature> &features, boo
   baseLearnerOptions(baseLearnerOptions),
   sourceData(numClasses),
   targetData(numClasses),
+  fixedData(numClasses),
   maxBoostingIterations(maxBoostingIterations),
   numFolds(numFolds),
-  savedBestT(bestT)
+  savedBestT(bestT),
+  bestSourceInstanceWeight(-1)
 {
   assert(baseLearner);
 }
@@ -28,6 +30,18 @@ void TwoStageTrAdaBoost::addData(const InstancePtr &instance) {
 void TwoStageTrAdaBoost::addSourceData(const InstancePtr &instance) {
   sourceData.add(instance);
 }
+
+void TwoStageTrAdaBoost::addFixedData(const InstancePtr &instance) {
+  fixedData.add(instance);
+}
+
+void TwoStageTrAdaBoost::clearSourceData() {
+  sourceData = InstanceSet(numClasses);
+}
+
+float TwoStageTrAdaBoost::getBestSourceInstanceWeight() {
+  return bestSourceInstanceWeight;
+}
   
 void TwoStageTrAdaBoost::outputDescription(std::ostream &out) const {
   out << "TwoStageTrAdaBoost" << std::endl;
@@ -37,6 +51,7 @@ void TwoStageTrAdaBoost::outputDescription(std::ostream &out) const {
 void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
   std::cout << "Num Source Instances: " << sourceData.size() << std::endl;
   std::cout << "Num Target Instances: " << targetData.size() << std::endl;
+  std::cout << "Num Fixed Instances: " << fixedData.size() << std::endl;
   if (targetData.size() == 0) {
     std::cout << "WARNING: TwoStageTrAdaBoost training with no target data, just defaulting to the base learner" << std::endl;
     model = baseLearner(features,baseLearnerOptions);
@@ -52,7 +67,7 @@ void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
   if (savedBestT <= 0) {
     ClassifierPtr newModel;
     float bestError = std::numeric_limits<float>::infinity();
-    for (unsigned int t = 1; t <= maxBoostingIterations; t++) {
+    for (unsigned int t = 0; t < maxBoostingIterations; t++) {
       reweightData(t);
       float error = 0.0;
       for (unsigned int fold = 0; fold < numFolds; fold++) {
@@ -83,21 +98,26 @@ void TwoStageTrAdaBoost::classifyInternal(const InstancePtr &instance, Classific
 
 void TwoStageTrAdaBoost::reweightData(unsigned int t) {
   float n = sourceData.size();
-  float m = targetData.size();
-  float fracTargetWeight = m / (n + m) + (t / ((float)maxBoostingIterations)) * (1 - m / (n + m));
+  float m = targetData.size() + fixedData.weight;
+  float fracTargetWeight = m / (n + m) + (t / ((float)maxBoostingIterations - 1.0)) * (1 - m / (n + m));
   float fracSourceWeight = 1 - fracTargetWeight;
   // per instance
   float totalWeight = m / fracTargetWeight;
   float targetWeight = fracTargetWeight * totalWeight / m;
   float sourceWeight = (fracSourceWeight * totalWeight) / n;
   //std::cout << "TARGET WEIGHT: " << targetWeight << "  SOURCE WEIGHT: " << sourceWeight << std::endl;
-  std::cout << "totalTarget: " << m * targetWeight << "  totalSource: " << n * sourceWeight << std::endl;
+  std::cout << "totalTarget+Fixed: " << m * targetWeight << "  totalSource: " << n * sourceWeight << std::endl;
   for (unsigned int i = 0; i < sourceData.size(); i++)
     sourceData[i]->weight = sourceWeight;
   sourceData.weight = n * sourceWeight;
-  for (unsigned int i = 0; i < targetData.size(); i++)
-    targetData[i]->weight = targetWeight;
-  targetData.weight = m *  targetWeight;
+  if (fabs(targetData.weight + fixedData.weight - m * targetWeight) > 1e-2) {
+    std::cout << targetData.weight << " " << m * targetWeight << std::endl;
+    exit(134);
+  }
+  //for (unsigned int i = 0; i < targetData.size(); i++)
+    //targetData[i]->weight = targetWeight;
+  //targetData.weight = m *  targetWeight;
+  bestSourceInstanceWeight = sourceWeight;
 }
 
 double TwoStageTrAdaBoost::calcError(ClassifierPtr newModel, InstanceSet &data) {
@@ -121,7 +141,7 @@ void TwoStageTrAdaBoost::createFolds(std::vector<InstanceSet> &folds) {
 ClassifierPtr TwoStageTrAdaBoost::createModel(int fold, std::vector<InstanceSet> &folds) {
   ClassifierPtr newModel = baseLearner(features,baseLearnerOptions);
   if (sourceData.weight > 0) {
-    std::cout << "adding source: " << sourceData.weight << std::endl;
+    //std::cout << "adding source: " << sourceData.weight << std::endl;
     for (unsigned int i = 0; i < sourceData.size(); i++)
       newModel->addSourceData(sourceData[i]);
   }
@@ -131,6 +151,8 @@ ClassifierPtr TwoStageTrAdaBoost::createModel(int fold, std::vector<InstanceSet>
     for (unsigned int j = 0; j < folds[i].size(); j++)
       newModel->addData(folds[i][j]);
   }
+  for (unsigned int i = 0; i < fixedData.size(); i++)
+    newModel->addSourceData(fixedData[i]);
   newModel->train(false);
   return newModel;
 }
