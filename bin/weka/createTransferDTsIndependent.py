@@ -5,7 +5,7 @@ from common import getUniqueStudents, getArch
 
 studentFile = 'data/newStudents29.txt'
 
-def main(targetDir,sourceDir,prefix,jobInd):
+def main(targetDir,sourceDir,jobInd):
   students = getUniqueStudents(studentFile)
   i = -1
   for targetStudent in students:
@@ -33,7 +33,7 @@ def extractTree(inFile,outFile):
 
 if __name__ == '__main__':
   import sys
-  usage = 'Usage: createTransferTrees.py targetDir sourceDir prefix [--only NUM]'
+  usage = 'Usage: createTransferTrees.py targetDir sourceDir [--only NUM]'
   args = sys.argv[1:]
   jobInd = None
   if ('-h' in args) or ('--help' in args):
@@ -43,11 +43,10 @@ if __name__ == '__main__':
     ind = args.index('--only')
     jobInd = int(args[ind+1])
     args = args[:ind] + args[ind+2:]
-  if len(args) != 3:
+  if len(args) != 2:
     print usage
     sys.exit(1)
   targetDir = args[0]
   sourceDir = args[1]
-  prefix = args[2]
-  main(targetDir,sourceDir,prefix,jobInd)
+  main(targetDir,sourceDir,jobInd)
 
