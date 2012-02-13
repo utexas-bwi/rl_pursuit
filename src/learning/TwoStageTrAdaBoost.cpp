@@ -98,7 +98,7 @@ void TwoStageTrAdaBoost::classifyInternal(const InstancePtr &instance, Classific
 
 void TwoStageTrAdaBoost::reweightData(unsigned int t) {
   float n = sourceData.size();
-  float m = targetData.size() + fixedData.weight;
+  float m = targetData.size();// + fixedData.weight;
   float fracTargetWeight = m / (n + m) + (t / ((float)maxBoostingIterations - 1.0)) * (1 - m / (n + m));
   float fracSourceWeight = 1 - fracTargetWeight;
   // per instance
@@ -106,11 +106,11 @@ void TwoStageTrAdaBoost::reweightData(unsigned int t) {
   float targetWeight = fracTargetWeight * totalWeight / m;
   float sourceWeight = (fracSourceWeight * totalWeight) / n;
   //std::cout << "TARGET WEIGHT: " << targetWeight << "  SOURCE WEIGHT: " << sourceWeight << std::endl;
-  std::cout << "totalTarget+Fixed: " << m * targetWeight << "  totalSource: " << n * sourceWeight << std::endl;
+  std::cout << "totalTarget: " << m * targetWeight << "  totalSource: " << n * sourceWeight << " totalFixed: " << fixedData.weight << std::endl;
   for (unsigned int i = 0; i < sourceData.size(); i++)
     sourceData[i]->weight = sourceWeight;
   sourceData.weight = n * sourceWeight;
-  if (fabs(targetData.weight + fixedData.weight - m * targetWeight) > 1e-2) {
+  if (fabs(targetData.weight /* + fixedData.weight*/ - m * targetWeight) > 1e-2) {
     std::cout << targetData.weight << " " << m * targetWeight << std::endl;
     exit(134);
   }
