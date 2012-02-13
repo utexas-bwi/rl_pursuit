@@ -111,7 +111,7 @@ int main(int argc, const char *argv[]) {
   std::vector<Feature> features = getFeatures();
 
   std::cout << "Creating classifier" << std::endl << std::flush;
-  TwoStageTrAdaBoost classifier(features,false,baseLearner,baseLearnerOptions,5,2,-1);
+  TwoStageTrAdaBoost classifier(features,false,baseLearner,baseLearnerOptions,10,2,-1);
   std::cout << "done creating classifier" << std::endl << std::flush;
   for (unsigned int i = 0; i < targetData.size(); i++)
     classifier.addData(targetData[i]);
