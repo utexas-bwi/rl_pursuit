@@ -36,17 +36,19 @@ std::string getDTName(const std::string &student, const std::string &baseDir) {
 }
  
 int main(int argc, const char *argv[]) {
-  std::vector<Feature> features = getFeatures();
-  std::cout << "Creating classifier" << std::endl << std::flush;
-  WekaClassifier classifier(features,false,"weka.classifiers.trees.REPTree");
   int origSourceInstances    =  40000;
   int currentSourceInstances = 200000;
 
   std::string usage = "Usage: boostWeights targetStudent targetDir sourceDir sourceStudent sourceWeight [sourceStudent sourceWeight ...]";
   if ((argc < 4) || (argc % 2 != 0)) {
     std::cout << usage << std::endl;
+    exit(1);
   }
   std::cout << "Reweighting source instances as if weights were given for " << origSourceInstances << " and now using " << currentSourceInstances << std::endl;
+  
+  std::vector<Feature> features = getFeatures();
+  std::cout << "Creating classifier" << std::endl << std::flush;
+  WekaClassifier classifier(features,false,"weka.classifiers.trees.REPTree");
 
   std::string targetStudent = argv[1];
   std::string targetDir = argv[2];
