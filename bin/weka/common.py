@@ -28,7 +28,7 @@ def getStudents(filename=DEFAULT_STUDENT_FILENAME):
   return numpy.loadtxt(filename,dtype=str)
 
 def getUniqueStudents(filename=DEFAULT_STUDENT_FILENAME):
-  return list(set(getStudents(filename)))
+  return sorted(list(set(getStudents(filename))))
 
 def getSelectedStudents(filename=DEFAULT_STUDENT_FILENAME,includeStudents=[],excludeStudents=[]):
   students = getUniqueStudents(filename)
