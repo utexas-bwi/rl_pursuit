@@ -51,7 +51,6 @@ def main(targetDir,sourceDir,inPrefix,outPrefix,studentInd,origNumSource):
     filename = os.path.join(targetDir,'desc',inFilename % student)
     #print student
     res = parseDesc(filename)
-    print 'HERE'
     #print res
     if res is None:
       print >>sys.stderr,'SKIPPING',student
