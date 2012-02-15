@@ -94,6 +94,7 @@ int main(int argc, const char *argv[]) {
   std::cout << "done creating classifier" << std::endl << std::flush;
   
   readAndAddArff(getArffName(targetStudent,targetDir),classifier,false,false);
+  std::cout << "HERE" << std::endl;
 
   std::vector<float> studentWeights;
   BOOST_FOREACH(std::string &student, orderedStudents) {
@@ -109,6 +110,7 @@ int main(int argc, const char *argv[]) {
       readAndAddArff(getArffName(student,sourceDir),classifier,true,true,sourceInstanceWeight);
     }
   }
+  classifier.train();
   
   for (unsigned int i = 0; i < orderedStudents.size(); i++) {
     std::cout << studentWeights[i] << " " << orderedStudents[i] << std::endl;

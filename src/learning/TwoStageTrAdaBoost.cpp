@@ -53,10 +53,19 @@ void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
   std::cout << "Num Target Instances: " << targetData.size() << std::endl;
   std::cout << "Num Fixed Instances: " << fixedData.size() << std::endl;
   if (targetData.size() == 0) {
-    std::cout << "WARNING: TwoStageTrAdaBoost training with no target data, just defaulting to the base learner" << std::endl;
+    std::cout << "WARNING: TwoStageTrAdaBoost training with no target data, just defaulting to the base learner applied to the source" << std::endl;
     model = baseLearner(features,baseLearnerOptions);
     for (unsigned int i = 0; i < sourceData.size(); i++)
       model->addSourceData(sourceData[i]);
+    model->train(false);
+    return;
+  } else if (sourceData.size()  == 0) {
+    std::cout << "WARNING: TwoStageTrAdaBoost training with no source data, just defaulting to the base learner applyed to the target+fixed" << std::endl;
+    model = baseLearner(features,baseLearnerOptions);
+    for (unsigned int i = 0; i < targetData.size(); i++)
+      model->addData(targetData[i]);
+    for (unsigned int i = 0; i < fixedData.size(); i++)
+      model->addSourceData(fixedData[i]);
     model->train(false);
     return;
   }
