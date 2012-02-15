@@ -36,73 +36,42 @@ std::string getDTName(const std::string &student, const std::string &baseDir) {
   return baseDir + "/weighted/only-" + student + ".weka";
 }
  
-void evaluateClassifier(ClassifierPtr classifier, const InstanceSet &testData, double &fracCorrect, double &fracMaxCorrect) {
-  fracCorrect = 0.0;
-  fracMaxCorrect = 0.0;
-
-  for (unsigned int i = 0; i < testData.size(); i++) {
-    Classification c;
-    classifier->classify(testData[i],c);
-    fracCorrect += c[testData[i]->label];
-    unsigned int maxInd = vectorMaxInd(c);
-    if (maxInd == testData[i]->label)
-      fracMaxCorrect++;
-  }
-  fracCorrect /= testData.size();
-  fracMaxCorrect /= testData.size();
-}
-
 int main(int argc, const char *argv[]) {
   if (argc != 6) {
     std::cerr << "Expected 5 arguments" << std::endl;
-    std::cerr << "Usage: boostTest targetStudent studentList targetDir sourceDir numSourceSamples" << std::endl;
+    std::cerr << "Usage: boostGivenOrder targetStudent givenOrderFile targetDir sourceDir numSourceSamples" << std::endl;
     return 1;
   }
   std::string targetStudent = argv[1];
-  std::string studentList = argv[2];
+  std::string givenOrderFile = argv[2];
   std::string targetDir = argv[3];
   std::string sourceDir = argv[4];
   int numSourceSamples = boost::lexical_cast<int>(argv[5]);
-
-  //Json::Value options;
-  //if (! readJson(jsonFile,options))
-    //return 1;
-  std::set<std::string> students;
-  getAvailableStudents(studentList,students);
-  students.erase(targetStudent);
-  std::cout << "Using " << students.size() << " source students" << std::endl;
-  
-  InstanceSet targetData(5);
-  readArff(getArffName(targetStudent,targetDir),targetData);
   
   std::vector<std::string> orderedStudents;
   std::vector<double> orderedEvals;
-  Json::Value evalOptions;
-  evalOptions["type"] = "dt";
-  evalOptions["initialTrain"] = false;
-  evalOptions["caching"] = false;
-  
-  for (std::set<std::string>::iterator it = students.begin(); it != students.end(); it++) {
-    evalOptions["filename"] = getDTName(*it,sourceDir);
-    ClassifierPtr sourceClassifier = createClassifier(evalOptions);
-    double fracCorrect;
-    double fracMaxCorrect;
-    evaluateClassifier(sourceClassifier,targetData,fracCorrect,fracMaxCorrect);
-    //double &correct = fracCorrect;
-    //double &correct = fracMaxCorrect;
-    double correct = 2.0 * fracCorrect * fracMaxCorrect / (fracCorrect + fracMaxCorrect);
-    //std::cout << *it << " " << fracCorrect << " " << fracMaxCorrect << std::endl;
-    int ind;
-    for (ind = 0; ind < (int)orderedEvals.size(); ind++) {
-      if (correct > orderedEvals[ind])
-        break;
-    }
-    orderedStudents.insert(orderedStudents.begin() + ind, *it);
-    orderedEvals.insert(orderedEvals.begin() + ind, correct);
+  std::ifstream in(givenOrderFile.c_str());
+  assert(in.good());
+  while (in.good()) {
+    std::string str;
+    float val;
+    in >> val;
+    if (in.eof())
+      break;
+    in >> str;
+    if (str.size() == 0)
+      break;
+    orderedEvals.push_back(val);
+    orderedStudents.push_back(str);
   }
+  in.close();
+  
   for (unsigned int i = 0; i < orderedEvals.size(); i++) {
     std::cout << orderedEvals[i] << " " << orderedStudents[i] << std::endl;
   }
+
+  InstanceSet targetData(5);
+  readArff(getArffName(targetStudent,targetDir),targetData);
   
   Json::Value baseLearnerOptions;
   baseLearnerOptions["type"] = "weka";
@@ -130,6 +99,7 @@ int main(int argc, const char *argv[]) {
     classifier.clearSourceData();
     float sourceInstanceWeight = classifier.getBestSourceInstanceWeight();
     studentWeights.push_back(sourceInstanceWeight);
+    std::cout << "STUDENT WEIGHT: " << sourceInstanceWeight << " " << student << std::endl;
     if (sourceInstanceWeight > 1e-10) {
       for (unsigned int i = 0; i < sourceData.size(); i++) {
         sourceData[i]->weight = sourceInstanceWeight;
