@@ -17,13 +17,23 @@ std::vector<Feature> getFeatures() {
   return arff.getFeatureTypes();
 }
 
-void readArff(const std::string &filename, InstanceSet &instances, int numSourceSamples = -1) {
-  std::cout << "Reading " << filename << std::endl;
+void readAndAddArff(const std::string &filename, TwoStageTrAdaBoost &classifier, bool source, bool fixed, float weight = 1.0, int numSamples = -1) {
+  std::cout << "Reading " << filename << " with weight/inst: " << weight << std::endl;
   std::ifstream in(filename.c_str());
   ArffReader arff(in);
-  while ((!arff.isDone()) && ((numSourceSamples < 0) || ((int)instances.size() < numSourceSamples))) {
+  int counter = 0;
+  while ((!arff.isDone()) && ((numSamples < 0) || (counter < numSamples))) {
     InstancePtr instance = arff.next();
-    instances.add(instance);
+    instance->weight = weight;
+    if (source) {
+      if (fixed)
+        classifier.addFixedData(instance);
+      else
+        classifier.addSourceData(instance);
+    } else {
+      classifier.addData(instance);
+    }
+    counter++;
   }
   in.close();
 }
@@ -39,14 +49,14 @@ std::string getDTName(const std::string &student, const std::string &baseDir) {
 int main(int argc, const char *argv[]) {
   if (argc != 6) {
     std::cerr << "Expected 5 arguments" << std::endl;
-    std::cerr << "Usage: boostGivenOrder targetStudent givenOrderFile targetDir sourceDir numSourceSamples" << std::endl;
+    std::cerr << "Usage: boostGivenOrder targetStudent givenOrderFile targetDir sourceDir maxNumBoosts" << std::endl;
     return 1;
   }
   std::string targetStudent = argv[1];
   std::string givenOrderFile = argv[2];
   std::string targetDir = argv[3];
   std::string sourceDir = argv[4];
-  int numSourceSamples = boost::lexical_cast<int>(argv[5]);
+  unsigned int maxNumBoosts = boost::lexical_cast<unsigned int>(argv[5]);
   
   std::vector<std::string> orderedStudents;
   std::vector<double> orderedEvals;
@@ -63,15 +73,15 @@ int main(int argc, const char *argv[]) {
       break;
     orderedEvals.push_back(val);
     orderedStudents.push_back(str);
+    if (orderedStudents.size() >= maxNumBoosts)
+      break;
   }
   in.close();
   
-  for (unsigned int i = 0; i < orderedEvals.size(); i++) {
+  for (unsigned int i = 0; i < orderedStudents.size(); i++) {
     std::cout << orderedEvals[i] << " " << orderedStudents[i] << std::endl;
   }
 
-  InstanceSet targetData(5);
-  readArff(getArffName(targetStudent,targetDir),targetData);
   
   Json::Value baseLearnerOptions;
   baseLearnerOptions["type"] = "weka";
@@ -79,20 +89,15 @@ int main(int argc, const char *argv[]) {
   baseLearnerOptions["options"] = "weka.classifiers.trees.REPTree";
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
   std::vector<Feature> features = getFeatures();
-
   std::cout << "Creating classifier" << std::endl << std::flush;
   TwoStageTrAdaBoost classifier(features,false,baseLearner,baseLearnerOptions,10,2,-1);
   std::cout << "done creating classifier" << std::endl << std::flush;
-  for (unsigned int i = 0; i < targetData.size(); i++)
-    classifier.addData(targetData[i]);
- 
-  std::vector<float> studentWeights;
+  
+  readAndAddArff(getArffName(targetStudent,targetDir),classifier,false,false);
 
+  std::vector<float> studentWeights;
   BOOST_FOREACH(std::string &student, orderedStudents) {
-    InstanceSet sourceData(5);
-    readArff(getArffName(student,sourceDir),sourceData,numSourceSamples);
-    for (unsigned int i = 0; i < sourceData.size(); i++)
-      classifier.addSourceData(sourceData[i]);
+    readAndAddArff(getArffName(student,sourceDir),classifier,true,false);
     classifier.train();
     std::cout << "done training classifier" << std::endl << std::flush;
     //std::cout << classifier << std::endl;
@@ -101,10 +106,7 @@ int main(int argc, const char *argv[]) {
     studentWeights.push_back(sourceInstanceWeight);
     std::cout << "STUDENT WEIGHT: " << sourceInstanceWeight << " " << student << std::endl;
     if (sourceInstanceWeight > 1e-10) {
-      for (unsigned int i = 0; i < sourceData.size(); i++) {
-        sourceData[i]->weight = sourceInstanceWeight;
-        classifier.addFixedData(sourceData[i]);
-      }
+      readAndAddArff(getArffName(student,sourceDir),classifier,true,true,sourceInstanceWeight);
     }
   }
   
