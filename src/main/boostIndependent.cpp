@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <learning/Common.h>
 #include <learning/ArffReader.h>
@@ -16,12 +17,12 @@ std::vector<Feature> getFeatures() {
   return arff.getFeatureTypes();
 }
 
-void readAndAddArff(const std::string &filename, Classifier &classifier, bool source, float weight = 1.0, int numSourceSamples = -1) {
+void readAndAddArff(const std::string &filename, Classifier &classifier, bool source, float weight = 1.0, int numSamples = -1) {
   std::cout << "Reading " << filename << " with weight/inst: " << weight << std::endl;
   std::ifstream in(filename.c_str());
   ArffReader arff(in);
   int counter = 0;
-  while ((!arff.isDone()) && ((numSourceSamples < 0) || (counter < numSourceSamples))) {
+  while ((!arff.isDone()) && ((numSamples < 0) || (counter < numSamples))) {
     InstancePtr instance = arff.next();
     instance->weight = weight;
     if (source)
@@ -42,15 +43,16 @@ std::string getDTName(const std::string &student, const std::string &baseDir) {
 }
  
 int main(int argc, const char *argv[]) {
-  if (argc != 5) {
-    std::cerr << "Expected 4 arguments" << std::endl;
-    std::cerr << "Usage: boostIndependent targetStudent sourceStudent targetDir sourceDir" << std::endl;
+  if (argc != 6) {
+    std::cerr << "Expected 5 arguments" << std::endl;
+    std::cerr << "Usage: boostIndependent targetStudent sourceStudent targetDir sourceDir numTargetInstances" << std::endl;
     return 1;
   }
   std::string targetStudent = argv[1];
   std::string sourceStudent = argv[2];
   std::string targetDir = argv[3];
   std::string sourceDir = argv[4];
+  int numTargetInstances = boost::lexical_cast<int>(argv[5]);
 
   Json::Value baseLearnerOptions;
   baseLearnerOptions["type"] = "weka";
@@ -63,7 +65,7 @@ int main(int argc, const char *argv[]) {
   TwoStageTrAdaBoost classifier(features,false,baseLearner,baseLearnerOptions,10,2,-1);
   std::cout << "done creating classifier" << std::endl << std::flush;
 
-  readAndAddArff(getArffName(targetStudent,targetDir),classifier,false);
+  readAndAddArff(getArffName(targetStudent,targetDir),classifier,false,numTargetInstances);
   readAndAddArff(getArffName(sourceStudent,sourceDir),classifier,true);
   classifier.train();
   std::cout << classifier.getBestSourceInstanceWeight() << " " << sourceStudent << std::endl;
