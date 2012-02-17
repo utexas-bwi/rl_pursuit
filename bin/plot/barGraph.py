@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# NOTE: for the PS backend to work correctly, you may need to install a better version of xpdf (the one in ubuntu 11.10 seems to suck), try this: http://ctan.math.utah.edu/ctan/tex-archive/support/xpdf/xpdfbin-linux-3.03.tar.gz
 # NOTE: for better hatching, hack /usr/lib/pymodules/python2.7/matplotlib/backends/backend_ps.py
 #  change line: "0 setlinewidth" to "1 setlinewidth"
 
@@ -25,7 +26,7 @@ def parseOptions(dest,defaults,options,labelForErrors = None):
       val = defaults[key]
     dest.__dict__[key] = val
 
-def getAxisBounds(values,errors,yMinFixed):
+def getAxisBounds(values,errors,yMinFixed,xOffset):
   if errors is None:
     vals = values
   else:
@@ -36,7 +37,7 @@ def getAxisBounds(values,errors,yMinFixed):
   yFudge = (yMax - yMin) * 0.1
   yMin -= yFudge
   yMax += yFudge
-  xFudge = 0.5
+  xFudge = 0.1 - xOffset
   xMin = -xFudge
   xMax = len(values) - xFudge
   if yMinFixed is not None:
@@ -51,12 +52,13 @@ def makeBarGraph(values,options):
 
   params = {'backend': 'PS','axes.labelsize': fontSize,'text.fontsize': fontSize,'legend.fontsize': fontSize,'xtick.labelsize': tickSize,'ytick.labelsize': tickSize,'text.usetex': True, 'ps.usedistiller': 'xpdf'}
   plt.rcParams.update(params)
+  xOffset = -0.4
 
   plt.figure()
-  bounds = getAxisBounds(values,options.errors,options.yMinFixed)
+  bounds = getAxisBounds(values,options.errors,options.yMinFixed,xOffset)
   plt.axis(bounds)
   for x,v in enumerate(values):
-    plt.bar(x-0.4,v,label=options.labels[x],color=options.colors[x],hatch=options.styles[x],yerr=options.errors[x],ecolor='black')
+    plt.bar(x+xOffset,v,label=options.labels[x],color=options.colors[x],hatch=options.styles[x],yerr=options.errors[x],ecolor='black')
   plt.xticks([])
   plt.legend(loc=options.legendLoc)
   
@@ -91,7 +93,7 @@ def getMainOpts(**kwargs):
     'labels': None,
     'errors': [],
     'colors': ['b','r','g','c','m','y','k'],
-    'styles': ['.','|','-','/','\\','+','x','o','O','*'],
+    'styles': ['.','|','-','/','\\','+','x','o','0','*'],
     'legendLoc': 'best',
     'ylabel': '',
     'xlabel': '',
