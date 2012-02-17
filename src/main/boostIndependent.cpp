@@ -52,7 +52,7 @@ int main(int argc, const char *argv[]) {
   std::string sourceStudent = argv[2];
   std::string targetDir = argv[3];
   std::string sourceDir = argv[4];
-  int numTargetInstances = boost::lexical_cast<int>(argv[5]);
+  int numTargetInstances = 4 * boost::lexical_cast<int>(argv[5]);
 
   Json::Value baseLearnerOptions;
   baseLearnerOptions["type"] = "weka";
