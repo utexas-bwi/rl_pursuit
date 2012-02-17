@@ -5,7 +5,7 @@ from common import getUniqueStudents, getArch
 
 studentFile = 'data/newStudents29.txt'
 
-def main(targetDir,sourceDir,jobInd):
+def main(targetDir,sourceDir,destDir,numTargetInstances,jobInd):
   students = getUniqueStudents(studentFile)
   i = -1
   for targetStudent in students:
@@ -16,24 +16,13 @@ def main(targetDir,sourceDir,jobInd):
       if (jobInd is not None) and (i != jobInd):
         continue
       print targetStudent, sourceStudent
-      cmd = ['bin/%s/boostIndependent' % getArch(),targetStudent,sourceStudent,targetDir,sourceDir]
-      descFile = os.path.join(targetDir,'boostIndependent',targetStudent + '-' + sourceStudent + '.desc')
+      cmd = ['bin/%s/boostIndependent' % getArch(),targetStudent,sourceStudent,targetDir,sourceDir,str(numTargetInstances)]
+      descFile = os.path.join(destDir,'boostIndependent',targetStudent + '-' + sourceStudent + '.desc')
       subprocess.check_call(cmd,stdout=open(descFile,'w'))
-
-def extractTree(inFile,outFile):
-  with open(inFile,'r') as f:
-    lines = f.readlines()
-  startInd = [x.startswith('@relation') for x in lines].index(True)
-  ignoreStart = lines.index('REPTree\n')
-  ignoreEnd = ignoreStart + 3 # 3 lines later, including REPTree
-  endInd = [x.startswith('Size of the tree : ') for x in lines].index(True) - 1
-  with open(outFile,'w') as f:
-    f.writelines(lines[startInd:ignoreStart])
-    f.writelines(lines[ignoreEnd:endInd])
 
 if __name__ == '__main__':
   import sys
-  usage = 'Usage: createTransferTrees.py targetDir sourceDir [--only NUM]'
+  usage = 'Usage: createTransferTrees.py targetDir sourceDir destDir numTargetInstances [--only NUM]'
   args = sys.argv[1:]
   jobInd = None
   if ('-h' in args) or ('--help' in args):
@@ -43,10 +32,12 @@ if __name__ == '__main__':
     ind = args.index('--only')
     jobInd = int(args[ind+1])
     args = args[:ind] + args[ind+2:]
-  if len(args) != 2:
+  if len(args) != 4:
     print usage
     sys.exit(1)
   targetDir = args[0]
   sourceDir = args[1]
-  main(targetDir,sourceDir,jobInd)
+  destDir = args[2]
+  numTargetInstances = int(args[3])
+  main(targetDir,sourceDir,destDir,numTargetInstances,jobInd)
 
