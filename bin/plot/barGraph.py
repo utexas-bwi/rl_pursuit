@@ -58,7 +58,11 @@ def makeBarGraph(values,options):
   bounds = getAxisBounds(values,options.errors,options.yMinFixed,xOffset)
   plt.axis(bounds)
   for x,v in enumerate(values):
-    plt.bar(x+xOffset,v,label=options.labels[x],color=options.colors[x],hatch=options.styles[x],yerr=options.errors[x],ecolor='black')
+    if options.styleInds is None:
+      styleInd = x
+    else:
+      styleInd = options.styleInds[x]
+    plt.bar(x+xOffset,v,label=options.labels[x],color=options.colors[styleInd],hatch=options.styles[styleInd],yerr=options.errors[x],ecolor='black')
   plt.xticks([])
   plt.legend(loc=options.legendLoc)
   
@@ -98,7 +102,8 @@ def getMainOpts(**kwargs):
     'ylabel': '',
     'xlabel': '',
     'title': '',
-    'fontSize': 24
+    'fontSize': 24,
+    'styleInds': None
   }
   options = Options()
   parseOptions(options,defaults,kwargs,'Main')
