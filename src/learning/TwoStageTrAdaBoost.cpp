@@ -120,7 +120,7 @@ void TwoStageTrAdaBoost::reweightData(unsigned int t) {
     sourceData[i]->weight = sourceWeight;
   sourceData.weight = n * sourceWeight;
   if (fabs(targetData.weight /* + fixedData.weight*/ - m * targetWeight) > 1e-2) {
-    std::cout << targetData.weight << " " << m * targetWeight << std::endl;
+    std::cout << targetData.weight << " " << m * targetWeight << " " << targetData.weight - m * targetWeight << std::endl;
     exit(134);
   }
   //for (unsigned int i = 0; i < targetData.size(); i++)

@@ -65,7 +65,7 @@ int main(int argc, const char *argv[]) {
   TwoStageTrAdaBoost classifier(features,false,baseLearner,baseLearnerOptions,10,2,-1);
   std::cout << "done creating classifier" << std::endl << std::flush;
 
-  readAndAddArff(getArffName(targetStudent,targetDir),classifier,false,numTargetInstances);
+  readAndAddArff(getArffName(targetStudent,targetDir),classifier,false,1.0,numTargetInstances);
   readAndAddArff(getArffName(sourceStudent,sourceDir),classifier,true);
   classifier.train();
   std::cout << classifier.getBestSourceInstanceWeight() << " " << sourceStudent << std::endl;
