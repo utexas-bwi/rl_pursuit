@@ -4,12 +4,12 @@ import numpy, csv, os
 
 def loadResults(path):
   if os.path.isfile(path):
-    return loadResultsFromFile(path)
+    res = loadResultsFromFile(path)
   else:
     res = loadResultsFromDirectory(path)
     if res is None:
       res = loadResultsFromDirectory(os.path.join(path,'results'))
-    return res
+  return res
 
 def loadResultsFromFile(filename):
   numSteps = []
@@ -54,14 +54,15 @@ def printResults(episodeLengths,label,outputCsv,outputHeader):
         #episodeLengths[i][j] = 1000
   if outputCsv:
     if outputHeader:
-      print 'label, Num episodes, mean, means, median, std, min, max'
+      #print 'label, Num episodes, mean, means, median, std, min, max'
+      print 'label, Num episodes, mean, median, std, min, max'
     vals = [label]
     if episodeLengths is None:
       vals.append(0)
     else:
       vals.append(len(episodeLengths))
       vals.append(numpy.mean(episodeLengths))
-      vals.append(numpy.mean(episodeLengths,0))
+      #vals.append(numpy.mean(episodeLengths,0))
       vals.append(numpy.median(episodeLengths))
       vals.append(numpy.std(episodeLengths))
       vals.append(numpy.min(episodeLengths))
@@ -75,10 +76,17 @@ def printResults(episodeLengths,label,outputCsv,outputHeader):
       return
     print 'Num episodes = ',len(episodeLengths)
     print 'mean=',numpy.mean(episodeLengths)
-    print 'means=',numpy.mean(episodeLengths,0)
+    #print 'means=',numpy.mean(episodeLengths,0)
     print 'median=',numpy.median(episodeLengths)
     print 'std=',numpy.std(episodeLengths)
     print 'min,max=',numpy.min(episodeLengths),numpy.max(episodeLengths)
+    #print episodeLengths[:10]
+    #print numpy.median(episodeLengths)
+    #from scipy import stats
+    #print [stats.scoreatpercentile(episodeLengths,x)[0] for x in [10,90]]
+    #episodeLengths.sort(axis=0)
+    #for amount in [10,25,50,100]:
+      #print amount,numpy.mean(episodeLengths[amount:len(episodeLengths)-amount])
 
 def getStudentInds(path,includeStudents,excludeStudents):
   with open(path,'r') as f:
@@ -103,7 +111,7 @@ def getStudentInds(path,includeStudents,excludeStudents):
   return inds
 
 def main(paths,outputCsv,includeStudents,excludeStudents,matchNumEpisodes):
-  studentInds = getStudentInds('data/students.txt',includeStudents,excludeStudents)
+  studentInds = getStudentInds('data/newStudents29.txt',includeStudents,excludeStudents)
   numEpisodes = len(studentInds)
   if matchNumEpisodes:
     print 'MATCHING number of episodes, via sorting first axis (MIGHT BE WRONG)'
