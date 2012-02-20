@@ -47,9 +47,9 @@ std::string getDTName(const std::string &student, const std::string &baseDir) {
 }
  
 int main(int argc, const char *argv[]) {
-  if (argc != 6) {
-    std::cerr << "Expected 5 arguments" << std::endl;
-    std::cerr << "Usage: boostGivenOrder targetStudent givenOrderFile targetDir sourceDir maxNumBoosts" << std::endl;
+  if (argc != 7) {
+    std::cerr << "Expected 6 arguments" << std::endl;
+    std::cerr << "Usage: boostGivenOrder targetStudent givenOrderFile targetDir sourceDir maxNumBoosts numTargetInstances" << std::endl;
     return 1;
   }
   std::string targetStudent = argv[1];
@@ -57,6 +57,7 @@ int main(int argc, const char *argv[]) {
   std::string targetDir = argv[3];
   std::string sourceDir = argv[4];
   unsigned int maxNumBoosts = boost::lexical_cast<unsigned int>(argv[5]);
+  int numTargetInstances = 4 * boost::lexical_cast<int>(argv[6]);
   
   std::vector<std::string> orderedStudents;
   std::vector<double> orderedEvals;
@@ -93,7 +94,7 @@ int main(int argc, const char *argv[]) {
   TwoStageTrAdaBoost classifier(features,false,baseLearner,baseLearnerOptions,10,2,-1);
   std::cout << "done creating classifier" << std::endl << std::flush;
   
-  readAndAddArff(getArffName(targetStudent,targetDir),classifier,false,false);
+  readAndAddArff(getArffName(targetStudent,targetDir),classifier,false,false,1.0,numTargetInstances);
   std::cout << "HERE" << std::endl;
 
   std::vector<float> studentWeights;
