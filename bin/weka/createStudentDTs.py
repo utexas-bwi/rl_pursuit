@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from createDT import main as createDT
-from common import getUniqueStudents, getFilename, TRAIN
+from common import getUniqueStudents, getFilename, TRAIN, parseArgs
 
-def main(basename,stayWeight,treeOptions,useWeka,studentInd):
+def main(basename,dataDir,stayWeight,treeOptions,useWeka,studentInd,numInstances):
   students = getUniqueStudents()
   
   for i,student in enumerate(students):
@@ -13,29 +13,19 @@ def main(basename,stayWeight,treeOptions,useWeka,studentInd):
     print '-------------------'
     print student
     print '-------------------'
-    dataFile = getFilename(basename,student,TRAIN)
-    createDT(dataFile,basename,'only-%s' % student,stayWeight,treeOptions,useWeka)
+    dataFile = getFilename(dataDir,student,TRAIN)
+    createDT(dataFile,basename,'only-%s' % student,stayWeight,treeOptions,useWeka,numInstances)
 
 if __name__ == '__main__':
-  import sys
-  usage = 'Usage: createStudentDTs.py basename [--weka] [--only studentInd] [treeOptions ...]'
-  args = sys.argv[1:]
-  useWeka = False
-  studentInd = None
-  if '--weka' in args:
-    args.remove('--weka')
-    useWeka = True
-  if '--only' in args:
-    ind = args.index('--only')
-    studentInd = int(args[ind+1])
-    args = args[:ind] + args[ind+2:]
-  if len(args) < 1:
-    print usage
-    sys.exit(1)
-  if args[0] in ['-h','--help']:
-    print usage
-    sys.exit(0)
-  basename = args[0]
+  from optparse import make_option
+  opts = []
+  opts.append(make_option('--only',action='store',dest='studentInd',default=None,help='only run for specified student',metavar='NUM',type='int'))
+  opts.append(make_option('--dataDir',action='store',dest='dataDir',default=None,help='data dir',metavar='DIR'))
+
+  usage = 'Usage: createStudentDTs.py [options] baseDir [-- treeOptions ...]'
+  options,args,treeOptions = parseArgs(usage=usage,numArgs=1,studentOptions=False,options=opts,numInstancesFlag=True)
+  baseDir = args[0]
+  if options.dataDir is None:
+    options.dataDir = baseDir
   stayWeight = None
-  treeOptions = args[1:]
-  main(basename ,stayWeight,treeOptions,useWeka,studentInd)
+  main(baseDir,options.dataDir,stayWeight,treeOptions,options.useWeka,options.studentInd,options.numInstances)

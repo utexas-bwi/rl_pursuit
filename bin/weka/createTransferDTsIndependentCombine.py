@@ -6,7 +6,7 @@ from common import getUniqueStudents, getArch
 studentFile = 'data/newStudents29.txt'
 
 def main(targetDir,prefix,jobInd):
-  TOP_NUM = 10
+  TOP_NUM = 30
   students = getUniqueStudents(studentFile)
   i = -1
   for targetStudent in students:
@@ -48,17 +48,6 @@ def main(targetDir,prefix,jobInd):
       f.write('TwoStageTrAdaBoost\n')
 
       #subprocess.check_call(cmd,stdout=open(descFile,'w'))
-
-def extractTree(inFile,outFile):
-  with open(inFile,'r') as f:
-    lines = f.readlines()
-  startInd = [x.startswith('@relation') for x in lines].index(True)
-  ignoreStart = lines.index('REPTree\n')
-  ignoreEnd = ignoreStart + 3 # 3 lines later, including REPTree
-  endInd = [x.startswith('Size of the tree : ') for x in lines].index(True) - 1
-  with open(outFile,'w') as f:
-    f.writelines(lines[startInd:ignoreStart])
-    f.writelines(lines[ignoreEnd:endInd])
 
 if __name__ == '__main__':
   import sys

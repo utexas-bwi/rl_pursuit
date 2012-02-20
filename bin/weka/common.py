@@ -83,7 +83,7 @@ def makeTemp(*args,**kwargs):
   os.close(fd)
   return temp
 
-def parseArgs(usage=None,options=[],args=None, minArgs=None, maxArgs=None, numArgs=0, studentOptions=True,unprocessedArgsAllowed=True,wekaFlag=True):
+def parseArgs(usage=None,options=[],args=None, minArgs=None, maxArgs=None, numArgs=0, studentOptions=True,unprocessedArgsAllowed=True,wekaFlag=True,numInstancesFlag=False):
   import sys
   from optparse import OptionParser
   parser = OptionParser(usage)
@@ -92,6 +92,8 @@ def parseArgs(usage=None,options=[],args=None, minArgs=None, maxArgs=None, numAr
     parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
   if wekaFlag:
     parser.add_option('--weka',action='store_true',dest='useWeka',default=False,help='use weka instead of Sam\'s dts')
+  if numInstancesFlag:
+    parser.add_option('--numInstances',action='store',dest='numInstances',default=None,help='num instances for training',metavar='NUM',type='int')
   for option in options:
     parser.add_option(option)
   if args is None:
