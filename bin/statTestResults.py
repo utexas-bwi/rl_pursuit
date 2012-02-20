@@ -8,7 +8,7 @@ Created:  2011-10-31
 Modified: 2011-10-31
 '''
 
-import numpy, csv
+import numpy, csv, sys
 from scipy import stats
 '''
 def studentTTest(mu1,sd1,n1,mu2,sd2,n2):
@@ -37,6 +37,8 @@ def pairedStudentsTTest(data1,data2):
   p = stats.t.cdf(t,dof)
   return 2*p
 '''
+
+
 def loadResultsFromFile(filename):
   numSteps = []
   with open(filename,'r') as f:
@@ -50,22 +52,29 @@ def loadResultsFromFile(filename):
   return numSteps
 
 def main(args):
-  assert(len(args) == 2),'Incorrect number of arguments'
+  if len(args) != 2:
+    print >>sys.stderr,'Incorrect number of arguments'
+    print >>sys.stderr,'Expected %i, but got %i' % (2,len(args))
+    sys.exit(1)
   resultsPath1 = args[0]
   resultsPath2 = args[1]
   a = loadResultsFromFile(resultsPath1)
   b = loadResultsFromFile(resultsPath2)
-  diffs = a - b
-  print 'Num Episodes:',len(diffs)
-  z,p = stats.wilcoxon(diffs)
-  print 'prob equal = %g' % p
-  if diffs.mean() < 0:
-    print '%s is smaller' % resultsPath1
-  else:
-    print '%s is smaller' % resultsPath2
+  #diffs = a - b
+  print 'Num Episodes:',len(a)
   print 'Mean of %s is %f' % (resultsPath1,a.mean())
   print 'Mean of %s is %f' % (resultsPath2,b.mean())
+  z,p = stats.wilcoxon(a,b)
+  print 'Wilcoxon z-statistic: %g' % z
+  print 'Wilcoxon p-value: %g' % p
+  t,p = stats.ttest_rel(a,b)
+  print 'TTest t-statistic: %g' % t
+  print 'TTest p-value: %g' % p
+  #if diffs.mean() < 0:
+    #print '%s is smaller' % resultsPath1
+  #else:
+    #print '%s is smaller' % resultsPath2
+
 if __name__ == '__main__':
-  import sys
   main(sys.argv[1:])
 
