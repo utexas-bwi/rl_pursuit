@@ -7,4 +7,4 @@ fi
 
 dir=$1
 
-rsync -avz ~/pursuit2/$dir school:pursuit2/$dir/*
+rsync -avz ~/pursuit2/$dir/* school:pursuit2/$dir
