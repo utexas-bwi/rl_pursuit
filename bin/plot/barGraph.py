@@ -55,6 +55,7 @@ def makeBarGraph(values,options):
   xOffset = -0.4
 
   plt.figure()
+  plt.xticks(options.xtickLocs,options.xtickLabels)
   bounds = getAxisBounds(values,options.errors,options.yMinFixed,xOffset)
   plt.axis(bounds)
   for x,v in enumerate(values):
@@ -63,8 +64,8 @@ def makeBarGraph(values,options):
     else:
       styleInd = options.styleInds[x]
     plt.bar(x+xOffset,v,label=options.labels[x],color=options.colors[styleInd],hatch=options.styles[styleInd],yerr=options.errors[x],ecolor='black')
-  plt.xticks([])
-  plt.legend(loc=options.legendLoc)
+  if options.legendLoc is not None:
+    plt.legend(loc=options.legendLoc)
   
   plt.ylabel(options.ylabel)
   plt.xlabel(options.xlabel)
@@ -76,7 +77,11 @@ def makeBarGraph(values,options):
     plt.savefig(options.filename,format='eps',bbox_inches='tight',pad_inches=0.1)
 
 def readFile(filename):
-  data = numpy.loadtxt(filename,dtype=int,delimiter=',')
+  data = numpy.loadtxt(filename,dtype=float,delimiter=',')
+  origLen = data.shape[0]
+  data = data[~numpy.isnan(data).any(1)]
+  if data.shape[0] != origLen:
+    print 'WARNING: removed nans from %s, resulting in %i episodes' % (filename,data.shape[0])
   # should be of form: jobNum, steps
   assert(data.shape[1] == 2),'Two columns expected in data'
   return data[:,1]
@@ -103,7 +108,9 @@ def getMainOpts(**kwargs):
     'xlabel': '',
     'title': '',
     'fontSize': 24,
-    'styleInds': None
+    'styleInds': None,
+    'xtickLocs': [],
+    'xtickLabels': []
   }
   options = Options()
   parseOptions(options,defaults,kwargs,'Main')
