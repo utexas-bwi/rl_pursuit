@@ -19,7 +19,10 @@ public:
   ArffReader(std::ifstream &in);
   ~ArffReader();
   InstancePtr next(); // gets the next set of features
-  std::string getClassFeature();
+  inline FeatureType_t getClassFeature() {
+    // TODO assuming class is last feature
+    return featureTypes.back().feat;
+  }
   std::vector<Feature> getFeatureTypes();
   bool isDone();
   std::string getHeader();

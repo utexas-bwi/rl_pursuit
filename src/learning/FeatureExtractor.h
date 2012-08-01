@@ -43,15 +43,25 @@ protected:
   };
 
   //void setFeature(InstancePtr &instance, const std::string &key, float val);
-  inline void setFeature(InstancePtr &instance, const std::string &key, float val) {
-    (*instance)[key] = val;
-  }
+  //inline void setFeature(InstancePtr &instance, const std::string &key, float val) {
+    //(*instance)[key] = val;
+  //}
 
 
 protected:
   const Point2D dims;
   std::vector<FeatureAgent> featureAgents;
-  std::vector<Feature> featureTypes;
+  std::vector<std::string> featureKeys;
+  unsigned int keyInd;
+
+  inline void startKeys() {keyInd = 0;}
+  inline std::string* getKey() {return &featureKeys[keyInd++];}
+  inline void addKey(const std::string &key) {featureKeys.push_back(key);}
+  void endKeys();
+  inline void setFeature(InstancePtr &instance, float val) {
+    (*instance)[*getKey()] = val;
+  }
+
 public:
   static const unsigned int HISTORY_SIZE;
   static const bool USE_ALL_AGENTS_HISTORY;

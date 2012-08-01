@@ -29,10 +29,9 @@ InstancePtr ArffReader::next() {
   for (unsigned int i = 0; i < featureTypes.size(); i++) {
     in >> val;
     in.ignore(1,',');
-    (*instance)[featureTypes[i].name] = val;
+    (*instance)[featureTypes[i].feat] = val;
   }
-  // TODO assuming class is last feature
-  instance->label = (*instance)[featureTypes.back().name];
+  instance->label = (*instance)[getClassFeature()];
   // check if there's a weight
   if (in.peek() == '{') {
     in.ignore(1,'{');
@@ -40,10 +39,6 @@ InstancePtr ArffReader::next() {
     in.ignore(1,'}');
   }
   return instance;
-}
-
-std::string ArffReader::getClassFeature() {
-  return featureTypes.back().name;
 }
 
 std::vector<Feature> ArffReader::getFeatureTypes() {

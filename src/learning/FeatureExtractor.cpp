@@ -13,6 +13,8 @@ Modified: 2011-12-10
 const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
 const bool FeatureExtractor::USE_ALL_AGENTS_HISTORY = false;
 
+#define ADD_KEY(s) if (calcKeyNames) {addKey(s);}
+
 #define FEATURE_EXTRACTOR_TIMING
 
 #ifdef FEATURE_EXTRACTOR_TIMING
@@ -65,31 +67,37 @@ void FeatureExtractor::addFeatureAgent(const std::string &key, const std::string
 }
 
 InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHistory &history) {
+  bool calcKeyNames = (featureKeys.size() == 0);
+  startKeys();
+
   TIC(total);
   assert(obs.preyInd == 0);
   InstancePtr instance(new Instance);
   
   TIC(pos);
-  setFeature(instance,"PredInd",obs.myInd - 1);
+  ADD_KEY("PredInd");
+  setFeature(instance,obs.myInd - 1);
   // positions of agents
   for (unsigned int i = 0; i < obs.positions.size(); i++) {
     TIC(diff);
     Point2D diff = getDifferenceToPoint(dims,obs.myPos(),obs.positions[i]);
     TOC(diff);
     TIC(poskey);
-    std::string key;
-    if (i == 0)
-      key = "Prey";
-    else
-      key = "Pred" + boost::lexical_cast<std::string>(i-1);
-    //setFeature(instance,key + ".dx",diff.x);
-    //setFeature(instance,key + ".dy",diff.y);
-    std::string keyx = key + ".dx";
-    std::string keyy = key + ".dy";
+    if (calcKeyNames) {
+      std::string key;
+      if (i == 0)
+        key = "Prey";
+      else
+        key = "Pred" + boost::lexical_cast<std::string>(i-1);
+      //setFeature(instance,key + ".dx",diff.x);
+      //setFeature(instance,key + ".dy",diff.y);
+      addKey(key + ".dx");
+      addKey(key + ".dy");
+    }
     TOC(poskey);
     TIC(posset);
-    setFeature(instance,keyx,diff.x);
-    setFeature(instance,keyy,diff.x);
+    setFeature(instance,diff.x);
+    setFeature(instance,diff.x);
     TOC(posset);
   }
   TOC(pos);
@@ -109,17 +117,19 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
         break;
       }
     }
-    std::string key = "Occupied." + boost::lexical_cast<std::string>(a);
-    setFeature(instance,key,occupied);
+    ADD_KEY("Occupied." + boost::lexical_cast<std::string>(a));
+    setFeature(instance,occupied);
   }
-  setFeature(instance,"NextToPrey",next2prey);
+  ADD_KEY("NextToPrey");
+  setFeature(instance,next2prey);
   TOC(derived);
   // actions predicted by models
   TIC(actions);
   ActionProbs actionProbs;
   for (std::vector<FeatureAgent>::iterator it = featureAgents.begin(); it != featureAgents.end(); it++) {
     actionProbs = it->agent->step(obs);
-    setFeature(instance,it->name + ".des",actionProbs.maxAction());
+    ADD_KEY(it->name + ".des");
+    setFeature(instance,actionProbs.maxAction());
   }
   TOC(actions);
   // update the history
@@ -134,12 +144,13 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
       else
         action = Action::NUM_ACTIONS;
       if (USE_ALL_AGENTS_HISTORY) {
-        std::string key = "HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j);
-        setFeature(instance,key,action);
+        ADD_KEY("HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j));
+        setFeature(instance,action);
       }
 
       if (agentInd == obs.myInd) {
-        setFeature(instance,"MyHistoricalAction." + boost::lexical_cast<std::string>(j),action);
+        ADD_KEY("MyHistoricalAction." + boost::lexical_cast<std::string>(j));
+        setFeature(instance,action);
       }
 
     }
@@ -147,6 +158,7 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
   TOC(history);
 
   instance->weight = 1.0;
+  endKeys();
   TOC(total);
   return instance;
 }
@@ -187,4 +199,11 @@ void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs,
 void FeatureExtractor::printTimes() {
   std::cout << "FeatureExtractor Timings: " << OUTPUT(total) << OUTPUT(pos) << OUTPUT(derived) << OUTPUT(actions) << OUTPUT(history) << std::endl;
   std::cout << "  " << OUTPUT(pos) << ":" << OUTPUT(diff) << OUTPUT(poskey) << OUTPUT(posset) << std::endl;
+}
+  
+void FeatureExtractor::endKeys() {
+  if (keyInd != featureKeys.size()) {
+    std::cerr << "FeatureExtractor: incorrect number of keys, got final ind: " << keyInd << " for size: " << featureKeys.size() << std::endl;
+    exit(57);
+  }
 }

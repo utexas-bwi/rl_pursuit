@@ -16,15 +16,44 @@ Modified: 2011-12-01
 #include <stdexcept>
 #include <ostream>
 #include <boost/shared_ptr.hpp>
+#include <common/Enum.h>
 
 typedef std::vector<float> Classification;
+
+const float FEATURE_UNSET = 999999;
+inline bool isFeatureUnset(float val) {
+  return fabs(FEATURE_UNSET - val) < 0.0001f;
+}
+
+ENUM(FeatureType,
+  ind,
+  preyDx,
+  preyDy,
+  pred0Dx,
+  pred0Dy,
+  pred1Dx,
+  pred1Dy,
+  pred2Dx,
+  pred2Dy,
+  pred3Dx,
+  pred3Dy,
+  occupiedRight,
+  occupiedLeft,
+  occupiedUp,
+  occupiedDown,
+  nextToPrey,
+  myHistoricalAction0,
+  myHistoricalAction1
+)
 
 struct Instance {
   Instance();
   void clear();
   unsigned int size() const;
-  float& operator[](const std::string &key);
-  float operator[](const std::string &key) const;
+  inline float& operator[] (FeatureType_t f) {return data[f];}
+  inline float operator[] (FeatureType_t f) const {return data[f];}
+  //float& operator[](const std::string &key);
+  //float operator[](const std::string &key) const;
   //inline float& operator[](const std::string &key) {
     //return data[key];
   //}
@@ -34,9 +63,10 @@ struct Instance {
       //throw std::out_of_range("Unknown key: " + key);
     //return it->second;
   //}
-  float get(const std::string& key, float defaultVal) const;
+  //float get(const std::string& key, float defaultVal) const;
   
-  std::map<std::string,float> data;
+  //std::map<std::string,float> data;
+  float data[FeatureType::NUM];
   unsigned int label;
   float weight;
   bool operator==(const Instance &inst) const;
@@ -63,7 +93,7 @@ struct InstanceSet {
   unsigned int size() const;
   InstancePtr operator[](unsigned int ind) const;
   InstancePtr& operator[](unsigned int ind);
-  void getValuesForFeature(const std::string &key, FloatSet &values);
+  void getValuesForFeature(const FeatureType_t &key, FloatSet &values);
   void recalculateWeight();
 
   std::vector<InstancePtr> instances;
@@ -75,7 +105,8 @@ typedef boost::shared_ptr<InstanceSet> InstanceSetPtr;
 
 
 struct Feature {
-  std::string name;
+  //std::string name;
+  FeatureType_t feat;
   bool numeric;
   std::vector<unsigned int> values;
   
