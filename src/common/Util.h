@@ -19,7 +19,25 @@ Modified: 2011-12-02
 #ifndef NULL
 #define NULL 0
 #endif
+
 double getTime();
+void tic(int id=0);
+double toc(int id=0);
+void toc(double &counter, int id=0);
+
+class Timer {
+public:
+  Timer():
+    last(0),
+    counter(0)
+  {}
+  void tic() {last = getTime(); }
+  void toc() {counter += getTime()-last;}
+  double get() {return counter;}
+private:
+  double last;
+  double counter;
+};
 
 template <class T>
 inline int sgn(const T &x) {

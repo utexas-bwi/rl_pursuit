@@ -34,6 +34,7 @@ public:
   InstancePtr extract(const Observation &obs, FeatureExtractorHistory &history);
   void updateHistory(const Observation &obs, FeatureExtractorHistory &history);
   void calcObservedActions(Observation prevObs, Observation obs, std::vector<Action::Type> &actions);
+  void printTimes();
 
 protected:
   struct FeatureAgent {
@@ -41,7 +42,11 @@ protected:
     boost::shared_ptr<Agent> agent;
   };
 
-  void setFeature(InstancePtr &instance, const std::string &key, float val);
+  //void setFeature(InstancePtr &instance, const std::string &key, float val);
+  inline void setFeature(InstancePtr &instance, const std::string &key, float val) {
+    (*instance)[key] = val;
+  }
+
 
 protected:
   const Point2D dims;

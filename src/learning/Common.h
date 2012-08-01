@@ -25,6 +25,15 @@ struct Instance {
   unsigned int size() const;
   float& operator[](const std::string &key);
   float operator[](const std::string &key) const;
+  //inline float& operator[](const std::string &key) {
+    //return data[key];
+  //}
+  //inline float operator[](const std::string &key) const {
+    //std::map<std::string,float>::const_iterator it = data.find(key);
+    //if (it == data.end())
+      //throw std::out_of_range("Unknown key: " + key);
+    //return it->second;
+  //}
   float get(const std::string& key, float defaultVal) const;
   
   std::map<std::string,float> data;

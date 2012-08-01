@@ -13,6 +13,34 @@ Modified: 2011-12-10
 const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
 const bool FeatureExtractor::USE_ALL_AGENTS_HISTORY = false;
 
+#define FEATURE_EXTRACTOR_TIMING
+
+#ifdef FEATURE_EXTRACTOR_TIMING
+
+#define TIC(s) FEATURE_EXTRACTOR_TIMING_ ## s.tic()
+#define TOC(s) FEATURE_EXTRACTOR_TIMING_ ## s.toc()
+#define GETTIME(s) FEATURE_EXTRACTOR_TIMING_ ## s.get()
+#define OUTPUT(s) #s << "(" << GETTIME(s) << ") " 
+#define MAKE(s) Timer FEATURE_EXTRACTOR_TIMING_ ## s
+
+MAKE(total);
+MAKE(pos);
+MAKE(derived);
+MAKE(actions);
+MAKE(history);
+MAKE(diff);
+MAKE(poskey);
+MAKE(posset);
+
+#else
+
+#define TIC(s) ((void) 0)
+#define TOC(s) ((void) 0)
+#define GETTIME(s) ((void) 0)
+#define OUTPUT(s) ((void) 0)
+
+#endif
+
 FeatureExtractorHistory::FeatureExtractorHistory():
   initialized(false),
   actionHistory()
@@ -37,22 +65,36 @@ void FeatureExtractor::addFeatureAgent(const std::string &key, const std::string
 }
 
 InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHistory &history) {
+  TIC(total);
   assert(obs.preyInd == 0);
   InstancePtr instance(new Instance);
   
+  TIC(pos);
   setFeature(instance,"PredInd",obs.myInd - 1);
   // positions of agents
   for (unsigned int i = 0; i < obs.positions.size(); i++) {
+    TIC(diff);
     Point2D diff = getDifferenceToPoint(dims,obs.myPos(),obs.positions[i]);
+    TOC(diff);
+    TIC(poskey);
     std::string key;
     if (i == 0)
       key = "Prey";
     else
       key = "Pred" + boost::lexical_cast<std::string>(i-1);
-    setFeature(instance,key + ".dx",diff.x);
-    setFeature(instance,key + ".dy",diff.y);
+    //setFeature(instance,key + ".dx",diff.x);
+    //setFeature(instance,key + ".dy",diff.y);
+    std::string keyx = key + ".dx";
+    std::string keyy = key + ".dy";
+    TOC(poskey);
+    TIC(posset);
+    setFeature(instance,keyx,diff.x);
+    setFeature(instance,keyy,diff.x);
+    TOC(posset);
   }
+  TOC(pos);
   // derived features
+  TIC(derived);
   bool next2prey = false;
   for (unsigned int a = 0; a < Action::NUM_NEIGHBORS; a++) {
     Point2D pos = movePosition(dims,obs.myPos(),(Action::Type)a);
@@ -71,13 +113,17 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
     setFeature(instance,key,occupied);
   }
   setFeature(instance,"NextToPrey",next2prey);
+  TOC(derived);
   // actions predicted by models
+  TIC(actions);
   ActionProbs actionProbs;
   for (std::vector<FeatureAgent>::iterator it = featureAgents.begin(); it != featureAgents.end(); it++) {
     actionProbs = it->agent->step(obs);
     setFeature(instance,it->name + ".des",actionProbs.maxAction());
   }
+  TOC(actions);
   // update the history
+  TIC(history);
   updateHistory(obs,history);
   // add the history features
   Action::Type action;
@@ -98,8 +144,10 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
 
     }
   }
+  TOC(history);
 
   instance->weight = 1.0;
+  TOC(total);
   return instance;
 }
 
@@ -132,7 +180,11 @@ void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs,
   }
 }
 
-void FeatureExtractor::setFeature(InstancePtr &instance, const std::string &key, float val) {
-  (*instance)[key] = val;
-}
+//void FeatureExtractor::setFeature(InstancePtr &instance, const std::string &key, float val) {
+  //(*instance)[key] = val;
+//}
 
+void FeatureExtractor::printTimes() {
+  std::cout << "FeatureExtractor Timings: " << OUTPUT(total) << OUTPUT(pos) << OUTPUT(derived) << OUTPUT(actions) << OUTPUT(history) << std::endl;
+  std::cout << "  " << OUTPUT(pos) << ":" << OUTPUT(diff) << OUTPUT(poskey) << OUTPUT(posset) << std::endl;
+}
