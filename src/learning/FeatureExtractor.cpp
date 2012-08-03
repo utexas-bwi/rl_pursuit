@@ -100,6 +100,7 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
   }
 
   instance->weight = 1.0;
+  //std::cout << "instance: " << *instance << std::endl;
   return instance;
 }
 

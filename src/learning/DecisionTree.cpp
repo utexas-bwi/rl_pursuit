@@ -25,6 +25,7 @@ DecisionTree::InteriorNode::InteriorNode(ComparisonOperator cmp, const std::stri
   cmp(cmp),
   splitKey(splitKey)
 {
+  //std::cout << "  " << splitKey << std::endl;
 }
 
 void DecisionTree::InteriorNode::addChild(const NodePtr &child, float splitValue) {

@@ -3,6 +3,14 @@
 #include <controller/ModelUpdaterBayes.h>
 #include <factory/PlanningFactory.h>
 
+//#define WORLDMDP_DEBUG
+
+#ifdef WORLDMDP_DEBUG
+#define OUTPUT(x) std::cout << x << std::endl
+#else
+#define OUTPUT(x) ((void) 0)
+#endif
+
 WorldMDP::WorldMDP(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldModel> model, boost::shared_ptr<World> controller, boost::shared_ptr<AgentDummy> adhocAgent, bool usePreySymmetry):
   rng(rng),
   model(model),
@@ -51,6 +59,11 @@ void WorldMDP::step(Action::Type adhocAction) {//, std::vector<boost::shared_ptr
 }
 
 void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &state, bool &terminal) {
+#ifdef WORLDMDP_DEBUG
+  Observation obs2;
+  controller->generateObservation(obs2);
+  std::cout << "pre takeAction: " << obs2 << std::endl;
+#endif
   adhocAgent->setAction(action);
   controller->step();
 
@@ -65,6 +78,7 @@ void WorldMDP::takeAction(const Action::Type &action, float &reward, State_t &st
   Observation obs;
   controller->generateObservation(obs);
   state = getState(obs);
+  OUTPUT("post takeAction: " << obs);
   //std::cout << obs << std::endl;
   //for (unsigned int i = 0; i < STATE_SIZE; i++)
     //state.positions[i] = model->getAgentPosition(i);

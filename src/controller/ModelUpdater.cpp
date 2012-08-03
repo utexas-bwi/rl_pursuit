@@ -8,6 +8,14 @@ Modified: 2011-09-21
 
 #include "ModelUpdater.h"
 #include <boost/lexical_cast.hpp>
+
+//#define MODELUPDATER_DEBUG
+
+#ifdef MODELUPDATER_DEBUG
+#define OUTPUT(x) std::cout << x << std::endl
+#else
+#define OUTPUT(x) ((void) 0)
+#endif
   
 ModelInfo::ModelInfo(const boost::shared_ptr<WorldMDP> &mdp, const std::string &description, double prob):
   mdp(mdp),
@@ -62,6 +70,7 @@ boost::shared_ptr<WorldMDP> ModelUpdater::selectModel(const State_t &state) {
   //boost::shared_ptr<WorldMDP> mdp(new WorldMDP(*(models[ind].mdp)));
   boost::shared_ptr<WorldMDP> mdp = models[ind].mdp->clone();
   mdp->setState(state);
+  OUTPUT("Select Model: " << ind << " " << models[ind].description);
   return mdp;
   //std::cout << "SELECT MODEL: " << modelDescriptions[ind] << std::endl;
   //mdp->setAgents(models[ind]);

@@ -1,5 +1,14 @@
 #include "World.h"
 #include <boost/lexical_cast.hpp>
+
+//#define WORLD_DEBUG
+
+#ifdef WORLD_DEBUG
+#define OUTPUT(x) std::cout << x << std::endl
+#else
+#define OUTPUT(x) ((void) 0)
+#endif
+
 /*
 bool ObservationComp::operator() (const Observation& lhs, const Observation& rhs) const {
   if (lhs.positions.size() < rhs.positions.size())
@@ -107,6 +116,7 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
     actionProbList.resize(agents.size());
     for (unsigned int i = 0; i < agents.size(); i++) {
       actionProbList[i] = getAgentAction(i,agents[i],obs);
+      OUTPUT("action for " << i << ": " << actionProbList[i]);
       if (!actionProbList[i].checkTotal()) {
         for (unsigned int j = 0; j < Action::NUM_ACTIONS; j++)
           std::cout << actionProbList[i][(Action::Type)j] << " ";

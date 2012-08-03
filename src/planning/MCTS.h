@@ -17,6 +17,14 @@ Modified: 2011-12-13
 #include <common/Util.h>
 #include <controller/ModelUpdater.h>
 
+//#define MCTS_DEBUG
+
+#ifdef MCTS_DEBUG
+#define MCTS_OUTPUT(x) std::cout << x << std::endl
+#else
+#define MCTS_OUTPUT(x) ((void) 0)
+#endif
+
 template<class State, class Action>
 class MCTS {
 public:
@@ -64,12 +72,12 @@ template<class State, class Action>
 void MCTS<State,Action>::search(const State &startState) {
   endPlanningTime = getTime() + maxPlanningTime;
   for (unsigned int i = 0; (numPlayouts == 0) || (i < numPlayouts); i++) {
-    //std::cout << "-----------------------------------" << std::endl;
-    //std::cout << "ROLLOUT: " << i << std::endl;
+    MCTS_OUTPUT("-----------------------------------");
+    MCTS_OUTPUT("ROLLOUT: " << i);
     if ((maxPlanningTime > 0) && (getTime() > endPlanningTime))
       break;
     rollout(startState);
-    //std::cout << "-----------------------------------" << std::endl;
+    MCTS_OUTPUT("-----------------------------------");
   }
 }
 
@@ -113,7 +121,7 @@ void MCTS<State,Action>::checkInternals() {
 
 template<class State, class Action>
 void MCTS<State,Action>::rollout(const State &startState) {
-  //std::cout << "------------START ROLLOUT--------------" << std::endl;
+  MCTS_OUTPUT("------------START ROLLOUT--------------");
   boost::shared_ptr<Model<State,Action> > model = modelUpdater->selectModel(startState);
   State state(startState);
   State newState;
@@ -123,8 +131,7 @@ void MCTS<State,Action>::rollout(const State &startState) {
   valueEstimator->startRollout();
 
   for (unsigned int depth = 0; (depth < maxDepth) || (maxDepth == 0); depth++) {
-    //std::cout << "MCTS State: " << state << " ";// << std::endl;
-    //std::cout << "DEPTH: " << depth << std::endl;
+    MCTS_OUTPUT("MCTS State: " << state << " " << "DEPTH: " << depth);
     if (terminal || ((maxPlanningTime > 0) && (getTime() > endPlanningTime)))
       break;
     action = valueEstimator->selectPlanningAction(state);
@@ -136,7 +143,7 @@ void MCTS<State,Action>::rollout(const State &startState) {
   }
 
   valueEstimator->finishRollout(state,terminal);
-  //std::cout << "------------STOP  ROLLOUT--------------" << std::endl;
+  MCTS_OUTPUT("------------STOP  ROLLOUT--------------");
 }
 
 #endif /* end of include guard: MCTS_MJ647W13 */
