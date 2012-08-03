@@ -10,7 +10,7 @@ Modified: 2011-12-02
 #include <factory/AgentFactory.h>
 #include <boost/lexical_cast.hpp>
 
-#define PREDATOR_CLASSIFIER_TIMING
+//#define PREDATOR_CLASSIFIER_TIMING
 double PREDATOR_CLASSIFIER_TIMING_STEP = 0.;
 double PREDATOR_CLASSIFIER_TIMING_EXTRACT = 0.;
 double PREDATOR_CLASSIFIER_TIMING_CLASSIFY = 0.;
@@ -79,8 +79,10 @@ std::string PredatorClassifier::generateDescription() {
 }
 
 void PredatorClassifier::learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind) {
+#ifdef PREDATOR_CLASSIFIER_TIMING
   std::cout << "Classifier timings step, extract, classify: " << PREDATOR_CLASSIFIER_TIMING_STEP << " " << PREDATOR_CLASSIFIER_TIMING_EXTRACT << " " << PREDATOR_CLASSIFIER_TIMING_CLASSIFY << std::endl;
   featureExtractor.printTimes();
+#endif
   if (trainingPeriod < 0)
     return;
 

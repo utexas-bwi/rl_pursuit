@@ -13,7 +13,7 @@ Modified: 2011-12-10
 const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
 const bool FeatureExtractor::USE_ALL_AGENTS_HISTORY = false;
 
-#define FEATURE_EXTRACTOR_TIMING
+//#define FEATURE_EXTRACTOR_TIMING
 
 #ifdef FEATURE_EXTRACTOR_TIMING
 
@@ -28,9 +28,11 @@ MAKE(pos);
 MAKE(derived);
 MAKE(actions);
 MAKE(history);
-MAKE(diff);
-MAKE(poskey);
-MAKE(posset);
+MAKE(historycalc);
+MAKE(historyupdate);
+MAKE(historydiff);
+MAKE(historyaction);
+MAKE(historyuncenter);
 
 #else
 
@@ -73,16 +75,10 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
   setFeature(instance,FeatureType::PredInd,obs.myInd - 1);
   // positions of agents
   for (unsigned int i = 0; i < obs.positions.size(); i++) {
-    //TIC(diff);
     Point2D diff = getDifferenceToPoint(dims,obs.myPos(),obs.positions[i]);
-    //TOC(diff);
-    //TIC(poskey);
     unsigned int key = FeatureType::Prey_dx + 2 * i;
-    //TOC(poskey);
-    //TIC(posset);
     setFeature(instance,key,diff.x);
     setFeature(instance,key+1,diff.y);
-    //TOC(posset);
   }
   TOC(pos);
   // derived features
@@ -121,6 +117,7 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
   TIC(history);
   updateHistory(obs,history);
   // add the history features
+  TIC(historyupdate);
   Action::Type action;
   for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
     if (j < history.actionHistory[obs.myInd].size())
@@ -129,6 +126,7 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
       action = Action::NUM_ACTIONS;
     setFeature(instance,FeatureType::MyHistoricalAction_0 + j,action);
   }
+  TOC(historyupdate);
 /*
   for (unsigned int agentInd = 0; agentInd < obs.positions.size(); agentInd++) {
     for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
@@ -160,7 +158,9 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
 void FeatureExtractor::updateHistory(const Observation &obs, FeatureExtractorHistory &history) {
   std::vector<Action::Type> observedActions;
   if (history.initialized) {
+    TIC(historycalc);
     calcObservedActions(history.obs,obs,observedActions);
+    TOC(historycalc);
   } else {
     //std::cout << "no hist " << obs << std::endl;
     for (unsigned int i = 0; i < obs.positions.size(); i++) {
@@ -176,13 +176,20 @@ void FeatureExtractor::updateHistory(const Observation &obs, FeatureExtractorHis
 }
 
 void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs, std::vector<Action::Type> &actions) {
-  actions.clear();
+  actions.resize(prevObs.positions.size());
+  TIC(historyuncenter);
   prevObs.uncenterPrey(dims);
   obs.uncenterPrey(dims);
+  TOC(historyuncenter);
   //std::cout << prevObs << " " << obs << std::endl << std::flush;
   for (unsigned int i = 0; i < prevObs.positions.size(); i++) {
+    TIC(historydiff);
     Point2D diff = getDifferenceToPoint(dims,prevObs.positions[i],obs.positions[i]);
-    actions.push_back(getAction(diff));
+    TOC(historydiff);
+    TIC(historyaction);
+    //actions.push_back(getAction(diff));
+    actions[i] = getAction(diff);
+    TOC(historyaction);
   }
 }
 
@@ -191,6 +198,8 @@ void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs,
 //}
 
 void FeatureExtractor::printTimes() {
+#ifdef FEATURE_EXTRACTOR_TIMING
   std::cout << "FeatureExtractor Timings: " << OUTPUT(total) << OUTPUT(pos) << OUTPUT(derived) << OUTPUT(actions) << OUTPUT(history) << std::endl;
-  std::cout << "  " << OUTPUT(pos) << ":" << OUTPUT(diff) << OUTPUT(poskey) << OUTPUT(posset) << std::endl;
+  std::cout << "  " << OUTPUT(history) << ":" << OUTPUT(historycalc) << OUTPUT(historyupdate) << OUTPUT(historydiff) << OUTPUT(historyaction) << OUTPUT(historyuncenter) << std::endl;
+#endif
 }

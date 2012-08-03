@@ -1,6 +1,5 @@
 #include "Util.h"
 
-#include <sys/time.h>
 #include <fstream>
 #include <cmath>
 #include <cassert>
@@ -8,12 +7,7 @@
 #include <stdlib.h>
 #include <limits>
 
-double getTime() {
-  struct timeval time;
-
-  gettimeofday(&time,NULL);
-  return time.tv_sec + time.tv_usec / 1000000.0;
-}
+//double getTime() {
 
 std::map<int,double> TIME_MAP;
 

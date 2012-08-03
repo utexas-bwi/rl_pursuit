@@ -15,12 +15,18 @@ Modified: 2011-12-02
 #include <vector>
 #include <ostream>
 #include <map>
+#include <sys/time.h>
 
 #ifndef NULL
 #define NULL 0
 #endif
 
-double getTime();
+inline double getTime() {
+  struct timeval time;
+
+  gettimeofday(&time,NULL);
+  return time.tv_sec + time.tv_usec / 1000000.0;
+}
 void tic(int id=0);
 double toc(int id=0);
 void toc(double &counter, int id=0);
@@ -31,9 +37,9 @@ public:
     last(0),
     counter(0)
   {}
-  void tic() {last = getTime(); }
-  void toc() {counter += getTime()-last;}
-  double get() {return counter;}
+  inline void tic() {last = getTime(); }
+  inline void toc() {counter += getTime()-last;}
+  inline double get() {return counter;}
 private:
   double last;
   double counter;
