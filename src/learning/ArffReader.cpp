@@ -9,6 +9,7 @@ Modified: 2011-11-21
 #include "ArffReader.h"
 #include <cassert>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 ArffReader::ArffReader(std::ifstream &in):
   in(in)
@@ -76,7 +77,9 @@ void ArffReader::readHeader() {
     startInd = str.find(" ",start.size()-1);
     endInd = str.find(" ",startInd+1);
     Feature feature;
-    feature.name = str.substr(startInd+1,endInd-startInd-1);
+    std::string name = str.substr(startInd+1,endInd-startInd-1);
+    boost::replace_all(name,".","_"); // because . is unusable for the enum
+    feature.feat = FeatureType::fromName(name);
     feature.numeric = str.substr(endInd + 1) == "numeric";
     if (!feature.numeric) {
       unsigned int start = endInd + 1;

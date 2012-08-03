@@ -10,13 +10,19 @@ Modified: 2011-12-27
 #include <iostream>
 #include <common/Util.h>
 
-std::size_t hash_value(const Instance &i) {
+std::size_t hash_value(const Instance &inst) {
   std::size_t seed = 0;
-  boost::hash_combine(seed,i.data.size());
-  for (std::map<std::string,float>::const_iterator it = i.data.begin(); it != i.data.end(); it++)
-    boost::hash_combine(seed,it->second);
+  for (unsigned int i = 0; i < FeatureType::NUM; i++)
+    boost::hash_combine(seed,inst.data[i]);
   return seed;
 }
+//std::size_t hash_value(const Instance &i) {
+  //std::size_t seed = 0;
+  //boost::hash_combine(seed,i.data.size());
+  //for (std::map<std::string,float>::const_iterator it = i.data.begin(); it != i.data.end(); it++)
+    //boost::hash_combine(seed,it->second);
+  //return seed;
+//}
 
 Classifier::Classifier(const std::vector<Feature> &features, bool caching):
   features(features),

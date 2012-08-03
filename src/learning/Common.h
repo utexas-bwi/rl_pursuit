@@ -16,35 +16,9 @@ Modified: 2011-12-01
 #include <stdexcept>
 #include <ostream>
 #include <boost/shared_ptr.hpp>
-#include <common/Enum.h>
+#include "Features.h"
 
 typedef std::vector<float> Classification;
-
-const float FEATURE_UNSET = 999999;
-inline bool isFeatureUnset(float val) {
-  return fabs(FEATURE_UNSET - val) < 0.0001f;
-}
-
-ENUM(FeatureType,
-  ind,
-  preyDx,
-  preyDy,
-  pred0Dx,
-  pred0Dy,
-  pred1Dx,
-  pred1Dy,
-  pred2Dx,
-  pred2Dy,
-  pred3Dx,
-  pred3Dy,
-  occupiedRight,
-  occupiedLeft,
-  occupiedUp,
-  occupiedDown,
-  nextToPrey,
-  myHistoricalAction0,
-  myHistoricalAction1
-)
 
 struct Instance {
   Instance();
@@ -64,6 +38,13 @@ struct Instance {
     //return it->second;
   //}
   //float get(const std::string& key, float defaultVal) const;
+  
+  inline float get(FeatureType_t key, float defaultVal) const {
+    float val = data[key];
+    if (isFeatureUnset(val))
+      return defaultVal;
+    return val;
+  }
   
   //std::map<std::string,float> data;
   float data[FeatureType::NUM];

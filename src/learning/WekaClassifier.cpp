@@ -95,7 +95,7 @@ void WekaClassifier::classifyInternal(const InstancePtr &instance, Classificatio
 
 void WekaClassifier::writeInstance(const InstanceConstPtr &instance) {
   for (unsigned int i = 0; i < features.size(); i++) {
-    comm->features[i] = instance->get(features[i].name,0);
+    comm->features[i] = instance->get(features[i].feat,0);
     //std::cout << i << " " << features[i].name << " " << comm->features[i] << std::endl;
   }
   *(comm->weight) = instance->weight;

@@ -121,7 +121,7 @@ void NaiveBayes::learnDiscreteAttribute(const Feature &feature) {
   std::vector<float> valueWeights(feature.values.size(),0);
   for (unsigned int i = 0; i < data.size(); i++) {
     for (unsigned int j = 0; j < feature.values.size(); j++) {
-      if (fabs((*data[i])[feature.name] - feature.values[j]) < 0.01) {
+      if (fabs((*data[i])[feature.feat] - feature.values[j]) < 0.01) {
         valueWeights[j] += data[i]->weight; // increment tho total weight
         attr.probs[j][data[i]->label] += data[i]->weight; // increment the weight of the correct class
         break;
@@ -173,7 +173,7 @@ void NaiveBayes::learnContinuousAttribute(const Feature &feature) {
   double sharedStdev = 0.0;
   // get mean of data for each class
   for (unsigned int i = 0; i < data.size(); i++) {
-    double val = data[i]->weight * (*data[i])[feature.name];
+    double val = data[i]->weight * (*data[i])[feature.feat];
     weights[data[i]->label] += data[i]->weight;
     attr.means[data[i]->label] += val;
 
@@ -194,10 +194,10 @@ void NaiveBayes::learnContinuousAttribute(const Feature &feature) {
   float val;
   float sharedVal = 0.0;
   for (unsigned int i = 0; i < data.size(); i++) {
-    val = (*data[i])[feature.name] - attr.means[data[i]->label];
+    val = (*data[i])[feature.feat] - attr.means[data[i]->label];
     attr.stdevs[data[i]->label] += data[i]->weight * val * val;
 
-    sharedVal = (*data[i])[feature.name] - sharedMean;
+    sharedVal = (*data[i])[feature.feat] - sharedMean;
     sharedStdev += data[i]->weight * sharedVal * sharedVal;
   }
   // make in stdev instead of variance
@@ -232,7 +232,7 @@ void NaiveBayes::predictDiscreteAttribute(const InstancePtr &instance, unsigned 
 #endif
   int valueInd = -1;
   for (unsigned int i = 0; i < features[attrInd].values.size(); i++) {
-    if (fabs((*instance)[features[attrInd].name] - features[attrInd].values[i]) < 0.01) {
+    if (fabs((*instance)[features[attrInd].feat] - features[attrInd].values[i]) < 0.01) {
       valueInd = i;
       break;
     }
@@ -263,7 +263,7 @@ void NaiveBayes::predictContinuousAttribute(const InstancePtr &instance, unsigne
   for (unsigned int i = 0; i < numClasses; i++) {
     //float val = ((*instance)[features[attrInd].name] - attributes[attrInd].means[i]);
     //float x = 1 / sqrt(2 * M_PI * attributes[attrInd].vars[i]) * exp(- val * val / (2 * attributes[attrInd].vars[i]));
-    float val = (((*instance)[features[attrInd].name] - attributes[attrInd].means[i])) / attributes[attrInd].stdevs[i];
+    float val = (((*instance)[features[attrInd].feat] - attributes[attrInd].means[i])) / attributes[attrInd].stdevs[i];
     //float x = 1 / sqrt(2 * M_PI) * exp(-0.5 * val * val);
     //c[i] *= x;
     float x = log(1 / sqrt(2 * M_PI)) - 0.5 * val * val;

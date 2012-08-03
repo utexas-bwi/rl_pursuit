@@ -101,7 +101,7 @@ void SVM::classifyInternal(const InstancePtr &instance, Classification &classifi
 void SVM::setNode(const InstancePtr &instance, libsvm::svm_node *nodes) {
   for (unsigned int i = 0; i < features.size() - 1; i++) {
     nodes[i].index = i+1;
-    nodes[i].value = (*instance)[features[i].name];
+    nodes[i].value = (*instance)[features[i].feat];
     //if (node.values[i+1] > maxVals[i])
       //maxVals[i] = node.values[i+1];
     //if (node.values[i+1] < minVals[i])

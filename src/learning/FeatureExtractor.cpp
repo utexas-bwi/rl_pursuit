@@ -13,8 +13,6 @@ Modified: 2011-12-10
 const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
 const bool FeatureExtractor::USE_ALL_AGENTS_HISTORY = false;
 
-#define ADD_KEY(s) if (calcKeyNames) {addKey(s);}
-
 #define FEATURE_EXTRACTOR_TIMING
 
 #ifdef FEATURE_EXTRACTOR_TIMING
@@ -67,38 +65,24 @@ void FeatureExtractor::addFeatureAgent(const std::string &key, const std::string
 }
 
 InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHistory &history) {
-  bool calcKeyNames = (featureKeys.size() == 0);
-  startKeys();
-
   TIC(total);
   assert(obs.preyInd == 0);
   InstancePtr instance(new Instance);
   
   TIC(pos);
-  ADD_KEY("PredInd");
-  setFeature(instance,obs.myInd - 1);
+  setFeature(instance,FeatureType::PredInd,obs.myInd - 1);
   // positions of agents
   for (unsigned int i = 0; i < obs.positions.size(); i++) {
-    TIC(diff);
+    //TIC(diff);
     Point2D diff = getDifferenceToPoint(dims,obs.myPos(),obs.positions[i]);
-    TOC(diff);
-    TIC(poskey);
-    if (calcKeyNames) {
-      std::string key;
-      if (i == 0)
-        key = "Prey";
-      else
-        key = "Pred" + boost::lexical_cast<std::string>(i-1);
-      //setFeature(instance,key + ".dx",diff.x);
-      //setFeature(instance,key + ".dy",diff.y);
-      addKey(key + ".dx");
-      addKey(key + ".dy");
-    }
-    TOC(poskey);
-    TIC(posset);
-    setFeature(instance,diff.x);
-    setFeature(instance,diff.x);
-    TOC(posset);
+    //TOC(diff);
+    //TIC(poskey);
+    unsigned int key = FeatureType::Prey_dx + 2 * i;
+    //TOC(poskey);
+    //TIC(posset);
+    setFeature(instance,key,diff.x);
+    setFeature(instance,key+1,diff.y);
+    //TOC(posset);
   }
   TOC(pos);
   // derived features
@@ -117,19 +101,20 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
         break;
       }
     }
-    ADD_KEY("Occupied." + boost::lexical_cast<std::string>(a));
-    setFeature(instance,occupied);
+    setFeature(instance,FeatureType::Occupied_0 + a, occupied);
   }
-  ADD_KEY("NextToPrey");
-  setFeature(instance,next2prey);
+  setFeature(instance,FeatureType::NextToPrey,next2prey);
   TOC(derived);
   // actions predicted by models
   TIC(actions);
-  ActionProbs actionProbs;
+  // not currently supported
+  //ActionProbs actionProbs;
   for (std::vector<FeatureAgent>::iterator it = featureAgents.begin(); it != featureAgents.end(); it++) {
-    actionProbs = it->agent->step(obs);
-    ADD_KEY(it->name + ".des");
-    setFeature(instance,actionProbs.maxAction());
+    std::cerr << "FeatureExtractor can't handle featureAgents" << std::endl;
+    exit(58);
+    //actionProbs = it->agent->step(obs);
+    //ADD_KEY(it->name + ".des");
+    //setFeature(instance,actionProbs.maxAction());
   }
   TOC(actions);
   // update the history
@@ -137,6 +122,14 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
   updateHistory(obs,history);
   // add the history features
   Action::Type action;
+  for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
+    if (j < history.actionHistory[obs.myInd].size())
+      action = history.actionHistory[obs.myInd][j];
+    else
+      action = Action::NUM_ACTIONS;
+    setFeature(instance,FeatureType::MyHistoricalAction_0 + j,action);
+  }
+/*
   for (unsigned int agentInd = 0; agentInd < obs.positions.size(); agentInd++) {
     for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
       if (j < history.actionHistory[agentInd].size())
@@ -144,21 +137,22 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
       else
         action = Action::NUM_ACTIONS;
       if (USE_ALL_AGENTS_HISTORY) {
-        ADD_KEY("HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j));
-        setFeature(instance,action);
+        std::cerr << "FeatureExtractor can't handle all agents history" << std::endl;
+        exit(58);
+        //ADD_KEY("HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j));
+        //setFeature(instance,action);
       }
 
       if (agentInd == obs.myInd) {
-        ADD_KEY("MyHistoricalAction." + boost::lexical_cast<std::string>(j));
-        setFeature(instance,action);
+        setFeature(instance,FeatureType::MyHistoricalAction_0 + j,action);
       }
 
     }
   }
+*/
   TOC(history);
 
   instance->weight = 1.0;
-  endKeys();
   TOC(total);
   return instance;
 }
@@ -199,11 +193,4 @@ void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs,
 void FeatureExtractor::printTimes() {
   std::cout << "FeatureExtractor Timings: " << OUTPUT(total) << OUTPUT(pos) << OUTPUT(derived) << OUTPUT(actions) << OUTPUT(history) << std::endl;
   std::cout << "  " << OUTPUT(pos) << ":" << OUTPUT(diff) << OUTPUT(poskey) << OUTPUT(posset) << std::endl;
-}
-  
-void FeatureExtractor::endKeys() {
-  if (keyInd != featureKeys.size()) {
-    std::cerr << "FeatureExtractor: incorrect number of keys, got final ind: " << keyInd << " for size: " << featureKeys.size() << std::endl;
-    exit(57);
-  }
 }

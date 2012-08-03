@@ -20,11 +20,11 @@ Modified: 2011-12-10
 
 class OutputDT {
 public:
-  struct FeatureType {
-    FeatureType(const std::string &name, int numCategories);
-    std::string name;
-    int numCategories;
-  };
+  //struct FeatureType {
+    //FeatureType(const std::string &name, int numCategories);
+    //std::string name;
+    //int numCategories;
+  //};
   OutputDT(const std::string &filename, const Point2D &dims, unsigned int numPredators, const std::vector<std::string> &modelNames, bool outputArff, bool useDesiredActions, unsigned int numSamples);
 
   void saveStep(unsigned int trialNum, unsigned int numSteps, const Observation &obs, const std::vector<Action::Type> &desiredActions);
@@ -45,7 +45,7 @@ protected:
   unsigned int numPredators;
   bool outputArff;
   bool useDesiredActions;
-  std::vector<FeatureType> featureTypes;
+  //std::vector<FeatureType> featureTypes;
   std::vector<std::vector<std::string> > outputForSteps;
   std::vector<Instance> instances;
   Observation prevObs;
