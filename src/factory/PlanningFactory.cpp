@@ -62,8 +62,8 @@ void ReplaceDataStudent::operator() (Json::Value &value) {
 }
 
 // MODEL UPDATER
-boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType updateType) {
-    return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,models,updateType));
+boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType updateType, bool allowRemovingModels) {
+    return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,models,updateType,allowRemovingModels));
 }
 
 boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options) {
@@ -134,8 +134,9 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     // make a bayes updater
     std::string updateTypeString = options.get("update","bayesian").asString();
     ModelUpdateType updateType = getModelUpdateType(updateTypeString);
+    bool allowRemovingModels = options.get("allowRemovingModels",true).asBool();
 
-    ptr = createModelUpdaterBayes(rng,modelList,updateType);
+    ptr = createModelUpdaterBayes(rng,modelList,updateType,allowRemovingModels);
   }
   // optionally enable output
   std::string modelOutput = options.get("modelOutputFile","").asString();

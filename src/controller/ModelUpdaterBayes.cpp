@@ -13,9 +13,10 @@ Modified: 2011-10-02
 
 const float ModelUpdaterBayes::MIN_MODEL_PROB = 0.001;
 
-ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType):
+ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType, bool allowRemovingModels):
   ModelUpdater(rng,models),
-  modelUpdateType(modelUpdateType)
+  modelUpdateType(modelUpdateType),
+  allowRemovingModels(allowRemovingModels)
 {
 }
 
@@ -137,7 +138,12 @@ void ModelUpdaterBayes::removeLowProbabilityModels() {
   // remove the models that are below the threshold
   while (i < models.size()) {
     if (models[i].prob < MIN_MODEL_PROB) {
-      removeModel(i);
+      if (allowRemovingModels)
+        removeModel(i);
+      else {
+        models[i].prob = MIN_MODEL_PROB;
+        ++i;
+      }
       removedModels = true;
     } else {
       ++i;
