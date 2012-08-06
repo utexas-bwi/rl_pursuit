@@ -110,10 +110,13 @@ def getStudentInds(path,includeStudents,excludeStudents):
     inds.append(i)
   return inds
 
-def main(paths,outputCsv,includeStudents,excludeStudents,matchNumEpisodes):
-  studentInds = getStudentInds('data/newStudents29.txt',includeStudents,excludeStudents)
+def main(paths,options):
+  studentInds = getStudentInds('data/newStudents29.txt',options.includeStudents,options.excludeStudents)
   numEpisodes = len(studentInds)
-  if matchNumEpisodes:
+  if options.useQuantile:
+    fracToRemove = numpy.floor((1.0 - options.quantile) * 0.5 * numEpisodes + 0.5)
+    print >>sys.stderr,'Removing bottom and top %i episodes for quantile %g' % (fracToRemove,options.quantile)
+  if options.matchNumEpisodes:
     print 'MATCHING number of episodes, via sorting first axis (MIGHT BE WRONG)'
   for i,path in enumerate(paths):
     res = loadResults(path)
@@ -127,11 +130,16 @@ def main(paths,outputCsv,includeStudents,excludeStudents,matchNumEpisodes):
         if trial in studentInds:
           inds.append(j)
       numSteps = numSteps[inds,:]
-    if matchNumEpisodes:
+    if options.matchNumEpisodes:
       numEpisodes = min(numEpisodes,len(numSteps))
       numSteps.sort(axis=0)
       numSteps = numSteps[:numEpisodes,:]
-    printResults(numSteps,path,outputCsv,i==0)
+    else:
+      if options.useQuantile:
+        numSteps.sort(axis=0)
+        numSteps = numSteps[fracToRemove:-fracToRemove]
+        #print 'resulting size: %i' % len(numSteps)
+    printResults(numSteps,path,options.outputCsv,i==0)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
     #numSteps = loadResultsFromFileSet(filenames)
@@ -149,8 +157,14 @@ def mainArgs(args):
   parser.add_option('-i','--include',action='append',dest='includeStudents',default=[],help='output only for specified students',metavar='STUDENT')
   parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
   parser.add_option('-m','--match',action='store_true',dest='matchNumEpisodes',default=False,help='matches the number of episodes between the results')
+  parser.add_option('-q','--quantile',action='store',dest='quantile',default=1.0,help='fraction of data to use, 0.9 removes the lowest and highest 0.05',type='float')
   options,args = parser.parse_args(args)
-  return main(args,options.outputCsv,options.includeStudents,options.excludeStudents,options.matchNumEpisodes)
+  options.useQuantile = (options.quantile < 0.9999)
+
+  if options.matchNumEpisodes and options.useQuantile:
+    print >>sys.stderr,'Do not support matching with quantiles'
+    return 2
+  return main(args,options)
 
 if __name__ == '__main__':
   import sys
