@@ -190,7 +190,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       // get the classifier of the base agent, if it's of the correct type
       boost::shared_ptr<PredatorClassifier> basePred = boost::static_pointer_cast<PredatorClassifier>(baseAgent);
       if (basePred.get() != NULL) {
-        std::cout << "SHARING CLASSIFIER" << std::endl;
+        //std::cout << "SHARING CLASSIFIER" << std::endl;
         classifier = basePred->getClassifier();
         basePred->setPreventTraining(true);
       }

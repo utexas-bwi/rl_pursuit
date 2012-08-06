@@ -68,7 +68,7 @@ boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned 
  
   line.used = true;
   //std::cout << "MAKING INTERIOR: " << line.name << std::endl;
-  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(line.op,line.name));
+  boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(line.op,FeatureType::fromName(line.name)));
   boost::shared_ptr<DecisionTree::Node> child;
   for (unsigned int i = lineInd; i < lines.size(); i++) {
     if (lines[i].depth == currentDepth) {

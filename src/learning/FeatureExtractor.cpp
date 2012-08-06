@@ -13,6 +13,36 @@ Modified: 2011-12-10
 const unsigned int FeatureExtractor::HISTORY_SIZE = 2;
 const bool FeatureExtractor::USE_ALL_AGENTS_HISTORY = false;
 
+//#define FEATURE_EXTRACTOR_TIMING
+
+#ifdef FEATURE_EXTRACTOR_TIMING
+
+#define TIC(s) FEATURE_EXTRACTOR_TIMING_ ## s.tic()
+#define TOC(s) FEATURE_EXTRACTOR_TIMING_ ## s.toc()
+#define GETTIME(s) FEATURE_EXTRACTOR_TIMING_ ## s.get()
+#define OUTPUT(s) #s << "(" << GETTIME(s) << ") " 
+#define MAKE(s) Timer FEATURE_EXTRACTOR_TIMING_ ## s
+
+MAKE(total);
+MAKE(pos);
+MAKE(derived);
+MAKE(actions);
+MAKE(history);
+MAKE(historycalc);
+MAKE(historyupdate);
+MAKE(historydiff);
+MAKE(historyaction);
+MAKE(historyuncenter);
+
+#else
+
+#define TIC(s) ((void) 0)
+#define TOC(s) ((void) 0)
+#define GETTIME(s) ((void) 0)
+#define OUTPUT(s) ((void) 0)
+
+#endif
+
 FeatureExtractorHistory::FeatureExtractorHistory():
   initialized(false),
   actionHistory()
@@ -37,22 +67,22 @@ void FeatureExtractor::addFeatureAgent(const std::string &key, const std::string
 }
 
 InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHistory &history) {
+  TIC(total);
   assert(obs.preyInd == 0);
   InstancePtr instance(new Instance);
   
-  setFeature(instance,"PredInd",obs.myInd - 1);
+  TIC(pos);
+  setFeature(instance,FeatureType::PredInd,obs.myInd - 1);
   // positions of agents
   for (unsigned int i = 0; i < obs.positions.size(); i++) {
     Point2D diff = getDifferenceToPoint(dims,obs.myPos(),obs.positions[i]);
-    std::string key;
-    if (i == 0)
-      key = "Prey";
-    else
-      key = "Pred" + boost::lexical_cast<std::string>(i-1);
-    setFeature(instance,key + ".dx",diff.x);
-    setFeature(instance,key + ".dy",diff.y);
+    unsigned int key = FeatureType::Prey_dx + 2 * i;
+    setFeature(instance,key,diff.x);
+    setFeature(instance,key+1,diff.y);
   }
+  TOC(pos);
   // derived features
+  TIC(derived);
   bool next2prey = false;
   for (unsigned int a = 0; a < Action::NUM_NEIGHBORS; a++) {
     Point2D pos = movePosition(dims,obs.myPos(),(Action::Type)a);
@@ -67,20 +97,37 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
         break;
       }
     }
-    std::string key = "Occupied." + boost::lexical_cast<std::string>(a);
-    setFeature(instance,key,occupied);
+    setFeature(instance,FeatureType::Occupied_0 + a, occupied);
   }
-  setFeature(instance,"NextToPrey",next2prey);
+  setFeature(instance,FeatureType::NextToPrey,next2prey);
+  TOC(derived);
   // actions predicted by models
-  ActionProbs actionProbs;
+  TIC(actions);
+  // not currently supported
+  //ActionProbs actionProbs;
   for (std::vector<FeatureAgent>::iterator it = featureAgents.begin(); it != featureAgents.end(); it++) {
-    actionProbs = it->agent->step(obs);
-    setFeature(instance,it->name + ".des",actionProbs.maxAction());
+    std::cerr << "FeatureExtractor can't handle featureAgents" << std::endl;
+    exit(58);
+    //actionProbs = it->agent->step(obs);
+    //ADD_KEY(it->name + ".des");
+    //setFeature(instance,actionProbs.maxAction());
   }
+  TOC(actions);
   // update the history
+  TIC(history);
   updateHistory(obs,history);
   // add the history features
+  TIC(historyupdate);
   Action::Type action;
+  for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
+    if (j < history.actionHistory[obs.myInd].size())
+      action = history.actionHistory[obs.myInd][j];
+    else
+      action = Action::NUM_ACTIONS;
+    setFeature(instance,FeatureType::MyHistoricalAction_0 + j,action);
+  }
+  TOC(historyupdate);
+/*
   for (unsigned int agentInd = 0; agentInd < obs.positions.size(); agentInd++) {
     for (unsigned int j = 0; j < HISTORY_SIZE; j++) {
       if (j < history.actionHistory[agentInd].size())
@@ -88,26 +135,32 @@ InstancePtr FeatureExtractor::extract(const Observation &obs, FeatureExtractorHi
       else
         action = Action::NUM_ACTIONS;
       if (USE_ALL_AGENTS_HISTORY) {
-        std::string key = "HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j);
-        setFeature(instance,key,action);
+        std::cerr << "FeatureExtractor can't handle all agents history" << std::endl;
+        exit(58);
+        //ADD_KEY("HistoricalAction" + boost::lexical_cast<std::string>(agentInd) + "." + boost::lexical_cast<std::string>(j));
+        //setFeature(instance,action);
       }
 
       if (agentInd == obs.myInd) {
-        setFeature(instance,"MyHistoricalAction." + boost::lexical_cast<std::string>(j),action);
+        setFeature(instance,FeatureType::MyHistoricalAction_0 + j,action);
       }
 
     }
   }
+*/
+  TOC(history);
 
   instance->weight = 1.0;
-  //std::cout << "instance: " << *instance << std::endl;
+  TOC(total);
   return instance;
 }
 
 void FeatureExtractor::updateHistory(const Observation &obs, FeatureExtractorHistory &history) {
   std::vector<Action::Type> observedActions;
   if (history.initialized) {
+    TIC(historycalc);
     calcObservedActions(history.obs,obs,observedActions);
+    TOC(historycalc);
   } else {
     //std::cout << "no hist " << obs << std::endl;
     for (unsigned int i = 0; i < obs.positions.size(); i++) {
@@ -123,17 +176,30 @@ void FeatureExtractor::updateHistory(const Observation &obs, FeatureExtractorHis
 }
 
 void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs, std::vector<Action::Type> &actions) {
-  actions.clear();
+  actions.resize(prevObs.positions.size());
+  TIC(historyuncenter);
   prevObs.uncenterPrey(dims);
   obs.uncenterPrey(dims);
+  TOC(historyuncenter);
   //std::cout << prevObs << " " << obs << std::endl << std::flush;
   for (unsigned int i = 0; i < prevObs.positions.size(); i++) {
+    TIC(historydiff);
     Point2D diff = getDifferenceToPoint(dims,prevObs.positions[i],obs.positions[i]);
-    actions.push_back(getAction(diff));
+    TOC(historydiff);
+    TIC(historyaction);
+    //actions.push_back(getAction(diff));
+    actions[i] = getAction(diff);
+    TOC(historyaction);
   }
 }
 
-void FeatureExtractor::setFeature(InstancePtr &instance, const std::string &key, float val) {
-  (*instance)[key] = val;
-}
+//void FeatureExtractor::setFeature(InstancePtr &instance, const std::string &key, float val) {
+  //(*instance)[key] = val;
+//}
 
+void FeatureExtractor::printTimes() {
+#ifdef FEATURE_EXTRACTOR_TIMING
+  std::cout << "FeatureExtractor Timings: " << OUTPUT(total) << OUTPUT(pos) << OUTPUT(derived) << OUTPUT(actions) << OUTPUT(history) << std::endl;
+  std::cout << "  " << OUTPUT(history) << ":" << OUTPUT(historycalc) << OUTPUT(historyupdate) << OUTPUT(historydiff) << OUTPUT(historyaction) << OUTPUT(historyuncenter) << std::endl;
+#endif
+}

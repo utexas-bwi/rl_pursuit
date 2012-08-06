@@ -10,6 +10,11 @@ Modified: 2011-12-02
 #include <factory/AgentFactory.h>
 #include <boost/lexical_cast.hpp>
 
+//#define PREDATOR_CLASSIFIER_TIMING
+double PREDATOR_CLASSIFIER_TIMING_STEP = 0.;
+double PREDATOR_CLASSIFIER_TIMING_EXTRACT = 0.;
+double PREDATOR_CLASSIFIER_TIMING_CLASSIFY = 0.;
+
 PredatorClassifier::PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<Classifier> classifier, const std::string &name, int trainingPeriod, bool trainIncremental):
   Agent(rng,dims),
   name(name),
@@ -28,13 +33,31 @@ PredatorClassifier::PredatorClassifier(boost::shared_ptr<RNG> rng, const Point2D
 }
 
 ActionProbs PredatorClassifier::step(const Observation &obs) {
+#ifdef PREDATOR_CLASSIFIER_TIMING
+  tic(1);
+#endif
   Classification c;
+#ifdef PREDATOR_CLASSIFIER_TIMING
+  tic();
+#endif
   InstancePtr instance = featureExtractor.extract(obs,stepHistory);
+#ifdef PREDATOR_CLASSIFIER_TIMING
+  toc(PREDATOR_CLASSIFIER_TIMING_EXTRACT);
+#endif
+#ifdef PREDATOR_CLASSIFIER_TIMING
+  tic();
+#endif
   classifier->classify(instance,c);
+#ifdef PREDATOR_CLASSIFIER_TIMING
+  toc(PREDATOR_CLASSIFIER_TIMING_CLASSIFY);
+#endif
   assert(c.size() == Action::NUM_ACTIONS);
   ActionProbs actionProbs;
   for (unsigned int i = 0; i < Action::NUM_ACTIONS; i++)
     actionProbs[(Action::Type)i] = c[i];
+#ifdef PREDATOR_CLASSIFIER_TIMING
+  toc(PREDATOR_CLASSIFIER_TIMING_STEP,1);
+#endif
   return actionProbs;
 }
 
@@ -56,13 +79,17 @@ std::string PredatorClassifier::generateDescription() {
 }
 
 void PredatorClassifier::learn(const Observation &prevObs, const Observation &currentObs, unsigned int ind) {
+#ifdef PREDATOR_CLASSIFIER_TIMING
+  std::cout << "Classifier timings step, extract, classify: " << PREDATOR_CLASSIFIER_TIMING_STEP << " " << PREDATOR_CLASSIFIER_TIMING_EXTRACT << " " << PREDATOR_CLASSIFIER_TIMING_CLASSIFY << std::endl;
+  featureExtractor.printTimes();
+#endif
   if (trainingPeriod < 0)
     return;
 
   Point2D move = getDifferenceToPoint(dims,prevObs.positions[ind],currentObs.positions[ind]);
   InstancePtr instance = featureExtractor.extract(prevObs,learnHistory);
   instance->label = getAction(move);
-  (*instance)["Pred.act"] = instance->label;
+  (*instance)[FeatureType::Pred_act] = instance->label;
   classifier->addData(instance);
   if (preventTraining)
     return;

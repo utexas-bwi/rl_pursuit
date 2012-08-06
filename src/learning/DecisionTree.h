@@ -49,7 +49,7 @@ public:
 
   class InteriorNode: public Node {
   public:
-    InteriorNode(ComparisonOperator cmp, const std::string &splitKey);
+    InteriorNode(ComparisonOperator cmp, FeatureType_t splitKey);
     void addChild(const NodePtr &child, float splitValue);
     void classify(const InstancePtr &instance, Classification &classification) const;
     void addData(const InstancePtr &instance);
@@ -60,7 +60,8 @@ public:
     NodePtr getChild(const InstancePtr &instance) const;
   private:
     const ComparisonOperator cmp;
-    const std::string splitKey;
+    //const std::string splitKey;
+    const FeatureType_t splitKey;
     std::vector<NodePtr> children;
     std::vector<float> splitValues;
   };

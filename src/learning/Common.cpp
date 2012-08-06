@@ -9,56 +9,63 @@ Modified: 2011-12-01
 #include "Common.h"
 #include <cmath>
 
-Instance::Instance():
-  label(0),
-  weight(0)
-{
+Instance::Instance() {
+  clear();
 }
 
 void Instance::clear() {
-  data.clear();
+  for (int i = 0; i < FeatureType::NUM; i++)
+    data[i] = FEATURE_UNSET;
   label = 0;
   weight = 0;
 }
 
 unsigned int Instance::size() const {
-  return data.size();
+  return FeatureType::NUM;
 }
 
-float& Instance::operator[](const std::string &key) {
-  return data[key];
-}
+//float& Instance::operator[](const std::string &key) {
+  //return data[key];
+//}
 
-float Instance::operator[](const std::string &key) const{
-  std::map<std::string,float>::const_iterator it = data.find(key);
-  if (it == data.end())
-    throw std::out_of_range("Unknown key: " + key);
-  return it->second;
-}
+//float Instance::operator[](const std::string &key) const{
+  //std::map<std::string,float>::const_iterator it = data.find(key);
+  //if (it == data.end())
+    //throw std::out_of_range("Unknown key: " + key);
+  //return it->second;
+//}
 
-float Instance::get(const std::string& key, float defaultVal) const {
-  std::map<std::string,float>::const_iterator it = data.find(key);
-  if (it == data.end())
-    return defaultVal;
-  return it->second;
-}
+//float Instance::get(const std::string& key, float defaultVal) const {
+  //std::map<std::string,float>::const_iterator it = data.find(key);
+  //if (it == data.end())
+    //return defaultVal;
+  //return it->second;
+//}
 
 bool Instance::operator==(const Instance &inst) const {
   const float EPS = 0.001f;
-  if (size() != inst.size()) {
-    return false;
-  }
-  for (std::map<std::string,float>::const_iterator it = data.begin(); it != data.end(); it++) {
-    if (fabs(it->second - inst[it->first]) > EPS)
+
+  for (int i = 0; i < FeatureType::NUM; i++) {
+    if (fabs(data[i] - inst.data[i]) > EPS)
       return false;
   }
   return true;
+
+  //if (size() != inst.size()) {
+    //return false;
+  //}
+  //for (std::map<std::string,float>::const_iterator it = data.begin(); it != data.end(); it++) {
+    //if (fabs(it->second - inst[it->first]) > EPS)
+      //return false;
+  //}
+  //return true;
 }
 
 std::ostream& operator<<(std::ostream &out, const Instance &inst) {
   out << "<Instance ";
-  for (std::map<std::string,float>::const_iterator it = inst.data.begin(); it != inst.data.end(); it++)
-    out << it->first << ":" << it->second << ",";
+  //for (std::map<std::string,float>::const_iterator it = inst.data.begin(); it != inst.data.end(); it++)
+  for (int i = 0; i < FeatureType::NUM; i++)
+    out << getName((FeatureType_t)i) << ":" << inst.data[i] << ",";
   out << "WEIGHT:" << inst.weight;
   out << ">";
   return out;
@@ -115,7 +122,7 @@ InstancePtr& InstanceSet::operator[](unsigned int ind) {
   return instances[ind];
 }
 
-void InstanceSet::getValuesForFeature(const std::string &key, FloatSet &values) {
+void InstanceSet::getValuesForFeature(const FeatureType_t &key, FloatSet &values) {
   for (unsigned int i = 0; i < instances.size(); i++) {
     values.insert((*instances[i])[key]);
   }
@@ -128,7 +135,8 @@ void InstanceSet::recalculateWeight() {
 }
 
 std::ostream& operator<<(std::ostream &out, const Feature &feat) {
-  out << feat.name << " ";
+  //out << feat.name << " ";
+  out << getName(feat.feat) << " ";
   if (feat.numeric)
     out << "numeric";
   else {

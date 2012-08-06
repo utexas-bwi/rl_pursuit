@@ -21,7 +21,7 @@ const float DecisionTree::EPS = 0.0001;
 // INTERIOR NODE
 ////////////////////
 
-DecisionTree::InteriorNode::InteriorNode(ComparisonOperator cmp, const std::string &splitKey):
+DecisionTree::InteriorNode::InteriorNode(ComparisonOperator cmp, FeatureType_t splitKey):
   cmp(cmp),
   splitKey(splitKey)
 {
@@ -187,7 +187,7 @@ void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &
     Feature const &feature = dt.features[i];
     if (feature.numeric) {
       FloatSet vals;
-      instances->getValuesForFeature(feature.name,vals);
+      instances->getValuesForFeature(feature.feat,vals);
 
       FloatSet::iterator it = vals.begin();
       FloatSet::iterator it2 = vals.begin();
@@ -224,7 +224,7 @@ void DecisionTree::LeafNode::trySplittingNode(NodePtr &ptr, const DecisionTree &
     ComparisonOperator op = EQUALS;
     if (feature.numeric)
       op = LESS;
-    boost::shared_ptr<InteriorNode> interior(new InteriorNode(op,feature.name));
+    boost::shared_ptr<InteriorNode> interior(new InteriorNode(op,feature.feat));
     for (unsigned int i = 0; i < bestSplit.instanceSets.size(); i++) {
       bestSplit.instanceSets[i]->normalize();
       NodePtr leaf(new LeafNode(bestSplit.instanceSets[i]));
@@ -373,7 +373,7 @@ void DecisionTree::splitData(const InstanceSetPtr &instances, Split &split) cons
     split.instanceSets[i] = InstanceSetPtr(new InstanceSet(instances->getNumClasses()));
 
   for (unsigned int i = 0; i < instances->size(); i++) {
-    float val = (*(*instances)[i])[feature.name];
+    float val = (*(*instances)[i])[feature.feat];
     if (!feature.numeric)
       val -= 0.5;
     for (unsigned int j = 0; j < split.splitVals.size(); j++) {

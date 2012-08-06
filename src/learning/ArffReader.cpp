@@ -9,6 +9,7 @@ Modified: 2011-11-21
 #include "ArffReader.h"
 #include <cassert>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 ArffReader::ArffReader(std::ifstream &in):
   in(in)
@@ -29,10 +30,9 @@ InstancePtr ArffReader::next() {
   for (unsigned int i = 0; i < featureTypes.size(); i++) {
     in >> val;
     in.ignore(1,',');
-    (*instance)[featureTypes[i].name] = val;
+    (*instance)[featureTypes[i].feat] = val;
   }
-  // TODO assuming class is last feature
-  instance->label = (*instance)[featureTypes.back().name];
+  instance->label = (*instance)[getClassFeature()];
   // check if there's a weight
   if (in.peek() == '{') {
     in.ignore(1,'{');
@@ -40,10 +40,6 @@ InstancePtr ArffReader::next() {
     in.ignore(1,'}');
   }
   return instance;
-}
-
-std::string ArffReader::getClassFeature() {
-  return featureTypes.back().name;
 }
 
 std::vector<Feature> ArffReader::getFeatureTypes() {
@@ -81,7 +77,9 @@ void ArffReader::readHeader() {
     startInd = str.find(" ",start.size()-1);
     endInd = str.find(" ",startInd+1);
     Feature feature;
-    feature.name = str.substr(startInd+1,endInd-startInd-1);
+    std::string name = str.substr(startInd+1,endInd-startInd-1);
+    boost::replace_all(name,".","_"); // because . is unusable for the enum
+    feature.feat = FeatureType::fromName(name);
     feature.numeric = str.substr(endInd + 1) == "numeric";
     if (!feature.numeric) {
       unsigned int start = endInd + 1;

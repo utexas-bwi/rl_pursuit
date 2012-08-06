@@ -1,6 +1,5 @@
 #include "Util.h"
 
-#include <sys/time.h>
 #include <fstream>
 #include <cmath>
 #include <cassert>
@@ -8,11 +7,20 @@
 #include <stdlib.h>
 #include <limits>
 
-double getTime() {
-  struct timeval time;
+//double getTime() {
 
-  gettimeofday(&time,NULL);
-  return time.tv_sec + time.tv_usec / 1000000.0;
+std::map<int,double> TIME_MAP;
+
+void tic(int id) {
+  TIME_MAP[id] = getTime();
+}
+
+double toc(int id) {
+  return getTime() - TIME_MAP[id];
+}
+
+void toc(double &counter, int id) {
+  counter += toc(id);
 }
 
 unsigned int vectorMaxInd(const std::vector<float> &arr) {
