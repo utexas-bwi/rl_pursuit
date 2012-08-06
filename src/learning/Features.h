@@ -3,6 +3,7 @@
 
 #include <common/Enum.h>
 #include <cmath>
+#include <iostream>
 
 const float FEATURE_UNSET = 999999;
 inline bool isFeatureUnset(float val) {
