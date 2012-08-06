@@ -20,7 +20,7 @@ enum ModelUpdateType {
 
 class ModelUpdaterBayes: public ModelUpdater {
 public:
-  ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType, bool allowRemovingModels);
+  ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType, bool allowRemovingModels, float minModelProb);
   void updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
   void updateSimulationAction(const Action::Type &action, const State_t &state);
 
@@ -34,8 +34,8 @@ protected:
 
 protected:
   ModelUpdateType modelUpdateType;
-  static const float MIN_MODEL_PROB;
   bool allowRemovingModels;
+  float MIN_MODEL_PROB;
 
   FRIEND_TEST(ModelUpdaterBayesTest,AdvancedTests);
 };

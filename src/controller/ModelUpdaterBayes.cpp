@@ -11,12 +11,13 @@ Modified: 2011-10-02
 #include "ModelUpdaterBayes.h"
 #include <math.h>
 
-const float ModelUpdaterBayes::MIN_MODEL_PROB = 0.001;
+//const float ModelUpdaterBayes::MIN_MODEL_PROB = 0.001;
 
-ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType, bool allowRemovingModels):
+ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType, bool allowRemovingModels, float minModelProb):
   ModelUpdater(rng,models),
   modelUpdateType(modelUpdateType),
-  allowRemovingModels(allowRemovingModels)
+  allowRemovingModels(allowRemovingModels),
+  MIN_MODEL_PROB(minModelProb)
 {
 }
 
