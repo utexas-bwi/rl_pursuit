@@ -3,6 +3,7 @@
 #include <cassert>
 #include <model/Common.h>
 #include "ArffReader.h"
+#include <boost/algorithm/string.hpp>
 
 WekaParser::WekaParser(const std::string &filename, unsigned int numClasses):
   in(filename.c_str()),
@@ -68,6 +69,7 @@ boost::shared_ptr<DecisionTree::Node> WekaParser::readDecisionTreeNode(unsigned 
  
   line.used = true;
   //std::cout << "MAKING INTERIOR: " << line.name << std::endl;
+  boost::replace_all(line.name,".","_"); // because . is unusable for the enum
   boost::shared_ptr<DecisionTree::InteriorNode> node(new DecisionTree::InteriorNode(line.op,FeatureType::fromName(line.name)));
   boost::shared_ptr<DecisionTree::Node> child;
   for (unsigned int i = lineInd; i < lines.size(); i++) {

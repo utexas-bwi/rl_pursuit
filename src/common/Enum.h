@@ -73,6 +73,8 @@ public:
         if (strcmp(getName((type)i),name) == 0) \
           return (type)i; \
       } \
+      std::cerr << "Problem converting " << name << " to type " << #Enum << std::endl; \
+      exit(13); \
       return NUM; \
     } \
     inline type fromName(const std::string &name) {return fromName(name.c_str());} \
