@@ -20,7 +20,6 @@ Modified: 2011-12-13
 #include <planning/ValueEstimator.h>
 #include <planning/UCTEstimator.h>
 
-ModelUpdateType getModelUpdateType(std::string type);
 boost::shared_ptr<RNG> makeRNG(unsigned int seed);
 
 struct ReplaceDataStudent {
@@ -32,12 +31,12 @@ struct ReplaceDataStudent {
 };
 
 // model updater
-boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType updateType, bool allowRemovingModels, float minModelProb);
+boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, const ModelUpdaterBayes::Params &params);
 
 boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options);
 
 // WORLD MDPs
-boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType updateType, const StateConverter &stateConverter, double actionNoise, bool centerPrey);
+boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType_t updateType, const StateConverter &stateConverter, double actionNoise, bool centerPrey);
 boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, double actionNoise, bool centerPrey, const Json::Value &options);
 
 // VALUE ESTIMATORS

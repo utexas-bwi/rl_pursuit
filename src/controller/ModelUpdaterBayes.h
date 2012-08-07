@@ -11,16 +11,34 @@ Modified: 2011-10-02
 
 #include "ModelUpdater.h"
 #include <gtest/gtest_prod.h>
+#include <common/Params.h>
+#include <common/Params.h>
+#include <common/Enum.h>
 
-enum ModelUpdateType {
-  BAYESIAN_UPDATES,
-  POLYNOMIAL_WEIGHTS,
-  NO_MODEL_UPDATES
-};
+ENUM(ModelUpdateType,
+  bayesian,
+  polynomial,
+  none
+)
+
+//SET_FROM_JSON_ENUM(ModelUpdateType)
 
 class ModelUpdaterBayes: public ModelUpdater {
+
 public:
-  ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType, bool allowRemovingModels, float minModelProb);
+#define PARAMS(_) \
+  _(ModelUpdateType_t,modelUpdateType,update,ModelUpdateType::bayesian) \
+  _(bool,allowRemovingModels,allowRemovingModels,true) \
+  _(float,MIN_MODEL_PROB,minModelProb,0.0001)
+
+  Params_STRUCT(PARAMS)
+#undef PARAMS
+
+protected:
+  Params p;
+
+public:
+  ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, const Params &p);
   void updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
   void updateSimulationAction(const Action::Type &action, const State_t &state);
 
@@ -32,10 +50,6 @@ protected:
   void removeLowProbabilityModels();
   std::string generateSpecificDescription();
 
-protected:
-  ModelUpdateType modelUpdateType;
-  bool allowRemovingModels;
-  float MIN_MODEL_PROB;
 
   FRIEND_TEST(ModelUpdaterBayesTest,AdvancedTests);
 };

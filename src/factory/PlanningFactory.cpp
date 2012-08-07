@@ -19,20 +19,6 @@ Modified: 2011-10-02
 #include <controller/State.h>
 #include <controller/WorldBeliefMDP.h>
 
-ModelUpdateType getModelUpdateType(std::string type) {
-  boost::to_lower(type);
-  if (type == "bayesian")
-    return BAYESIAN_UPDATES;
-  else if (type == "polynomial")
-    return POLYNOMIAL_WEIGHTS;
-  else if (type == "none")
-    return NO_MODEL_UPDATES;
-  else {
-    std::cerr << "getModelUpdateType: ERROR: unknown updateTypeString: " << type;
-    exit(34);
-  }
-}
-
 boost::shared_ptr<RNG> makeRNG(unsigned int seed) {
   return boost::shared_ptr<RNG>(new RNG(seed));
 }
@@ -62,8 +48,8 @@ void ReplaceDataStudent::operator() (Json::Value &value) {
 }
 
 // MODEL UPDATER
-boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType updateType, bool allowRemovingModels, float minModelProb) {
-    return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,models,updateType,allowRemovingModels,minModelProb));
+boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, const ModelUpdaterBayes::Params &params) {
+    return boost::shared_ptr<ModelUpdaterBayes>(new ModelUpdaterBayes(rng,models,params));
 }
 
 boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options) {
@@ -132,12 +118,15 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     ptr = boost::shared_ptr<ModelUpdaterSilver>(new ModelUpdaterSilver(rng,modelList,weighted));
   } else {
     // make a bayes updater
-    std::string updateTypeString = options.get("update","bayesian").asString();
-    ModelUpdateType updateType = getModelUpdateType(updateTypeString);
-    bool allowRemovingModels = options.get("allowRemovingModels",true).asBool();
-    float minModelProb = options.get("minModelProb",0.001).asDouble();
+    //std::string updateTypeString = options.get("update","bayesian").asString();
+    //ModelUpdateType updateType = getModelUpdateType(updateTypeString);
+    //bool allowRemovingModels = options.get("allowRemovingModels",true).asBool();
+    //float minModelProb = options.get("minModelProb",0.001).asDouble();
+    //ptr = createModelUpdaterBayes(rng,modelList,updateType,allowRemovingModels,minModelProb);
+    ModelUpdaterBayes::Params p;
+    p.fromJson(options);
 
-    ptr = createModelUpdaterBayes(rng,modelList,updateType,allowRemovingModels,minModelProb);
+    ptr = createModelUpdaterBayes(rng,modelList,p);
   }
   // optionally enable output
   std::string modelOutput = options.get("modelOutputFile","").asString();
@@ -156,7 +145,7 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
   return ptr;
 }
 
-boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType /*updateType*/, const StateConverter &/*stateConverter*/, double actionNoise, bool centerPrey) {
+boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType_t /*updateType*/, const StateConverter &/*stateConverter*/, double actionNoise, bool centerPrey) {
   // create some rngs
   boost::shared_ptr<RNG> rngWorld1 = makeRNG(rng->randomUInt());
   boost::shared_ptr<RNG> rngWorld2 = makeRNG(rng->randomUInt());
@@ -198,7 +187,7 @@ boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Poi
   bool usePreySymmetry = options.get("preySymmetry",true).asBool();
   bool beliefMDP = options.get("beliefMDP",false).asBool();
   std::string updateTypeString = options.get("update","bayesian").asString();
-  ModelUpdateType updateType = getModelUpdateType(updateTypeString);
+  ModelUpdateType_t updateType = ModelUpdateType::fromName(updateTypeString);
 
   StateConverter stateConverter = createStateConverter(options);
   return createWorldMDP(rng,dims,usePreySymmetry,beliefMDP,updateType,stateConverter,actionNoise, centerPrey);

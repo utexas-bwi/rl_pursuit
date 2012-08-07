@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <string.h>
+#include <common/Params.h>
 
 /**
 * @class EnumName
@@ -78,6 +79,7 @@ public:
       return NUM; \
     } \
     inline type fromName(const std::string &name) {return fromName(name.c_str());} \
-  }
+  } \
+  SET_FROM_JSON_ENUM(Enum)
 
 #endif /* end of include guard: ENUM_1E2YM5S5 */

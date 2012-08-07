@@ -13,11 +13,9 @@ Modified: 2011-10-02
 
 //const float ModelUpdaterBayes::MIN_MODEL_PROB = 0.001;
 
-ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, ModelUpdateType modelUpdateType, bool allowRemovingModels, float minModelProb):
+ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, const ModelUpdaterBayes::Params &p):
   ModelUpdater(rng,models),
-  modelUpdateType(modelUpdateType),
-  allowRemovingModels(allowRemovingModels),
-  MIN_MODEL_PROB(minModelProb)
+  p(p)
 {
 }
 
@@ -28,7 +26,7 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
   if ((models.size() == 1) && (precisionOutputStream.get() == NULL))
     return;
   // done if we're not doing updates
-  if (modelUpdateType == NO_MODEL_UPDATES)
+  if (p.modelUpdateType == ModelUpdateType::none)
     return;
 
   std::vector<double> newModelProbs(models.size());
@@ -91,15 +89,18 @@ void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Typ
     (*precisionOutputStream) << "-----" << std::endl;
   for (unsigned int i = 0; i < models.size(); i++) {
     modelProb = calculateModelProb(i,prevObs,lastAction,currentObs);
-    switch(modelUpdateType) {
-      case BAYESIAN_UPDATES:
+    switch(p.modelUpdateType) {
+      case ModelUpdateType::bayesian:
         newModelProbs[i] *= modelProb;
         break;
-      case POLYNOMIAL_WEIGHTS:
+      case ModelUpdateType::polynomial:
         loss = 1.0 - modelProb;
         newModelProbs[i] *= (1 - eta * loss);
         break;
-      case NO_MODEL_UPDATES:
+      case ModelUpdateType::none:
+        assert(false);
+        break;
+      default:
         assert(false);
         break;
     }
@@ -138,11 +139,11 @@ void ModelUpdaterBayes::removeLowProbabilityModels() {
   unsigned int i = 0;
   // remove the models that are below the threshold
   while (i < models.size()) {
-    if (models[i].prob < MIN_MODEL_PROB) {
-      if (allowRemovingModels)
+    if (models[i].prob < p.MIN_MODEL_PROB) {
+      if (p.allowRemovingModels)
         removeModel(i);
       else {
-        models[i].prob = MIN_MODEL_PROB;
+        models[i].prob = p.MIN_MODEL_PROB;
         ++i;
       }
       removedModels = true;
@@ -156,17 +157,5 @@ void ModelUpdaterBayes::removeLowProbabilityModels() {
 }
 
 std::string ModelUpdaterBayes::generateSpecificDescription() {
-  switch (modelUpdateType) {
-    case BAYESIAN_UPDATES:
-      return "Bayesian";
-      break;
-    case POLYNOMIAL_WEIGHTS:
-      return "Polynomial";
-      break;
-    case NO_MODEL_UPDATES:
-      return "None";
-      break;
-    default:
-      assert(false);
-  }
+  return getName(p.modelUpdateType);
 }
