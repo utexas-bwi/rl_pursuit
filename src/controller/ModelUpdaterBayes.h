@@ -29,7 +29,9 @@ public:
 #define PARAMS(_) \
   _(ModelUpdateType_t,modelUpdateType,update,ModelUpdateType::bayesian) \
   _(bool,allowRemovingModels,allowRemovingModels,true) \
-  _(float,MIN_MODEL_PROB,minModelProb,0.0001)
+  _(float,MIN_MODEL_PROB,minModelProb,0.0001) \
+  _(int,stepsUntilSafetyModel,stepsUntilSafetyModel,-1) \
+  _(std::string,safetyModelDesc,safetyModelDesc,"pd")
 
   Params_STRUCT(PARAMS)
 #undef PARAMS
@@ -50,7 +52,8 @@ protected:
   void removeLowProbabilityModels();
   std::string generateSpecificDescription();
 
-
+protected:
+  ModelInfo *safetyModel;
   FRIEND_TEST(ModelUpdaterBayesTest,AdvancedTests);
 };
 

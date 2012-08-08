@@ -15,11 +15,33 @@ Modified: 2011-10-02
 
 ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, const ModelUpdaterBayes::Params &p):
   ModelUpdater(rng,models),
-  p(p)
+  p(p),
+  safetyModel(NULL)
 {
+  if (p.stepsUntilSafetyModel >= 0) {
+    for (unsigned int i = 0; i < models.size(); i++) {
+      if (models[i].description == p.safetyModelDesc) {
+        safetyModel = new ModelInfo(models[i]);
+        safetyModel->description = "SAFETY-" + safetyModel->description;
+        std::cout << "FOUND SAFETY MODEL" << std::endl;
+        break;
+      }
+    }
+    if (safetyModel == NULL) {
+      std::cerr << "Safety Model not found, exitting" << std::endl;
+      exit(45);
+    }
+  }
 }
 
 void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs) {
+  if (p.stepsUntilSafetyModel == 0) {
+    models.clear();
+    models.push_back(*safetyModel);
+    std::cout << "SWITCHING TO SAFETY" << std::endl;
+  }
+  p.stepsUntilSafetyModel--;
+  
   //std::cout << "  " << prevObs << " " << lastAction << std::endl;
   //std::cout << "  " << currentObs << std::endl;
   // done if we're down to 1 model and not outputting the precision of models
