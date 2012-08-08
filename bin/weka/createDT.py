@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 
-import subprocess, os
+import subprocess, os, time
 from addARFFWeights import addARFFWeights
 
 from common import getFilename,makeTemp,parseArgs,makeDirs,BIN_PATH,DESC,UNWEIGHTED,WEIGHTED, getArch
 
 def wekaCommandPrefix():
   return ['java','-cp',os.path.join(BIN_PATH,'weka.jar')]
+
+def getSeed():
+  return int(time.time() * 1000000) % 1000000
+
+def resample(inFile,outFile,frac):
+  cmd = wekaCommandPrefix() + ['weka.filters.unsupervised.instance.Resample','-Z',str(frac * 100),'-S',str(getSeed()),'-no-replacement','-i',inFile,'-o',outFile]
+  subprocess.check_call(cmd)
 
 def removeTrialStep(inFile,outFile,numInstances=None):
   cmd = wekaCommandPrefix() + ['weka.filters.unsupervised.attribute.Remove','-R','1-2','-i',inFile,'-o',outFile]
@@ -24,8 +31,11 @@ def removeTrialStep(inFile,outFile,numInstances=None):
     with open(outFile,'w') as f:
       f.writelines(outLines)
 
-def createTree(inFile,outFile,options):
-  cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
+def createTree(inFile,outFile,options,randomTree,numRandomFeatures):
+  if randomTree:
+    cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.RandomTree','-t',inFile,'-i','-K',str(numRandomFeatures),'-S',str(getSeed())] + options
+  else:
+    cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
   #cmd = wekaCommandPrefix() + ['-Xmx4096m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
@@ -36,7 +46,10 @@ def extractTree(arffFile,inFile,outFile):
   prefix = lines[:ind+1]
   with open(inFile,'r') as f:
     lines = f.readlines()
-  ind = lines.index('REPTree\n')
+  try:
+    ind = lines.index('REPTree\n')
+  except ValueError:
+    ind = lines.index('RandomTree\n')
   startInd = ind + 2 # 3 lines later, including REPTree
   if lines[startInd] == '\n':
     startInd += 1
@@ -48,38 +61,54 @@ def weightTree(inFile,dataFile,outFile):
   cmd = [os.path.join('bin',str(getArch()),'addWeights'),inFile,dataFile]
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
-def buildDT(dataFile,outFile,options):
+def buildDT(dataFile,outFile,options,randomTree):
+  if randomTree:
+    raise ValueError('cannot handle randomTrees here')
   cmd = [os.path.join('bin',str(getArch()),'buildDT'),dataFile] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
-def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstances=None):
+def makeTree(data,useWeka,stayWeight,base,name,treeOptions,randomTree,numRandomFeatures):
   descFile = getFilename(base,name,DESC)
-  #unweightedFile = getFilename(base,name,UNWEIGHTED)
+  unweightedFile = getFilename(base,name,UNWEIGHTED)
   weightedFile = getFilename(base,name,WEIGHTED)
+  if (stayWeight is not None) and (abs(stayWeight - 1.0) > 0.0001):
+    print 'Adding stay weights'
+    addARFFWeights(data,data,stayWeight)
+  if useWeka:
+    print 'Running weka to create initial tree'
+    createTree(data,descFile,treeOptions,randomTree,numRandomFeatures)
+    print 'Extracting tree from weka output'
+    # NOTE: changed weka to output class distributions, no longer need to add my own weights
+    if randomTree:
+      extractTree(data,descFile,unweightedFile)
+      print 'Adding class weights to tree'
+      weightTree(unweightedFile,data,weightedFile)
+    else:
+      extractTree(data,descFile,weightedFile)
+  else:
+    print 'Running buildDT to create a weighted tree'
+    buildDT(data,weightedFile,treeOptions,randomTree)
+
+def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstances=None,randomTree=False,numRandomTrees=10,numRandomFeatures = 14,resampleFrac=0.8):
 
   # create the temporary files we need
   tmpData = makeTemp('.arff')
+  removeFiles = [tmpData]
   try:
     print 'Removing trial and step features'
     removeTrialStep(inFile,tmpData,numInstances)
-    if (stayWeight is not None) and (abs(stayWeight - 1.0) > 0.0001):
-      print 'Adding stay weights'
-      addARFFWeights(tmpData,tmpData,stayWeight)
-    if useWeka:
-      print 'Running weka to create initial tree'
-      createTree(tmpData,descFile,treeOptions)
-      print 'Extracting tree from weka output'
-      # NOTE: changed weka to output class distributions, no longer need to add my own weights
-      extractTree(tmpData,descFile,weightedFile)
-      #extractTree(tmpData,descFile,unweightedFile)
-      #print 'Adding class weights to tree'
-      #weightTree(unweightedFile,tmpData,weightedFile)
+    if randomTree:
+      tmpDataSampled = makeTemp('-sampled.arff')
+      removeFiles.append(tmpDataSampled)
+      for i in range(numRandomTrees + 1):
+        resample(tmpData,tmpDataSampled,resampleFrac)
+        makeTree(tmpDataSampled,useWeka,stayWeight,base,name + '-%i' % i,treeOptions,randomTree,numRandomFeatures)
     else:
-      print 'Running buildDT to create a weighted tree'
-      buildDT(tmpData,weightedFile,treeOptions)
+      makeTree(tmpData,useWeka,stayWeight,base,name,treeOptions,randomTree,numRandomFeatures)
     print 'Done.'
   finally:
-    os.remove(tmpData)
+    for f in removeFiles:
+      os.remove(f)
 
 if __name__ == '__main__':
   usage = '%prog [options] inFile base name [-- treeOptions]'
