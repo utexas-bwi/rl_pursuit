@@ -101,7 +101,7 @@ def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstan
     if randomTree:
       tmpDataSampled = makeTemp('-sampled.arff')
       removeFiles.append(tmpDataSampled)
-      for i in range(numRandomTrees + 1):
+      for i in range(numRandomTrees):
         print '*** Random Tree %i' % i
         resample(tmpData,tmpDataSampled,resampleFrac)
         makeTree(tmpDataSampled,useWeka,stayWeight,base,name + '-%i' % i,treeOptions,randomTree,featureFrac)
