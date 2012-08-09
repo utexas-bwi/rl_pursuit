@@ -36,7 +36,7 @@ def createTree(inFile,outFile,options,randomTree,featureFrac):
     #cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.RandomTree','-t',inFile,'-i','-F',str(featureFrac),'-S',str(getSeed())] + options
     cmd = wekaCommandPrefix() + ['-Xmx2048m','REPRandomTree','-t',inFile,'-i','-F',str(featureFrac),'-S',str(getSeed())] + options
   else:
-    cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
+    cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i','-S',str(getSeed())] + options
   #cmd = wekaCommandPrefix() + ['-Xmx4096m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
@@ -70,7 +70,7 @@ def buildDT(dataFile,outFile,options,randomTree):
 
 def makeTree(data,useWeka,stayWeight,base,name,treeOptions,randomTree,featureFrac):
   descFile = getFilename(base,name,DESC)
-  unweightedFile = getFilename(base,name,UNWEIGHTED)
+  #unweightedFile = getFilename(base,name,UNWEIGHTED)
   weightedFile = getFilename(base,name,WEIGHTED)
   if (stayWeight is not None) and (abs(stayWeight - 1.0) > 0.0001):
     print 'Adding stay weights'
@@ -80,12 +80,12 @@ def makeTree(data,useWeka,stayWeight,base,name,treeOptions,randomTree,featureFra
     createTree(data,descFile,treeOptions,randomTree,featureFrac)
     print 'Extracting tree from weka output'
     # NOTE: changed weka to output class distributions, no longer need to add my own weights
-    if randomTree:
-      extractTree(data,descFile,unweightedFile)
-      print 'Adding class weights to tree'
-      weightTree(unweightedFile,data,weightedFile)
-    else:
-      extractTree(data,descFile,weightedFile)
+    #if randomTree:
+      #extractTree(data,descFile,unweightedFile)
+      #print 'Adding class weights to tree'
+      #weightTree(unweightedFile,data,weightedFile)
+    #else:
+    extractTree(data,descFile,weightedFile)
   else:
     print 'Running buildDT to create a weighted tree'
     buildDT(data,weightedFile,treeOptions,randomTree)
