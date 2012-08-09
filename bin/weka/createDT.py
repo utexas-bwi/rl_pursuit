@@ -36,7 +36,8 @@ def createTree(inFile,outFile,options,randomTree,featureFrac):
     #cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.RandomTree','-t',inFile,'-i','-F',str(featureFrac),'-S',str(getSeed())] + options
     cmd = wekaCommandPrefix() + ['-Xmx2048m','REPRandomTree','-t',inFile,'-i','-F',str(featureFrac),'-S',str(getSeed())] + options
   else:
-    cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i','-S',str(getSeed())] + options
+    #cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i','-S',str(getSeed())] + options
+    cmd = wekaCommandPrefix() + ['-Xmx2048m','REPTree','-t',inFile,'-i','-S',str(getSeed())] + options # using my version of REPTree that outputs
   #cmd = wekaCommandPrefix() + ['-Xmx4096m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 

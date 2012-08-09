@@ -15,7 +15,7 @@
  */
 
 /*
- *    REPRandomTree.java
+ *    REPTree.java
  *    Copyright (C) 1999 University of Waikato, Hamilton, New Zealand
  *
  */
@@ -79,7 +79,7 @@ import java.util.Vector;
  * @author Eibe Frank (eibe@cs.waikato.ac.nz)
  * @version $Revision: 6954 $ 
  */
-public class REPRandomTree 
+public class REPTree 
   extends AbstractClassifier 
   implements OptionHandler, WeightedInstancesHandler, Drawable, 
 	     AdditionalMeasureProducer, Sourcable {
@@ -429,7 +429,7 @@ public class REPRandomTree
           String str = " : ";
           for (double prob: m_ClassProbs) {
             str = str + Double.toString(prob) + " ";
-	}
+          }
           return str;
 	}
 	//return " : " + m_Info.classAttribute().value(maxIndex) + 
@@ -517,7 +517,7 @@ public class REPRandomTree
 			     Instances data, double totalWeight, 
 			     double[] classProbs, Instances header,
 			     double minNum, double minVariance,
-			     int depth, int maxDepth, double featureFrac, Random random) 
+			     int depth, int maxDepth) 
       throws Exception {
       
       // Store structure of dataset, set minimum number of instances
@@ -632,16 +632,6 @@ public class REPRandomTree
 	  }
 	}
       }
-      
-      // randomly remove features
-      for (int i = 0; i < data.numAttributes(); i++) {
-        if (i != data.classIndex()) {
-          if (random.nextDouble() > featureFrac) {
-            // remove this feature
-            vals[i] = Double.NEGATIVE_INFINITY;
-          }
-        }
-      }
 
       // Find best attribute
       m_Attribute = Utils.maxIndex(vals);
@@ -695,7 +685,7 @@ public class REPRandomTree
 	    buildTree(subsetIndices[i], subsetWeights[i], 
 		      data, attTotalSubsetWeights[i],
 		      attSubsetDists[i], header, minNum, 
-		      minVariance, depth + 1, maxDepth, featureFrac, random);
+		      minVariance, depth + 1, maxDepth);
 
           // Release as much memory as we can
           attSubsetDists[i] = null;
@@ -1397,9 +1387,6 @@ public class REPRandomTree
   /** Whether to spread initial count across all values */
   protected boolean m_SpreadInitialCount = false;
 
-  /** Fraction of time to consider a feature for splitting */
-  protected double m_FeatureFrac = 1.0;
-
   /**
    * Returns the tip text for this property
    * @return tip text for this property suitable for
@@ -1634,14 +1621,6 @@ public class REPRandomTree
     
     m_SpreadInitialCount = newSpreadInitialCount;
   }
-
-  public double getFeatureFrac() {
-    return m_FeatureFrac;
-  }
-
-  public void setFeatureFrac(double frac) {
-    m_FeatureFrac = frac;
-  }
   
   /**
    * Lists the command-line options for this classifier.
@@ -1650,7 +1629,7 @@ public class REPRandomTree
    */
   public Enumeration listOptions() {
     
-    Vector newVector = new Vector(9);
+    Vector newVector = new Vector(8);
 
     newVector.
       addElement(new Option("\tSet minimum number of instances per leaf " +
@@ -1680,8 +1659,6 @@ public class REPRandomTree
       addElement(new Option("\tSpread initial count over all class values (i.e." +
                             " don't use 1 per value)",
 			    "R", 0, "-R"));
-    
-    newVector.addElement(new Option("\tFraction of features to consider for splitting", "F", 1, "-F"));
 
     return newVector.elements();
   } 
@@ -1713,7 +1690,6 @@ public class REPRandomTree
     if (getSpreadInitialCount()) {
       options[current++] = "-R";
     }
-    options[current++] = "-F" + getFeatureFrac();
     while (current < options.length) {
       options[current++] = "";
     }
@@ -1790,13 +1766,6 @@ public class REPRandomTree
       m_InitialCount = 0;
     }
     m_SpreadInitialCount = Utils.getFlag('R', options);
-
-    String featureFracString = Utils.getOption('F',options);
-    if (featureFracString.length() != 0) {
-      m_FeatureFrac = Double.parseDouble(featureFracString);
-    } else {
-      m_FeatureFrac = 1.0;
-    }
     
     Utils.checkForRemainingOptions(options);
   }
@@ -1836,7 +1805,7 @@ public class REPRandomTree
       return (double) numNodes();
     }
     else {throw new IllegalArgumentException(additionalMeasureName 
-			      + " not supported (REPRandomTree)");
+			      + " not supported (REPTree)");
     }
   }
 
@@ -1973,7 +1942,7 @@ public class REPRandomTree
     // Build tree
     m_Tree.buildTree(sortedIndices, weights, train, totalWeight, classProbs,
 		     new Instances(train, 0), m_MinNum, m_MinVarianceProp * 
-		     trainVariance, 0, m_MaxDepth, m_FeatureFrac, random);
+		     trainVariance, 0, m_MaxDepth);
     
     // Insert pruning data and perform reduced error pruning
     if (!m_NoPruning) {
@@ -2035,7 +2004,7 @@ public class REPRandomTree
     throws Exception {
      
     if (m_Tree == null) {
-      throw new Exception("REPRandomTree: No model built yet.");
+      throw new Exception("REPTree: No model built yet.");
     } 
     StringBuffer [] source = m_Tree.toSource(className, m_Tree);
     return
@@ -2068,7 +2037,7 @@ public class REPRandomTree
   public String graph() throws Exception {
 
     if (m_Tree == null) {
-      throw new Exception("REPRandomTree: No model built yet.");
+      throw new Exception("REPTree: No model built yet.");
     } 
     StringBuffer resultBuff = new StringBuffer();
     m_Tree.toGraph(resultBuff, 0, null);
@@ -2088,10 +2057,10 @@ public class REPRandomTree
       return "No attributes other than class. Using ZeroR.\n\n" + m_zeroR.toString();
     }
     if ((m_Tree == null)) {
-      return "REPRandomTree: No model built yet.";
+      return "REPTree: No model built yet.";
     } 
     return     
-      "\nREPRandomTree\n============\n" + m_Tree.toString(0, null) + "\n" +
+      "\nREPTree\n============\n" + m_Tree.toString(0, null) + "\n" +
       "\nSize of the tree : " + numNodes();
   }
   
@@ -2110,6 +2079,6 @@ public class REPRandomTree
    * @param argv the commandline options
    */
   public static void main(String[] argv) {
-    runClassifier(new REPRandomTree(), argv);
+    runClassifier(new REPTree(), argv);
   }
 }

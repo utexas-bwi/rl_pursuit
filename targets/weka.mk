@@ -2,7 +2,7 @@ WEKA_BRIDGE_LIB_NAME := libWekaBridge.so
 WEKA_BRIDGE_LIB := bin/$(ARCH)/$(WEKA_BRIDGE_LIB_NAME)
 WEKA_DIR := bin/weka
 SRC_DIR := src/learning
-CLASSES := $(WEKA_DIR)/WekaBridge.class $(WEKA_DIR)/REPRandomTree.class
+CLASSES := $(WEKA_DIR)/WekaBridge.class $(WEKA_DIR)/REPRandomTree.class $(WEKA_DIR)/REPTree.class
 CPP_SRC := $(SRC_DIR)/WekaBridge.cpp $(SRC_DIR)/Communicator.cpp
 # NOTE: libWekaBridge name used below as well
 
