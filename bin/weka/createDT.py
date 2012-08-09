@@ -6,7 +6,7 @@ from addARFFWeights import addARFFWeights
 from common import getFilename,makeTemp,parseArgs,makeDirs,BIN_PATH,DESC,UNWEIGHTED,WEIGHTED, getArch
 
 def wekaCommandPrefix():
-  return ['java','-cp',os.path.join(BIN_PATH,'weka.jar')]
+  return ['java','-cp',os.path.join(BIN_PATH,'weka.jar') + ':' + BIN_PATH]
 
 def getSeed():
   return int(time.time() * 1000000) % 1000000
@@ -31,9 +31,10 @@ def removeTrialStep(inFile,outFile,numInstances=None):
     with open(outFile,'w') as f:
       f.writelines(outLines)
 
-def createTree(inFile,outFile,options,randomTree,numRandomFeatures):
+def createTree(inFile,outFile,options,randomTree,featureFrac):
   if randomTree:
-    cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.RandomTree','-t',inFile,'-i','-K',str(numRandomFeatures),'-S',str(getSeed())] + options
+    #cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.RandomTree','-t',inFile,'-i','-F',str(featureFrac),'-S',str(getSeed())] + options
+    cmd = wekaCommandPrefix() + ['-Xmx2048m','REPRandomTree','-t',inFile,'-i','-F',str(featureFrac),'-S',str(getSeed())] + options
   else:
     cmd = wekaCommandPrefix() + ['-Xmx2048m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
   #cmd = wekaCommandPrefix() + ['-Xmx4096m','weka.classifiers.trees.REPTree','-t',inFile,'-i'] + options
@@ -49,7 +50,7 @@ def extractTree(arffFile,inFile,outFile):
   try:
     ind = lines.index('REPTree\n')
   except ValueError:
-    ind = lines.index('RandomTree\n')
+    ind = lines.index('REPRandomTree\n')
   startInd = ind + 2 # 3 lines later, including REPTree
   if lines[startInd] == '\n':
     startInd += 1
@@ -67,7 +68,7 @@ def buildDT(dataFile,outFile,options,randomTree):
   cmd = [os.path.join('bin',str(getArch()),'buildDT'),dataFile] + options
   subprocess.check_call(cmd,stdout=open(outFile,'w'))
 
-def makeTree(data,useWeka,stayWeight,base,name,treeOptions,randomTree,numRandomFeatures):
+def makeTree(data,useWeka,stayWeight,base,name,treeOptions,randomTree,featureFrac):
   descFile = getFilename(base,name,DESC)
   unweightedFile = getFilename(base,name,UNWEIGHTED)
   weightedFile = getFilename(base,name,WEIGHTED)
@@ -76,7 +77,7 @@ def makeTree(data,useWeka,stayWeight,base,name,treeOptions,randomTree,numRandomF
     addARFFWeights(data,data,stayWeight)
   if useWeka:
     print 'Running weka to create initial tree'
-    createTree(data,descFile,treeOptions,randomTree,numRandomFeatures)
+    createTree(data,descFile,treeOptions,randomTree,featureFrac)
     print 'Extracting tree from weka output'
     # NOTE: changed weka to output class distributions, no longer need to add my own weights
     if randomTree:
@@ -89,7 +90,7 @@ def makeTree(data,useWeka,stayWeight,base,name,treeOptions,randomTree,numRandomF
     print 'Running buildDT to create a weighted tree'
     buildDT(data,weightedFile,treeOptions,randomTree)
 
-def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstances=None,randomTree=False,numRandomTrees=10,numRandomFeatures = 14,resampleFrac=0.8):
+def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstances=None,randomTree=False,numRandomTrees=10,featureFrac = 0.8,resampleFrac=0.5):
 
   # create the temporary files we need
   tmpData = makeTemp('.arff')
@@ -101,10 +102,11 @@ def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstan
       tmpDataSampled = makeTemp('-sampled.arff')
       removeFiles.append(tmpDataSampled)
       for i in range(numRandomTrees + 1):
+        print '*** Random Tree %i' % i
         resample(tmpData,tmpDataSampled,resampleFrac)
-        makeTree(tmpDataSampled,useWeka,stayWeight,base,name + '-%i' % i,treeOptions,randomTree,numRandomFeatures)
+        makeTree(tmpDataSampled,useWeka,stayWeight,base,name + '-%i' % i,treeOptions,randomTree,featureFrac)
     else:
-      makeTree(tmpData,useWeka,stayWeight,base,name,treeOptions,randomTree,numRandomFeatures)
+      makeTree(tmpData,useWeka,stayWeight,base,name,treeOptions,randomTree,featureFrac)
     print 'Done.'
   finally:
     for f in removeFiles:
