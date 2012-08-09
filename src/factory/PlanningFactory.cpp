@@ -62,6 +62,10 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     bool modelPerStudent = models[i].get("modelPerStudent",false).asBool();
     bool dataPerStudent = models[i].get("dataPerStudent",false).asBool();
     bool includeCurrentStudent = models[i].get("includeCurrentStudent",true).asBool();
+    bool randomForest = models[i].get("randomForest",false).asBool();
+    unsigned int numTrees = models[i].get("numTrees",10).asUInt();
+    if (!randomForest)
+      numTrees = 1;
     std::string pred = models[i].get("predator","UNKNOWN_PRED").asString();
     if (pred == "classifier")
       std::cout << "dataPerStudent: " << std::boolalpha << dataPerStudent << std::endl;
@@ -87,27 +91,32 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     
     // iterate through the considered students
     for (std::set<std::string>::iterator it = students.begin(); it != students.end(); it++) {
-      Json::Value modelOptions(modelOptionsV1);
-      std::map<std::string,std::string> reps;
-      reps["$(MODEL_STUDENT)"] = *it;
-      jsonReplaceStrings(modelOptions,reps);
-      
-      double prob = modelOptions.get("prob",1.0).asDouble();
-      std::string desc = modelOptions.get("desc","NO DESCRIPTION").asString();
-      //bool caching = modelOptions.get("cache",false).asBool();
+      for (unsigned int treeInd = 0; treeInd < numTrees; treeInd++) {
+        Json::Value modelOptions(modelOptionsV1);
+        std::map<std::string,std::string> reps;
+        std::string modelStudent = *it;
+        if (randomForest)
+          modelStudent += "-" + boost::lexical_cast<std::string>(treeInd);
+        reps["$(MODEL_STUDENT)"] = modelStudent;
+        jsonReplaceStrings(modelOptions,reps);
+        
+        double prob = modelOptions.get("prob",1.0).asDouble();
+        std::string desc = modelOptions.get("desc","NO DESCRIPTION").asString();
+        //bool caching = modelOptions.get("cache",false).asBool();
 
-      std::vector<AgentModel> agentModels;
-      std::vector<AgentPtr> agents;
-      boost::shared_ptr<WorldMDP> newMDP = mdp->clone();
-      boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(rng,dims));
-      newMDP->setAdhocAgent(adhocAgent);
-      
-      createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,adhocAgent,agents,agentModels);
-      newMDP->addAgents(agentModels,agents);
-      //newMDP->setCaching(caching);
-      //newMDP->resetCache();
+        std::vector<AgentModel> agentModels;
+        std::vector<AgentPtr> agents;
+        boost::shared_ptr<WorldMDP> newMDP = mdp->clone();
+        boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(rng,dims));
+        newMDP->setAdhocAgent(adhocAgent);
+        
+        createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,adhocAgent,agents,agentModels);
+        newMDP->addAgents(agentModels,agents);
+        //newMDP->setCaching(caching);
+        //newMDP->resetCache();
 
-      modelList.push_back(ModelInfo(newMDP,desc,prob));
+        modelList.push_back(ModelInfo(newMDP,desc,prob));
+      }
     }
   }
 
