@@ -91,7 +91,7 @@ def makeTree(data,useWeka,stayWeight,base,name,treeOptions,randomTree,featureFra
     print 'Running buildDT to create a weighted tree'
     buildDT(data,weightedFile,treeOptions,randomTree)
 
-def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstances=None,randomTree=False,numRandomTrees=10,featureFrac = 0.8,resampleFrac=0.5):
+def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstances=None,randomTree=False,numRandomTrees=10,featureFrac = 0.8,resampleFrac=0.5,randomTreeInd=None):
 
   # create the temporary files we need
   tmpData = makeTemp('.arff')
@@ -103,6 +103,8 @@ def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstan
       tmpDataSampled = makeTemp('-sampled.arff')
       removeFiles.append(tmpDataSampled)
       for i in range(numRandomTrees):
+        if (randomTreeInd is not None) and (i != randomTreeInd):
+          continue
         print '*** Random Tree %i' % i
         resample(tmpData,tmpDataSampled,resampleFrac)
         makeTree(tmpDataSampled,useWeka,stayWeight,base,name + '-%i' % i,treeOptions,randomTree,featureFrac)

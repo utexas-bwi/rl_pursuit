@@ -7,19 +7,19 @@ def main(basename,dataDir,stayWeight,treeOptions,options):
   students = getUniqueStudents()
   
   for i,student in enumerate(students):
-    if options.studentInd is not None:
-      if i != options.studentInd:
-        continue
+    if (options.studentInd is not None) and (i != options.studentInd):
+      continue
     print '-------------------'
     print student
     print '-------------------'
     dataFile = getFilename(dataDir,student,TRAIN)
-    createDT(dataFile,basename,'only-%s' % student,stayWeight,treeOptions,options.useWeka,options.numInstances,options.randomTree,options.numRandomTrees,options.featureFrac,options.resampleFrac)
+    createDT(dataFile,basename,'only-%s' % student,stayWeight,treeOptions,options.useWeka,options.numInstances,options.randomTree,options.numRandomTrees,options.featureFrac,options.resampleFrac,options.randomTreeInd)
 
 if __name__ == '__main__':
   from optparse import make_option
   opts = []
   opts.append(make_option('--only',action='store',dest='studentInd',default=None,help='only run for specified student',metavar='NUM',type='int'))
+  opts.append(make_option('--randomTreeInd',action='store',dest='randomTreeInd',default=None,help='only run for random tree ind',metavar='NUM',type='int'))
   opts.append(make_option('--dataDir',action='store',dest='dataDir',default=None,help='data dir',metavar='DIR'))
 
   opts.append(make_option('--random',action='store_true',dest='randomTree',default=False))
