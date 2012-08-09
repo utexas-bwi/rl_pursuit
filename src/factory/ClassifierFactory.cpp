@@ -11,6 +11,7 @@ Modified: 2011-12-28
 #include <cassert>
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
+#include <common/Util.h>
 
 #include <learning/WekaParser.h>
 #include <learning/ArffReader.h>
@@ -63,6 +64,7 @@ ClassifierPtr createClassifier(const std::string &filename, const Json::Value &o
 }
 
 ClassifierPtr createClassifier(const std::vector<Feature> &features, const Json::Value &options) {
+  assert(features.size() > 0);
   return createClassifier("","",features,options);
 }
 
@@ -217,20 +219,45 @@ boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::v
   return boost::shared_ptr<TrBagg>(new TrBagg(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,baseLearner,fallbackLearnerOptions));
 }
 
-boost::shared_ptr<Committee> createCommittee(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
-  assert(filename == "");
+boost::shared_ptr<Committee> createCommittee(const std::string &/*filename*/, const std::vector<Feature> &inFeatures, bool caching, const Json::Value &options) {
+  std::vector<Feature> features;
+  if (inFeatures.size() == 0) {
+    FeatureType::getFeatures(features);
+  } else {
+    features = inFeatures;
+  }
+  //std::cout << "CREATING COMMITTEE" << std::endl;
+  //for (unsigned int i = 0; i < features.size(); i++)
+    //std::cout << "  " << getName(features[i].feat) << std::endl;
+  //assert(filename == "");
   Committee::Params p;
   p.fromJson(options);
 
   // read in sub classifiers
   std::vector<Committee::SubClassifier> classifiers;
   const Json::Value &classifiersJson = options["classifiers"];
+
   for (unsigned int i = 0; i < classifiersJson.size(); i++) {
-    Committee::SubClassifier c;
-    c.weight = classifiersJson[i].get("weight",1.0).asDouble();
-    c.classifier = createClassifier(features,classifiersJson[i]);
-    classifiers.push_back(c);
+    unsigned int numRepeatedModels = classifiersJson[i].get("numRepeatedModels",1).asUInt();
+    float weight = classifiersJson[i].get("weight",1.0).asDouble();
+    for (unsigned int repeatInd = 0; repeatInd < numRepeatedModels; repeatInd++) {
+      // get the options, with $(REPEATED_NUM) filled out
+      Json::Value tempOpts(classifiersJson[i]);
+      std::map<std::string,std::string> reps;
+      reps["$(REPEATED_NUM)"] = boost::lexical_cast<std::string>(repeatInd);
+      jsonReplaceStrings(tempOpts,reps);
+      //std::cout << "  " << tempOpts.get("filename","").asCString() << std::endl;
+      
+      // create the classifier
+      Committee::SubClassifier c;
+      c.weight = weight;
+      c.classifier = createClassifier(tempOpts);
+      classifiers.push_back(c);
+    }
   }
 
-  return boost::shared_ptr<Committee>(new Committee(features,caching,classifiers,p));
+  //std::cout << "HERE" << std::endl << std::flush;
+  boost::shared_ptr<Committee> x(new Committee(features,caching,classifiers,p));
+  //std::cout << "HERE2" << std::endl << std::flush;
+  return x;
 }

@@ -5,6 +5,8 @@
 #include <cmath>
 #include <iostream>
 
+class Feature;
+
 const float FEATURE_UNSET = 999999;
 inline bool isFeatureUnset(float val) {
   return fabs(FEATURE_UNSET - val) < 0.0001f;
@@ -37,6 +39,13 @@ ENUM(FeatureType,
 )
 
 namespace FeatureType {
+  //static std::vector<Feature> features;
+  //bool initFeatures();
+  //static bool initResult = initFeatures();
+  void getFeatures(std::vector<Feature> &features);
+}
+/*
+namespace FeatureType {
   const int numCategories[NUM] = {
     //0, //Trial,
     //0, //Step,
@@ -61,5 +70,6 @@ namespace FeatureType {
     5 //Pred_act
   };
 }
+*/
 
 #endif /* end of include guard: FEATURES_YY6H8O9W */
