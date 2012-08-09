@@ -81,7 +81,7 @@ void DecisionTree::InteriorNode::output(std::ostream &out, unsigned int depth) {
   for (unsigned int i = 0; i < splitValues.size(); i++){
     for (unsigned int j = 0; j < depth; j++)
       out << "|  ";
-    out << splitKey << " ";
+    out << getName(splitKey) << " ";
     ComparisonOperator c = cmp;
     if ((c == LESS) && (i == splitValues.size() - 1))
       c = GEQ;
