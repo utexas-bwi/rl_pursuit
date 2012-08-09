@@ -228,7 +228,7 @@ boost::shared_ptr<Committee> createCommittee(const std::string &filename, const 
   for (unsigned int i = 0; i < classifiersJson.size(); i++) {
     Committee::SubClassifier c;
     c.weight = classifiersJson[i].get("weight",1.0).asDouble();
-    c.classifier = createClassifier(features,options);
+    c.classifier = createClassifier(features,classifiersJson[i]);
     classifiers.push_back(c);
   }
 
