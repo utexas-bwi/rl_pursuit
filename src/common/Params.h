@@ -36,6 +36,7 @@ SET_FROM_JSON(std::string,asString)
     } \
     \
     void fromJson(const Json::Value &opts) { \
+      (void)opts; /* to remove any compiler warnings if params is empty */ \
       params(PARAM_SET) \
     } \
   };

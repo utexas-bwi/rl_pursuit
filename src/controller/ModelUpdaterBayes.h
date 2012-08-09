@@ -12,7 +12,6 @@ Modified: 2011-10-02
 #include "ModelUpdater.h"
 #include <gtest/gtest_prod.h>
 #include <common/Params.h>
-#include <common/Params.h>
 #include <common/Enum.h>
 
 ENUM(ModelUpdateType,

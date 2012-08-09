@@ -17,6 +17,7 @@ Modified: 2011-12-28
 
 #include <learning/AdaBoost.h>
 #include <learning/AdaBoostPrime.h>
+#include <learning/Committee.h>
 #include <learning/DecisionTree.h>
 #include <learning/LinearSVM.h>
 #include <learning/NaiveBayes.h>
@@ -93,6 +94,8 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &d
     classifier = createTwoStageTrAdaBoost(filename,features,caching,options);
   } else if (type == "weka") {
     classifier = createWekaClassifier(filename,features,caching,options);
+  } else if (type == "committee") {
+    classifier = createCommittee(filename,features,caching,options);
   } else {
     std::cerr << "createClassifier: ERROR, unknown type: " << type << std::endl;
     exit(3);
@@ -212,4 +215,22 @@ boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::v
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
 
   return boost::shared_ptr<TrBagg>(new TrBagg(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,baseLearner,fallbackLearnerOptions));
+}
+
+boost::shared_ptr<Committee> createCommittee(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
+  assert(filename == "");
+  Committee::Params p;
+  p.fromJson(options);
+
+  // read in sub classifiers
+  std::vector<Committee::SubClassifier> classifiers;
+  const Json::Value &classifiersJson = options["classifiers"];
+  for (unsigned int i = 0; i < classifiersJson.size(); i++) {
+    Committee::SubClassifier c;
+    c.weight = classifiersJson[i].get("weight",1.0).asDouble();
+    c.classifier = createClassifier(features,options);
+    classifiers.push_back(c);
+  }
+
+  return boost::shared_ptr<Committee>(new Committee(features,caching,classifiers,p));
 }

@@ -54,7 +54,7 @@ boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<R
 
 boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options) {
   // create the agents
-  const Json::Value models = options["models"];
+  const Json::Value &models = options["models"];
   std::vector<ModelInfo> modelList;
   std::string currentStudent = options.get("student","UNKNOWN_STUDENT").asString();
 
