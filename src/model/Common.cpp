@@ -147,6 +147,11 @@ Point2D getDifferenceToPoint(const Point2D &dims, const Point2D &start, const Po
   return delta;
 }
 
+Observation::Observation():
+  prevPreyCaptured(false)
+{
+}
+
 std::ostream& operator<<(std::ostream &out, const Observation &obs) {
   out << "<Obs: ";
   for (unsigned int i = 0; i < obs.positions.size(); i++)
@@ -202,4 +207,21 @@ void Observation::uncenterPrey(const Point2D &dims) {
   Point2D offset = absPrey - preyPos();
   for (unsigned int i = 0; i < positions.size(); i++)
     positions[i] = movePosition(dims,positions[i],offset);
+}
+/*
+bool Observation::isPreyCaptured(const Point2D &dims) const {
+  if (preyInd < 0)
+    return true;
+  for (int i = 0; i < Action::NUM_NEIGHBORS; i++) {
+    if (getCollision(movePosition(dims,positions[preyInd],(Action::Type)i)) < 0) {
+      return false;
+    }
+  }
+  return true;
+}
+*/
+  
+bool Observation::didPreyMoveIllegally(const Point2D &dims, const Point2D &prevAbsPrey) {
+  unsigned int dist = getDistanceToPoint(dims,absPrey,prevAbsPrey);
+  return (dist > 1);
 }

@@ -183,7 +183,13 @@ void FeatureExtractor::calcObservedActions(Observation prevObs, Observation obs,
   obs.uncenterPrey(dims);
   TOC(historyuncenter);
   //std::cout << prevObs << " " << obs << std::endl << std::flush;
+  bool prevCapture = obs.didPreyMoveIllegally(dims,prevObs.absPrey);
   for (unsigned int i = 0; i < prevObs.positions.size(); i++) {
+    // skip if the prey was captured last step
+    if (prevCapture && ((int)i == obs.preyInd)) {
+      actions[i] = Action::NUM_ACTIONS;
+      continue;
+    }
     TIC(historydiff);
     Point2D diff = getDifferenceToPoint(dims,prevObs.positions[i],obs.positions[i]);
     TOC(historydiff);

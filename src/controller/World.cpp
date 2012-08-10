@@ -139,6 +139,7 @@ void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
   }
 
   handleCollisions(requestedPositions);
+  
   //std::cout << "STOP  WORLD STEP" << std::endl;
 }
 /*
@@ -276,8 +277,16 @@ double World::getOutcomeProbApprox(Observation prevObs, const Observation &curre
     absCurrentObs.uncenterPrey(dims);
   }
 
+  // if prey was captured last time, we need to handle it differently
+  bool prevCapture = absCurrentObs.didPreyMoveIllegally(dims,absPrevObs.absPrey);
+  //std::cout << absPrevObs << std::endl;
+  //std::cout << "prev capture: " << std::boolalpha << prevCapture << std::endl;
+
 
   for (unsigned int agentInd = 0; agentInd < agents.size(); agentInd++) {
+    // skip prey if it was captured last, (i.e. give it a probability of 1 of doing the observed move)
+    if (((int)agentInd == absPrevObs.preyInd) && prevCapture)
+      continue;
     //std::cout << "    agent: " << agentInd << std::endl;
 
     actionProbs = getAgentAction(agentInd,agents[agentInd],prevObs);

@@ -62,10 +62,12 @@ unsigned int getDistanceToPoint(const Point2D &dims, const Point2D &pos1, const 
 Point2D getDifferenceToPoint(const Point2D &dims, const Point2D &start, const Point2D &end);
 
 struct Observation {
+  Observation();
   std::vector<Point2D> positions;
   int preyInd;
   unsigned int myInd;
   Point2D absPrey;
+  bool prevPreyCaptured;
 
   const Point2D& preyPos() const;
   const Point2D& myPos() const;
@@ -74,6 +76,8 @@ struct Observation {
 
   void centerPrey(const Point2D &dims);
   void uncenterPrey(const Point2D &dims);
+  //bool isPreyCaptured(const Point2D &dims) const;
+  bool didPreyMoveIllegally(const Point2D &dims, const Point2D &prevAbsPrey);
 };
 
 std::ostream& operator<<(std::ostream &out, const Observation &obs) ;
