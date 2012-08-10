@@ -35,6 +35,8 @@ public:
     return boost::shared_ptr<WorldModel>(new WorldModel(*this));
   }
 
+  int getPreyInd() const {return preyInd;}
+
 protected:
   const Point2D dims;
   std::vector<AgentModel> agents;

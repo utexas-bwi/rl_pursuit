@@ -46,6 +46,7 @@ public:
   //void step(std::vector<boost::shared_ptr<Agent> > &agents);
   //void step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents);
   void randomizePositions();
+  void randomizePreyPosition();
   void restartAgents();
   bool addAgent(const AgentModel &agentModel, boost::shared_ptr<Agent> agent, bool ignorePosition=false);
   boost::shared_ptr<WorldModel> getModel();

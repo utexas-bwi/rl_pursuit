@@ -476,6 +476,18 @@ void World::randomizePositions() {
   } // for loop
 }
 
+void World::randomizePreyPosition() {
+  Point2D pos;
+  bool collision;
+  do {
+    pos.x = rng->randomInt(dims.x);
+    pos.y = rng->randomInt(dims.y);
+    collision = (world->getCollision(pos) >= 0); // includes collisions with current location
+  } while (collision);
+  int preyInd = world->getPreyInd();
+  world->setAgentPosition(preyInd,pos);
+}
+
 void World::restartAgents() {
   for (unsigned int i = 0; i < agents.size(); i++) {
     agents[i]->restart();

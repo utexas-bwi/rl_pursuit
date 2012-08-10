@@ -92,6 +92,9 @@ int main(int argc, const char *argv[])
   std::string saveFilename = options["save"].get("results","").asString();
   bool saveResultsQ = (saveFilename != "");
   bool randomizeSeedQ = options.get("randomizeSeed",false).asBool();
+  // running for fixed lengths
+  unsigned int numStepsPerEpisode = options.get("numStepsPerEpisode",0).asUInt();
+  bool runForFixedLength = (numStepsPerEpisode != 0);
 
   // get the output DT information
   unsigned int outputDTSteps = options["verbosity"].get("dtsteps",0).asUInt();
@@ -104,6 +107,11 @@ int main(int argc, const char *argv[])
   double startTime = getTime();
 
   std::vector<std::vector<unsigned int> > numSteps(numTrials,std::vector<unsigned int>(numEpisodes,0));
+  std::vector<std::vector<unsigned int> > numCaptures(numTrials,std::vector<unsigned int>(numEpisodes,0));
+  std::vector<std::vector<unsigned int> > *results = &numSteps;
+  if (runForFixedLength)
+    results = &numCaptures;
+
   std::cout << "Running for " << numTrials << " trials" << std::endl;
   
   unsigned int trialNum;
@@ -161,10 +169,17 @@ int main(int argc, const char *argv[])
       }
       while (!model->isPreyCaptured()) {
         numSteps[trial][episode]++;
-        if (numSteps[trial][episode] > 10000) {
-          std::cerr << "TRIAL " << trial << " EPISODE " << episode << " TOO LONG" << std::endl;
-          break;
+        // check end conditions
+        if (runForFixedLength) {
+          if (numSteps[trial][episode] > numStepsPerEpisode)
+            break;
+        } else {
+          if (numSteps[trial][episode] > 10000) {
+            std::cerr << "TRIAL " << trial << " EPISODE " << episode << " TOO LONG" << std::endl;
+            break;
+          }
         }
+
         if (displayObsQ) {
           world->generateObservation(obs);
           std::cout << obs << std::endl;
@@ -174,25 +189,33 @@ int main(int argc, const char *argv[])
           world->generateObservation(obs);  // should follow world->step so that we can extract the observed actions of the previous step
           outputDT->saveStep(trial,numSteps[trial][episode],obs,*actions);
         }
+
+        // if we want to run for a fixed length and the prey is captured, find a new position for the prey
+        if (runForFixedLength && model->isPreyCaptured()) {
+          //std::cout << "Prey is captured, generating new position" << std::endl;
+          world->randomizePreyPosition();
+          numCaptures[trial][episode]++;
+        }
       } // while the episode lasts
+
       if (displayObsQ) {
         world->generateObservation(obs);
         std::cout << obs << std::endl;
       }
       if (displayStepsPerEpisodeQ)
-        std::cout << std::setw(3) << numSteps[trial][episode] << " " << std::flush;
+        std::cout << std::setw(3) << (*results)[trial][episode] << " " << std::flush;
     }
     if (displayStepsPerTrialQ)
-      displayStepsPerTrial(displayStepsPerEpisodeQ,numSteps[trial]);
+      displayStepsPerTrial(displayStepsPerEpisodeQ,(*results)[trial]);
 
   } // end for trial
   double endTime = getTime();
   // optionally display the summary
   if (displaySummaryQ)
-    displaySummary(endTime-startTime,numSteps);
+    displaySummary(endTime-startTime,*results);
   // optionally save the results
   if (saveResultsQ)
-    saveResults(saveFilename,startTrial,numSteps);
+    saveResults(saveFilename,startTrial,*results);
   // optionally finialize the saving of data for the DT
   if (outputDTCSVQ)
     outputDT->finalizeSave(randomSeed);
