@@ -7,11 +7,14 @@ double PREDATOR_MCTS_TIMING_SEARCH = 0.;
 double PREDATOR_MCTS_TIMING_UPDATE_CONTROLLER = 0.;
 double PREDATOR_MCTS_TIMING_PRUNING = 0.;
 
-PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater):
+PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater, boost::shared_ptr<QuandryDetector> quandryDetector):
   Agent(rng,dims),
   planner(planner),
   modelUpdater(modelUpdater),
-  prevAction(Action::NUM_MOVES)
+  quandryDetector(quandryDetector),
+  prevAction(Action::NUM_MOVES),
+  movingToTarget(false),
+  pathPlanner(dims)
 {
   PREDATOR_MCTS_TIMING_MODEL_UPDATE = 0.;
   PREDATOR_MCTS_TIMING_SEARCH = 0.;
@@ -60,6 +63,43 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
   // save information for the modelUpdater
   prevAction = planner->selectWorldAction(state);
   prevObs = obs;
+
+  // see if we're stuck
+  if (quandryDetector.get() != NULL) {
+    bool stuck = quandryDetector->detect(obs);
+    // if stuck, move to the opposite side of the prey
+    if (stuck && !movingToTarget) {
+      movingToTarget = true;
+      Point2D pos = obs.myPos();
+      if (abs(pos.x) > abs(pos.y)) {
+        target.y = 0;
+        target.x = -1 * sgn(pos.x);
+      } else {
+        target.x = 0;
+        target.y = -1 * sgn(pos.y);
+      }
+      std::cout << "WE'RE STUCK, plan is " << target << " for current pos: " << obs.myPos() << std::endl;
+      std::cout << obs << std::endl;
+    }
+  }
+
+  // see if we're following a plan
+  if (movingToTarget) {
+    // move target relative to prey
+    Point2D dest = movePosition(dims,obs.preyPos(),target);
+    if (dest == obs.myPos()) {
+      movingToTarget = false;
+      std::cout << "FINISHED PLAN" << std::endl;
+    } else {
+      pathPlanner.plan(obs.myPos(),dest,obs.positions);
+      if (pathPlanner.foundPath()) {
+        Point2D diff = getDifferenceToPoint(dims,obs.myPos(),pathPlanner.getFirstStep());
+        prevAction = getAction(diff);
+        std::cout << "following plan: " << prevAction << " for " << obs<< std::endl;
+      } // else, go with the uct chosen action
+    }
+  }
+
   
   // update the internal models to the current state
   //std::cout << "update controller information: " << obs << std::endl;

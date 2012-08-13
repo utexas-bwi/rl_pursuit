@@ -19,6 +19,7 @@
 
 SET_FROM_JSON(bool,asBool)
 SET_FROM_JSON(int,asInt)
+SET_FROM_JSON(unsigned int,asUInt)
 SET_FROM_JSON(double,asDouble)
 SET_FROM_JSON(float,asDouble)
 SET_FROM_JSON(std::string,asString)

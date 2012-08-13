@@ -230,8 +230,11 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     boost::shared_ptr<ValueEstimator<State_t,Action::Type> > estimator = createValueEstimator(rng->randomUInt(),Action::NUM_ACTIONS,plannerOptions);
     // create the planner
     boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(estimator,modelUpdater,plannerOptions);
+    // create the quandry detector
+    boost::shared_ptr<QuandryDetector> quandryDetector = createQuandryDetector(dims,plannerOptions);
 
-    return ptr(new PredatorMCTS(rng,dims,mcts,modelUpdater));
+
+    return ptr(new PredatorMCTS(rng,dims,mcts,modelUpdater,quandryDetector));
   } else {
     std::cerr << "createAgent: unknown agent name: " << name << std::endl;
     exit(25);
@@ -251,4 +254,12 @@ boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dim
   }
 
   return createAgent(randomSeed,dims,name,trialNum,predatorInd,options,rootOptions,baseAgent);
+}
+
+boost::shared_ptr<QuandryDetector> createQuandryDetector(const Point2D &dims, const Json::Value &options) {
+  if (!options.get("useQuandryDetector",false).asBool())
+    return boost::shared_ptr<QuandryDetector>();
+  QuandryDetector::Params p;
+  p.fromJson(options);
+  return boost::shared_ptr<QuandryDetector>(new QuandryDetector(dims,p));
 }

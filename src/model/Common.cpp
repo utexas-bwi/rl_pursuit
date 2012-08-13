@@ -196,6 +196,8 @@ bool Observation::operator==(const Observation &other) const {
 }
 
 void Observation::centerPrey(const Point2D &dims) {
+  if (positions[preyInd] == 0.5f * dims)
+    return;
   Point2D offset = 0.5f * dims - absPrey;
   for (unsigned int i = 0; i < positions.size(); i++)
     positions[i] = movePosition(dims,positions[i],offset);

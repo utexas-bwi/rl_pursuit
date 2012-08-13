@@ -16,6 +16,7 @@ Modified: 2011-08-23
 #include <json/json.h>
 #include <controller/Agent.h>
 #include <controller/AgentPerturbation.h>
+#include <controller/QuandryDetector.h>
 #include <common/RNG.h>
 
 bool nameInSet(const std::string &name, ...);
@@ -28,5 +29,7 @@ void getPerturbationFromFile(unsigned int trialNum, int predatorInd, const std::
 boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent = boost::shared_ptr<Agent>());
 boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, std::string name, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent = boost::shared_ptr<Agent>());
 boost::shared_ptr<Agent> createAgent(unsigned int randomSeed, const Point2D &dims, unsigned int trialNum, int predatorInd, const Json::Value &options, const Json::Value &rootOptions, boost::shared_ptr<Agent> baseAgent = boost::shared_ptr<Agent>());
+
+boost::shared_ptr<QuandryDetector> createQuandryDetector(const Point2D &dims, const Json::Value &options);
 
 #endif /* end of include guard: AGENTFACTORY_31I9BDGK */

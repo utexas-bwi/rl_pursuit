@@ -15,10 +15,12 @@ Modified: 2011-08-23
 #include <planning/MCTS.h>
 #include <controller/WorldMDP.h>
 #include <controller/ModelUpdater.h>
+#include <controller/QuandryDetector.h>
+#include <controller/AStar.h>
 
 class PredatorMCTS: public Agent {
 public:
-  PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater);
+  PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater, boost::shared_ptr<QuandryDetector> quandryDetector);
 
   ActionProbs step(const Observation &obs);
   void restart();
@@ -33,8 +35,13 @@ public:
 protected:
   boost::shared_ptr<MCTS<State_t,Action::Type> > planner;
   boost::shared_ptr<ModelUpdater> modelUpdater;
+  boost::shared_ptr<QuandryDetector> quandryDetector;
   Observation prevObs;
   Action::Type prevAction;
+
+  bool movingToTarget;
+  Point2D target;
+  AStar pathPlanner;
 };
 
 #endif /* end of include guard: PREDATORMCTS_ERF6V5UK */
