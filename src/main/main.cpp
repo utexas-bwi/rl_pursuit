@@ -64,6 +64,7 @@ int main(int argc, const char *argv[])
   int startTrial = 0;
   int origNumTrials = numTrials;
   unsigned int numTrialsPerJob = options.get("trialsPerJob",1).asUInt();
+  unsigned int maxNumStepsPerEpisode = options.get("maxNumStepsPerEpisode",10000).asUInt();
   
   if (jobNum < 0) {
     jobNum = 0;
@@ -174,7 +175,7 @@ int main(int argc, const char *argv[])
           if (numSteps[trial][episode] > numStepsPerEpisode)
             break;
         } else {
-          if (numSteps[trial][episode] > 10000) {
+          if (numSteps[trial][episode] > maxNumStepsPerEpisode) {
             std::cerr << "TRIAL " << trial << " EPISODE " << episode << " TOO LONG" << std::endl;
             break;
           }
