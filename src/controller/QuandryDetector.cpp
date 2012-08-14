@@ -14,16 +14,20 @@ bool QuandryDetector::detect(const Observation &obs) {
   current.centerPrey(dims);
   //std::cout << "post center obs: " << current << std::endl;
   // not stuck if we just started
-  if (history.size() == 1)
+  if (history.size() < p.historySize + 1) { // not until we have a full history
+    //std::cout << "not stuck for " << obs << std::endl;
     return false;
+  }
 
   // loop through the history and detect if we're stuck
   // currently, the check if if anyone has moved more than notStuckDistMoved relative to the prey
   for (unsigned int historyInd = 0; historyInd < history.size() - 1; historyInd++) { // -1 to skip the current one
     for (unsigned int i = 0; i < current.positions.size(); i++) {
+      if (i == obs.myInd)
+        continue;
       unsigned int dist = getDistanceToPoint(dims,history[historyInd].positions[i],current.positions[i]);
       if (dist >= p.notStuckDistMoved) {
-        std::cout << "not stuck " << historyInd << "/" << history.size() << " " << i << " - " << history[historyInd].positions[i] << " " << current.positions[i] << std::endl;
+        //std::cout << "not stuck " << historyInd << "/" << history.size() << " " << i << " - " << history[historyInd].positions[i] << " " << current.positions[i] << std::endl;
         return false;
       }
     }

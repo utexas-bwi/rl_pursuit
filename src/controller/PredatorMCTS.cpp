@@ -70,7 +70,7 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
     // if stuck, move to the opposite side of the prey
     if (stuck && !movingToTarget) {
       movingToTarget = true;
-      Point2D pos = obs.myPos();
+      Point2D pos = getDifferenceToPoint(dims,obs.preyPos(),obs.myPos());
       if (abs(pos.x) > abs(pos.y)) {
         target.y = 0;
         target.x = -1 * sgn(pos.x);
@@ -78,8 +78,8 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
         target.x = 0;
         target.y = -1 * sgn(pos.y);
       }
-      std::cout << "WE'RE STUCK, plan is " << target << " for current pos: " << obs.myPos() << std::endl;
-      std::cout << obs << std::endl;
+      //std::cout << "WE'RE STUCK, plan is " << target << " for current pos: " << obs.myPos() << std::endl;
+      //std::cout << obs << std::endl;
     }
   }
 
@@ -87,15 +87,20 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
   if (movingToTarget) {
     // move target relative to prey
     Point2D dest = movePosition(dims,obs.preyPos(),target);
+    if (target.x == 0)
+      dest.x = obs.myPos().x;
+    else
+      dest.y = obs.myPos().y;
+
     if (dest == obs.myPos()) {
       movingToTarget = false;
-      std::cout << "FINISHED PLAN" << std::endl;
+      //std::cout << "FINISHED PLAN: " << obs << std::endl;
     } else {
       pathPlanner.plan(obs.myPos(),dest,obs.positions);
       if (pathPlanner.foundPath()) {
         Point2D diff = getDifferenceToPoint(dims,obs.myPos(),pathPlanner.getFirstStep());
         prevAction = getAction(diff);
-        std::cout << "following plan: " << prevAction << " for " << obs<< std::endl;
+        //std::cout << "following plan: " << prevAction << " for " << obs<< std::endl;
       } // else, go with the uct chosen action
     }
   }
