@@ -57,7 +57,7 @@ def printResults(episodeLengths,label,outputCsv,outputHeader):
       #print 'label, Num episodes, mean, means, median, std, min, max'
       print 'label, Num episodes, mean, median, std, min, max'
     vals = [label]
-    if episodeLengths is None:
+    if (episodeLengths is None) or (len(episodeLengths) == 0):
       vals.append(0)
     else:
       vals.append(len(episodeLengths))
@@ -135,7 +135,7 @@ def main(paths,options):
       numSteps.sort(axis=0)
       numSteps = numSteps[:numEpisodes,:]
     else:
-      if options.useQuantile:
+      if options.useQuantile and (numSteps is not None):
         numSteps.sort(axis=0)
         numSteps = numSteps[fracToRemove:-fracToRemove]
         #print 'resulting size: %i' % len(numSteps)
