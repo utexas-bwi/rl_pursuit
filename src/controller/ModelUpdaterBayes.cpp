@@ -18,7 +18,7 @@ ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vect
   p(p),
   safetyModel(NULL)
 {
-  assert(p.lossEta < 0.5 + 1.-10);
+  assert(p.lossEta < 0.5 + 1e-10);
   if (p.stepsUntilSafetyModel >= 0) {
     for (unsigned int i = 0; i < models.size(); i++) {
       if (models[i].description == p.safetyModelDesc) {
