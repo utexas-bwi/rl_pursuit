@@ -18,6 +18,7 @@ ModelUpdaterBayes::ModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vect
   p(p),
   safetyModel(NULL)
 {
+  assert(p.lossEta < 0.5 + 1.-10);
   if (p.stepsUntilSafetyModel >= 0) {
     for (unsigned int i = 0; i < models.size(); i++) {
       if (models[i].description == p.safetyModelDesc) {
@@ -106,7 +107,7 @@ unsigned int ModelUpdaterBayes::selectModelInd(const State_t &) {
 void ModelUpdaterBayes::getNewModelProbs(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs, std::vector<double> &newModelProbs) {
   double modelProb;
   double loss;
-  double eta = 0.5; // eta must be <= 0.5
+  double eta = p.lossEta; // eta must be <= 0.5
   if (precisionOutputStream.get() != NULL)
     (*precisionOutputStream) << "-----" << std::endl;
   for (unsigned int i = 0; i < models.size(); i++) {

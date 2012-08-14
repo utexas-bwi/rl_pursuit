@@ -30,7 +30,8 @@ public:
   _(bool,allowRemovingModels,allowRemovingModels,true) \
   _(float,MIN_MODEL_PROB,minModelProb,0.0001) \
   _(int,stepsUntilSafetyModel,stepsUntilSafetyModel,-1) \
-  _(std::string,safetyModelDesc,safetyModelDesc,"pd")
+  _(std::string,safetyModelDesc,safetyModelDesc,"pd") \
+  _(float,lossEta,lossEta,0.5)
 
   Params_STRUCT(PARAMS)
 #undef PARAMS
