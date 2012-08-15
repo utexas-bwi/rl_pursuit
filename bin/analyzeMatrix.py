@@ -4,7 +4,7 @@ import sys, csv, itertools, numpy, scipy
 
 filename = sys.argv[1]
 numStudentsToChoose = 4
-useHC = False
+useHC = True
 evalFunc = numpy.mean
 #evalFunc = numpy.max
 
