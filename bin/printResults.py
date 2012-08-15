@@ -27,6 +27,8 @@ def validResultFile(filename):
   return ext == '.csv'
 
 def loadResultsFromDirectory(directory):
+  if not(os.path.isdir(directory)):
+    return []
   tempFilenames = [os.path.join(directory,x) for x in os.listdir(directory)]
   filenames = filter(validResultFile,tempFilenames)
   if len(filenames) == 0:

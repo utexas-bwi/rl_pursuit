@@ -98,6 +98,7 @@ baseConfig = '''
 trialNumber,student,studentModel = getRunInfo(jobNum,trialsPerJob)
 oldTrialNumber = trialNumber
 trialNumber = trialsPerJob * trialNumber + jobNumInt
+print trialNumber,student,studentModel
 
 resultDir = '%s/results/%s/%s' % (dirName,student,studentModel)
 if not(os.path.exists(resultDir)):
