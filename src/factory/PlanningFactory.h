@@ -34,6 +34,9 @@ struct ReplaceDataStudent {
 boost::shared_ptr<ModelUpdaterBayes> createModelUpdaterBayes(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, const ModelUpdaterBayes::Params &params);
 
 boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &options);
+void createAndAddModel(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &modelOptions, std::vector<ModelInfo> &modelList);
+void createListModels(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const std::string &student, const Json::Value &options, std::vector<ModelInfo> &modelList);
+bool readModelsFromListFile(const std::string &filename, const std::string &student, std::vector<std::string> &modelNames);
 
 // WORLD MDPs
 boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType_t updateType, const StateConverter &stateConverter, double actionNoise, bool centerPrey);

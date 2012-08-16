@@ -64,6 +64,13 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
     bool includeCurrentStudent = models[i].get("includeCurrentStudent",true).asBool();
     bool randomForest = models[i].get("randomForest",false).asBool();
     unsigned int numTrees = models[i].get("numTrees",10).asUInt();
+    bool useListModels = models[i].get("useModelList",false).asBool();
+
+    if (useListModels) {
+      createListModels(rng,mdp,dims,trialNum,replacementInd,currentStudent,models[i],modelList);
+      continue;
+    }
+
     if (!randomForest)
       numTrees = 1;
     std::string pred = models[i].get("predator","UNKNOWN_PRED").asString();
@@ -100,22 +107,7 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
         reps["$(MODEL_STUDENT)"] = modelStudent;
         jsonReplaceStrings(modelOptions,reps);
         
-        double prob = modelOptions.get("prob",1.0).asDouble();
-        std::string desc = modelOptions.get("desc","NO DESCRIPTION").asString();
-        //bool caching = modelOptions.get("cache",false).asBool();
-
-        std::vector<AgentModel> agentModels;
-        std::vector<AgentPtr> agents;
-        boost::shared_ptr<WorldMDP> newMDP = mdp->clone();
-        boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(rng,dims));
-        newMDP->setAdhocAgent(adhocAgent);
-        
-        createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,adhocAgent,agents,agentModels);
-        newMDP->addAgents(agentModels,agents);
-        //newMDP->setCaching(caching);
-        //newMDP->resetCache();
-
-        modelList.push_back(ModelInfo(newMDP,desc,prob));
+        createAndAddModel(rng,mdp,dims,trialNum,replacementInd,modelOptions,modelList);
       }
     }
   }
@@ -153,6 +145,70 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
   }
   return ptr;
 }
+
+void createAndAddModel(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const Json::Value &modelOptions, std::vector<ModelInfo> &modelList) {
+  double prob = modelOptions.get("prob",1.0).asDouble();
+  std::string desc = modelOptions.get("desc","NO DESCRIPTION").asString();
+  //bool caching = modelOptions.get("cache",false).asBool();
+
+  std::vector<AgentModel> agentModels;
+  std::vector<AgentPtr> agents;
+  boost::shared_ptr<WorldMDP> newMDP = mdp->clone();
+  boost::shared_ptr<AgentDummy> adhocAgent(new AgentDummy(rng,dims));
+  newMDP->setAdhocAgent(adhocAgent);
+  
+  createAgentControllersAndModels(rng,dims,trialNum,replacementInd,modelOptions,adhocAgent,agents,agentModels);
+  newMDP->addAgents(agentModels,agents);
+  //newMDP->setCaching(caching);
+  //newMDP->resetCache();
+
+  modelList.push_back(ModelInfo(newMDP,desc,prob));
+}
+
+void createListModels(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> mdp, const Point2D &dims, unsigned int trialNum, int replacementInd, const std::string &student, const Json::Value &options, std::vector<ModelInfo> &modelList) {
+  std::cout << "creating list models" << std::endl;
+  std::string modelListFile = options.get("modelListFile","").asString();
+  std::string modelDir = options.get("modelDir","").asString();
+  if (modelDir == "") {
+    std::cerr << "Must specify modelDir" << std::endl;
+    exit(97);
+  }
+  std::vector<std::string> models;
+  if (!readModelsFromListFile(modelListFile,student,models) || (models.size() == 0)) {
+    std::cerr << "Error reading list models for " << student << " from file: " << modelListFile << std::endl;
+    exit(98);
+  }
+  
+  for (unsigned int i = 0; i < models.size(); i++) {
+    std::cout << "reading model " << i << ": " << models[i] << std::endl;
+    Json::Value modelOptions;
+    std::string modelFile = modelDir + "/" + models[i] + ".json";
+    if (!readJson(modelFile,modelOptions)) {
+      std::cerr << "Error reading in model " << modelFile << " at location: " << modelFile << std::endl;
+      exit(99);
+    }
+    createAndAddModel(rng,mdp,dims,trialNum,replacementInd,modelOptions,modelList);
+  }
+}
+
+bool readModelsFromListFile(const std::string &filename, const std::string &student, std::vector<std::string> &modelNames) {
+  std::ifstream in(filename.c_str());
+  std::string line;
+
+  while (in.good()) {
+    modelNames.clear();
+    std::getline(in,line);
+    if (!in.good())
+      break;
+    boost::split(modelNames,line,boost::is_any_of(","));
+    if (modelNames[0] != student)
+      continue;
+    modelNames.erase(modelNames.begin());
+    return true;
+  }
+  return false;
+}
+
 
 boost::shared_ptr<WorldMDP> createWorldMDP(boost::shared_ptr<RNG> rng, const Point2D &dims, bool usePreySymmetry, bool beliefMDP, ModelUpdateType_t /*updateType*/, const StateConverter &/*stateConverter*/, double actionNoise, bool centerPrey) {
   // create some rngs
