@@ -49,12 +49,14 @@ for i,row in enumerate(reader):
 #print results
 
 bestVal,bestInds,bestModels = calcBest(results,models)
-print 'Overall best: %s %s' % (bestVal,bestModels)
+#print 'Overall best: %s %s' % (bestVal,bestModels)
+print 'Overall,%s' % (','.join(bestModels))
 for i,student in enumerate(students):
   tempResults = scipy.delete(results,i,0)
   tempResults = scipy.delete(tempResults,i,1)
   tempModels = list(models)
   del tempModels[i]
   bestVal,bestInds,bestModels = calcBest(tempResults,tempModels)
-  print 'Leave one out %s: %s %s' % (student,bestVal,bestModels)
+  #print 'Leave one out %s: %s %s' % (student,bestVal,bestModels)
+  print '%s,%s' % (student,','.join(bestModels))
   sys.stdout.flush()
