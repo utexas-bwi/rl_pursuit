@@ -79,7 +79,17 @@ void ModelUpdaterBayes::updateRealWorldAction(const Observation &prevObs, Action
   for (unsigned int i = 0; i < models.size(); i++)
     models[i].prob = newModelProbs[i];
   // delete models with very low probabilities
-  removeLowProbabilityModels();
+  if (p.addUpdateNoise) {
+#ifdef DEBUG_MODELS
+  std::cout << "before noise PROBS: " << std::endl;
+  for (unsigned int i = 0; i < models.size(); i++)
+    std::cout << "  " << models[i].description << ": " << models[i].prob << std::endl;
+#endif
+    for (unsigned int i = 0; i < models.size(); i++)
+      models[i].prob = (1 - p.updateNoise) * models[i].prob + p.updateNoise / models.size();
+  } else {
+    removeLowProbabilityModels();
+  }
 #ifdef DEBUG_MODELS
   std::cout << "NEW PROBS: " << std::endl;
   for (unsigned int i = 0; i < models.size(); i++)

@@ -31,7 +31,9 @@ public:
   _(float,MIN_MODEL_PROB,minModelProb,0.0001) \
   _(int,stepsUntilSafetyModel,stepsUntilSafetyModel,-1) \
   _(std::string,safetyModelDesc,safetyModelDesc,"pd") \
-  _(float,lossEta,lossEta,0.5)
+  _(float,lossEta,lossEta,0.5) \
+  _(bool,addUpdateNoise,addUpdateNoise,false) \
+  _(float,updateNoise,updateNoise,0.05)
 
   Params_STRUCT(PARAMS)
 #undef PARAMS
