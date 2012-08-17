@@ -7,7 +7,7 @@ Modified: 2011-09-21
 */
 
 #include "ModelUpdaterSilver.h"
-
+/*
 StateHelperSilver::StateHelperSilver(bool useFrequencyCounts):
   useFrequencyCounts(useFrequencyCounts)
 {
@@ -47,10 +47,16 @@ void StateHelperSilver::addBelief(unsigned int ind) {
     totalCounts++;
   }
 }
+*/
+ModelUpdaterSilver::StateInfo::StateInfo(unsigned int numModels):
+  counts(numModels,0),
+  total(0)
+{
+}
 
-ModelUpdaterSilver::ModelUpdaterSilver(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, bool useFrequencyCounts):
+ModelUpdaterSilver::ModelUpdaterSilver(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, const Params &p):
   ModelUpdater(rng,models),
-  useFrequencyCounts(useFrequencyCounts)
+  p(p)
 {
 }
 
@@ -59,33 +65,50 @@ void ModelUpdaterSilver::updateRealWorldAction(const Observation&, Action::Type,
 }
 
 void ModelUpdaterSilver::updateSimulationAction(const Action::Type &, const State_t &state) {
-  std::map<State_t,boost::shared_ptr<StateHelperSilver> >::iterator it = stateHelpers.find(state);
-  if (it == stateHelpers.end()) {
+  map_t::iterator it = stateInfos.find(state);
+  if (it == stateInfos.end()) {
     // previously unseen state
-    boost::shared_ptr<StateHelperSilver> helper(new StateHelperSilver(useFrequencyCounts));
-    helper->addBelief(currentBeliefInd);
-    stateHelpers.insert(std::pair<State_t,boost::shared_ptr<StateHelperSilver> >(state,helper));
+    boost::shared_ptr<StateInfo> info(new StateInfo(models.size()));
+    it = stateInfos.insert(std::pair<State_t,boost::shared_ptr<StateInfo> >(state,info)).first;
+  }
+  StateInfo &stateInfo = *(it->second);
+  if (p.useFrequencyCounts) {
+    stateInfo.counts[currentBeliefInd]++;
+    stateInfo.total++;
   } else {
-    // seen state, add this controller as having reached it
-    it->second->addBelief(currentBeliefInd);
+    if (stateInfo.counts[currentBeliefInd] < 1e-10) {
+      stateInfo.counts[currentBeliefInd]++;
+      stateInfo.total++;
+    }
   }
 }
 
 unsigned int ModelUpdaterSilver::selectModelInd(const State_t &state) {
-  std::map<State_t,boost::shared_ptr<StateHelperSilver> >::iterator it = stateHelpers.find(state);
-  if (it == stateHelpers.end()) {
+  map_t::iterator it = stateInfos.find(state);
+  if (it == stateInfos.end()) {
     // unseen state, sample from the priors
     currentBeliefInd = rng->randomInt(models.size());
   } else {
-    // sample from the state helper
-    currentBeliefInd = it->second->sampleBeliefs(rng);
+    float val = rng->randomFloat();
+    float total = 0;
+    StateInfo &stateInfo = *(it->second);
+    for (unsigned int i = 0; i < stateInfo.counts.size(); i++) {
+      float prob = stateInfo.counts[i] / stateInfo.total;
+      if (p.addUpdateNoise)
+        prob = (1 - p.updateNoise) * prob + p.updateNoise / models.size();
+      total += prob;
+      if (val < total + 1e-10) {
+        currentBeliefInd = i;
+        break;
+      }
+    }
   }
   return currentBeliefInd;
 }
 
 std::string ModelUpdaterSilver::generateSpecificDescription() {
   std::string msg = "Silver";
-  if (useFrequencyCounts)
+  if (p.useFrequencyCounts)
     msg += " Weighted";
   return msg;
 }

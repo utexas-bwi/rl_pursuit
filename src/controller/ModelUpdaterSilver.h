@@ -11,23 +11,28 @@ Modified: 2011-09-21
 
 #include <boost/shared_ptr.hpp>
 #include "ModelUpdater.h"
-
-class StateHelperSilver {
-public:
-  StateHelperSilver(bool useFrequencyCounts);
-  unsigned int sampleBeliefs(boost::shared_ptr<RNG> rng);
-  void addBelief(unsigned int ind);
-
-private:
-  bool useFrequencyCounts;
-  std::vector<unsigned int> beliefs;
-  boost::shared_ptr<std::vector<unsigned int> > beliefCounts;
-  unsigned int totalCounts;
-};
+#include <common/Params.h>
 
 class ModelUpdaterSilver: public ModelUpdater {
 public:
-  ModelUpdaterSilver(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, bool useFrequencyCounts);
+#define PARAMS(_) \
+  _(bool,useFrequencyCounts,weighted,false) \
+  _(bool,addUpdateNoise,addUpdateNoise,false) \
+  _(float,updateNoise,updateNoise,0.05)
+
+  Params_STRUCT(PARAMS)
+#undef PARAMS
+
+  struct StateInfo {
+    StateInfo(unsigned int numModels);
+    std::vector<float> counts;
+    float total;
+  };
+
+  typedef std::map<State_t,boost::shared_ptr<StateInfo> > map_t;
+
+public:
+  ModelUpdaterSilver(boost::shared_ptr<RNG> rng, const std::vector<ModelInfo> &models, const Params &p);
   void updateRealWorldAction(const Observation &prevObs, Action::Type lastAction, const Observation &currentObs);
   void updateSimulationAction(const Action::Type &action, const State_t &state);
 
@@ -36,9 +41,9 @@ protected:
   std::string generateSpecificDescription();
 
 protected:
-  bool useFrequencyCounts;
-  std::map<State_t,boost::shared_ptr<StateHelperSilver> > stateHelpers;
+  map_t stateInfos;
   unsigned int currentBeliefInd;
+  Params p;
 };
 
 #endif /* end of include guard: MODELUPDATERSILVER_FRGC8XXJ */

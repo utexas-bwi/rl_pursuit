@@ -115,8 +115,9 @@ boost::shared_ptr<ModelUpdater> createModelUpdater(boost::shared_ptr<RNG> rng, b
   boost::shared_ptr<ModelUpdater> ptr;
   if (options.get("silver",false).asBool()) {
     // make a silver updater
-    bool weighted = options.get("weighted",false).asBool();
-    ptr = boost::shared_ptr<ModelUpdaterSilver>(new ModelUpdaterSilver(rng,modelList,weighted));
+    ModelUpdaterSilver::Params p;
+    p.fromJson(options);
+    ptr = boost::shared_ptr<ModelUpdaterSilver>(new ModelUpdaterSilver(rng,modelList,p));
   } else {
     // make a bayes updater
     //std::string updateTypeString = options.get("update","bayesian").asString();
