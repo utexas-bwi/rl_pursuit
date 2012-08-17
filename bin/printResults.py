@@ -122,6 +122,8 @@ def main(paths,options):
     print 'MATCHING number of episodes, via sorting first axis (MIGHT BE WRONG)'
   for i,path in enumerate(paths):
     res = loadResults(path)
+    if (options.requireNumTrials is not None) and (res.shape[0] != options.requireNumTrials):
+      continue
     if res is None:
       numSteps = None
     else:
@@ -142,7 +144,10 @@ def main(paths,options):
         numSteps = numSteps[fracToRemove:-fracToRemove]
         #print 'resulting size: %i' % len(numSteps)
     if options.maxLength is not None:
-      numSteps[numSteps > options.maxLength] = options.maxLength
+      if options.removeLongerThanMax:
+        numSteps = numSteps[numSteps <= options.maxLength]
+      else:
+        numSteps[numSteps > options.maxLength] = options.maxLength
     printResults(numSteps,path,options.outputCsv,i==0)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
@@ -162,7 +167,9 @@ def mainArgs(args):
   parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
   parser.add_option('-m','--match',action='store_true',dest='matchNumEpisodes',default=False,help='matches the number of episodes between the results')
   parser.add_option('-q','--quantile',action='store',dest='quantile',default=1.0,help='fraction of data to use, 0.9 removes the lowest and highest 0.05',type='float')
-  parser.add_option('--maxLength',action='store',dest='maxLength',default=None,type='int',help='Max length of episodes, longer ones get reduced to this value')
+  parser.add_option('--maxLength',action='store',dest='maxLength',default=None,type='int',help='Max length of episodes, longer ones get reduced to this value or removed if removeLongerThanMax is set')
+  parser.add_option('--removeLongerThanMax',action='store_true',dest='removeLongerThanMax',default=False)
+  parser.add_option('--requireNumTrials',action='store',type='int',default=None,dest='requireNumTrials',help='Ignore results without the proper number of trials')
   options,args = parser.parse_args(args)
   options.useQuantile = (options.quantile < 0.9999)
 
