@@ -181,9 +181,9 @@ void createListModels(boost::shared_ptr<RNG> rng, boost::shared_ptr<WorldMDP> md
   }
   
   for (unsigned int i = 0; i < models.size(); i++) {
-    std::cout << "reading model " << i << ": " << models[i] << std::endl;
     Json::Value modelOptions;
     std::string modelFile = modelDir + "/" + models[i] + ".json";
+    std::cout << "reading model " << i << ": " << models[i] << " " << modelFile << std::endl;
     if (!readJson(modelFile,modelOptions)) {
       std::cerr << "Error reading in model " << modelFile << " at location: " << modelFile << std::endl;
       exit(99);
