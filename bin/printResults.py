@@ -141,6 +141,8 @@ def main(paths,options):
         numSteps.sort(axis=0)
         numSteps = numSteps[fracToRemove:-fracToRemove]
         #print 'resulting size: %i' % len(numSteps)
+    if options.maxLength is not None:
+      numSteps[numSteps > options.maxLength] = options.maxLength
     printResults(numSteps,path,options.outputCsv,i==0)
   #for filenameList in filenames:
     #filenameList = flatten(map(getFilenames,filenameList))
@@ -160,6 +162,7 @@ def mainArgs(args):
   parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
   parser.add_option('-m','--match',action='store_true',dest='matchNumEpisodes',default=False,help='matches the number of episodes between the results')
   parser.add_option('-q','--quantile',action='store',dest='quantile',default=1.0,help='fraction of data to use, 0.9 removes the lowest and highest 0.05',type='float')
+  parser.add_option('--maxLength',action='store',dest='maxLength',default=None,type='int',help='Max length of episodes, longer ones get reduced to this value')
   options,args = parser.parse_args(args)
   options.useQuantile = (options.quantile < 0.9999)
 
