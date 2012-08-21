@@ -57,25 +57,23 @@ def run(targetBase,sourceDir,expectedNumEpisodes):
   return 0
 
 def main(args):
+  from optparse import OptionParser
   usage = 'Usage: combineResults.py sourceDirectory [sourceDirectory ...]'
-  if ('-h' in args) or ('--help' in args):
-    print usage
-    return 0
+  parser = OptionParser(usage)
+  parser.add_option('-t','--target',dest='target',action='store',type='str',default='results',help='Target directory for the results')
+  options,args = parser.parse_args(args)
   if len(args) < 1:
     print 'Invalid number of arguments'
     print usage
     return 1
-  #target = args[0]
-  target = 'results'
   sourceDirs = args[0:]
   expectedNumEpisodes = 1000
   for sourceDir in sourceDirs:
     print 'Combining',sourceDir
-    res = run(target,sourceDir,expectedNumEpisodes)
+    res = run(options.target,sourceDir,expectedNumEpisodes)
     if res != 0:
       return res
   return res
 
 if __name__ == '__main__':
-  import sys
   sys.exit(main(sys.argv[1:]))
