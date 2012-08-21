@@ -50,14 +50,12 @@ def loadResultsFromFileSet(filenames):
   return numSteps
 
 def printResults(episodeLengths,label,outputCsv,outputHeader):
-  #for i in range(len(episodeLengths)):
-    #for j in range(len(episodeLengths[i])):
-      #if episodeLengths[i][j] > 1000:
-        #episodeLengths[i][j] = 1000
-  if outputCsv:
-    if outputHeader:
-      #print 'label, Num episodes, mean, means, median, std, min, max'
+  if outputHeader:
+    if outputCsv:
       print 'label, Num episodes, mean, median, std, min, max'
+    return
+
+  if outputCsv:
     vals = [label]
     if (episodeLengths is None) or (len(episodeLengths) == 0):
       vals.append(0)
@@ -112,7 +110,7 @@ def getStudentInds(path,includeStudents,excludeStudents):
     inds.append(i)
   return inds
 
-def loadAndProcessResults(paths,options):
+def loadAndProcessResults(paths,options,postProcessFunc=None):
   results = {}
 
   studentInds = getStudentInds('data/newStudents29.txt',options.includeStudents,options.excludeStudents)
@@ -160,22 +158,23 @@ def loadAndProcessResults(paths,options):
         trials = trials[inds]
       else:
         numSteps[numSteps > options.maxLength] = options.maxLength
+    if postProcessFunc is not None:
+      postProcessFunc(trials,numSteps,path)
     results[path] = [trials,numSteps]
   return results
 
+def printHelper(trials,numSteps,path,options):
+  printResults(numSteps,path,options.outputCsv,False)
+  if options.printLongest:
+    print 'longest episodes: ',
+    for i in range(5):
+      ind = numpy.argmax(numSteps)
+      print '%i(%i) ' % (numSteps[ind],trials[ind]),
+      numSteps[ind] = -999999
+
 def main(paths,options):
-  results = loadAndProcessResults(paths,options)
-  for i,path in enumerate(paths):
-    if path not in results:
-      continue
-    trials,numSteps = results[path]
-    printResults(numSteps,path,options.outputCsv,i==0)
-    if options.printLongest:
-      print 'longest episodes: ',
-      for i in range(5):
-        ind = numpy.argmax(numSteps)
-        print '%i(%i) ' % (numSteps[ind],trials[ind]),
-        numSteps[ind] = -999999
+  printResults(None,None,options.outputCsv,True)
+  loadAndProcessResults(paths,options,postProcessFunc=lambda x,y,z: printHelper(x,y,z,options))
   return 0
 
 def parseArgs(args,parserOptions=[]):
