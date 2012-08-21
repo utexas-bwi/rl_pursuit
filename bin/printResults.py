@@ -170,6 +170,12 @@ def main(paths,options):
       continue
     trials,numSteps = results[path]
     printResults(numSteps,path,options.outputCsv,i==0)
+    if options.printLongest:
+      print 'longest episodes: ',
+      for i in range(5):
+        ind = numpy.argmax(numSteps)
+        print '%i(%i) ' % (numSteps[ind],trials[ind]),
+        numSteps[ind] = -999999
   return 0
 
 def parseArgs(args,parserOptions=[]):
@@ -183,6 +189,7 @@ def parseArgs(args,parserOptions=[]):
   parser.add_option('--maxLength',action='store',dest='maxLength',default=None,type='int',help='Max length of episodes, longer ones get reduced to this value or removed if removeLongerThanMax is set',metavar='NUM')
   parser.add_option('--removeLongerThanMax',action='store_true',dest='removeLongerThanMax',default=False)
   parser.add_option('--requireNumTrials',action='store',type='int',default=None,dest='requireNumTrials',help='Ignore results without the proper number of trials',metavar='NUM')
+  parser.add_option('--printLongest',action='store_true',dest='printLongest',default=False,help='prints a list of the 5 longest episodes')
   for o in parserOptions:
     parser.add_option(o)
   options,args = parser.parse_args(args)
