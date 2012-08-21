@@ -112,7 +112,9 @@ def getStudentInds(path,includeStudents,excludeStudents):
     inds.append(i)
   return inds
 
-def main(paths,options):
+def loadAndProcessResults(paths,options):
+  results = {}
+
   studentInds = getStudentInds('data/newStudents29.txt',options.includeStudents,options.excludeStudents)
   numEpisodes = len(studentInds)
   if options.useQuantile:
@@ -124,8 +126,8 @@ def main(paths,options):
     res = loadResults(path)
     if (options.requireNumTrials is not None) and (res.shape[0] != options.requireNumTrials):
       continue
-    if res is None:
-      numSteps = None
+    if (res is None) or (len(res) == 0):
+      continue
     else:
       trials = res[:,0]
       numSteps = res[:,1:]
@@ -134,48 +136,65 @@ def main(paths,options):
         if trial in studentInds:
           inds.append(j)
       numSteps = numSteps[inds,:]
+      trials = trials[inds]
     if options.matchNumEpisodes:
       numEpisodes = min(numEpisodes,len(numSteps))
-      numSteps.sort(axis=0)
+      inds = numpy.argsort(numSteps,axis=0)
+      numSteps = numSteps[inds,:]
+      trials = trials[inds]
+
       numSteps = numSteps[:numEpisodes,:]
+      trials = trials[:numEpisodes,:]
     else:
       if options.useQuantile and (numSteps is not None):
-        numSteps.sort(axis=0)
+        inds = numpy.argsort(numSteps,axis=0)
+        numSteps = numSteps[inds,:]
+        trials = trials[inds]
+        
         numSteps = numSteps[fracToRemove:-fracToRemove]
-        #print 'resulting size: %i' % len(numSteps)
+        trials = trials[fracToRemove:-fracToRemove]
     if options.maxLength is not None:
       if options.removeLongerThanMax:
-        numSteps = numSteps[numSteps <= options.maxLength]
+        inds = (numSteps <= options.maxLength)
+        numSteps = numSteps[inds]
+        trials = trials[inds]
       else:
         numSteps[numSteps > options.maxLength] = options.maxLength
-    printResults(numSteps,path,options.outputCsv,i==0)
-  #for filenameList in filenames:
-    #filenameList = flatten(map(getFilenames,filenameList))
-    #numSteps = loadResultsFromFileSet(filenames)
-    #print numSteps.size,numSteps.mean()
-  #else:
-    #for filename in filenames:
-      #print filename
-      #numSteps = loadResults(filename)
-      #print numSteps.size,numSteps.mean()
+    results[path] = [trials,numSteps]
+  return results
 
-def mainArgs(args):
+def main(paths,options):
+  results = loadAndProcessResults(paths,options)
+  for i,path in enumerate(paths):
+    if path not in results:
+      continue
+    trials,numSteps = results[path]
+    printResults(numSteps,path,options.outputCsv,i==0)
+  return 0
+
+def parseArgs(args,parserOptions=[]):
   from optparse import OptionParser
   parser = OptionParser('printResults.py [options] result1.csv [result2.csv ...]\nNOTE: can take directories or files')
   parser.add_option('-c','--csv',action='store_true',dest='outputCsv',default=False,help='output in csv format')
   parser.add_option('-i','--include',action='append',dest='includeStudents',default=[],help='output only for specified students',metavar='STUDENT')
   parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
   parser.add_option('-m','--match',action='store_true',dest='matchNumEpisodes',default=False,help='matches the number of episodes between the results')
-  parser.add_option('-q','--quantile',action='store',dest='quantile',default=1.0,help='fraction of data to use, 0.9 removes the lowest and highest 0.05',type='float')
-  parser.add_option('--maxLength',action='store',dest='maxLength',default=None,type='int',help='Max length of episodes, longer ones get reduced to this value or removed if removeLongerThanMax is set')
+  parser.add_option('-q','--quantile',action='store',dest='quantile',default=1.0,help='fraction of data to use, 0.9 removes the lowest and highest 0.05',type='float',metavar='NUM')
+  parser.add_option('--maxLength',action='store',dest='maxLength',default=None,type='int',help='Max length of episodes, longer ones get reduced to this value or removed if removeLongerThanMax is set',metavar='NUM')
   parser.add_option('--removeLongerThanMax',action='store_true',dest='removeLongerThanMax',default=False)
-  parser.add_option('--requireNumTrials',action='store',type='int',default=None,dest='requireNumTrials',help='Ignore results without the proper number of trials')
+  parser.add_option('--requireNumTrials',action='store',type='int',default=None,dest='requireNumTrials',help='Ignore results without the proper number of trials',metavar='NUM')
+  for o in parserOptions:
+    parser.add_option(o)
   options,args = parser.parse_args(args)
   options.useQuantile = (options.quantile < 0.9999)
 
   if options.matchNumEpisodes and options.useQuantile:
     print >>sys.stderr,'Do not support matching with quantiles'
-    return 2
+    sys.exit(2)
+  return options,args
+
+def mainArgs(args):
+  options,args = parseArgs(args)
   return main(args,options)
 
 if __name__ == '__main__':
