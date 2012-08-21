@@ -64,6 +64,7 @@ def main(args):
   usage = 'Usage: combineResults.py sourceDirectory [sourceDirectory ...]'
   parser = OptionParser(usage)
   parser.add_option('-t','--target',dest='target',action='store',type='str',default='results',help='Target directory for the results')
+  retCode = 0
   options,args = parser.parse_args(args)
   if len(args) < 1:
     print 'Invalid number of arguments'
@@ -76,9 +77,10 @@ def main(args):
     res = run(options.target,sourceDir,expectedNumEpisodes)
     if res != 0:
       print 'Skipping %s' % sourceDir
+      retCode = res
     #if res != 0:
       #return res
-  return res
+  return retCode
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
