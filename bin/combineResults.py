@@ -15,7 +15,7 @@ def getFilenames(sourceDir,expectedNumEpisodes):
         usedModelFiles = True
       else:
          print >>sys.stderr,'Missing episode: %i' % i
-         sys.exit(3)
+         return None
     else:
       filenames.append([filename,False])
       
@@ -29,7 +29,10 @@ def run(targetBase,sourceDir,expectedNumEpisodes):
   dirPath,targetName = os.path.split(sourceDir)
   if targetName == '':
     _,targetName = os.path.split(dirPath)
-  filenames,usedModelFiles = getFilenames(sourceDir,expectedNumEpisodes)
+  res = getFilenames(sourceDir,expectedNumEpisodes)
+  if res is None:
+    return 3
+  filenames,usedModelFiles  = res
   assert(len(filenames) == expectedNumEpisodes)
   if usedModelFiles:
     targetName += '-incomplete'
