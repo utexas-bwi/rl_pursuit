@@ -115,9 +115,6 @@ def loadAndProcessResults(paths,options,postProcessFunc=None):
 
   studentInds = getStudentInds('data/newStudents29.txt',options.includeStudents,options.excludeStudents)
   numEpisodes = len(studentInds)
-  if options.useQuantile:
-    fracToRemove = numpy.floor((1.0 - options.quantile) * 0.5 * numEpisodes + 0.5)
-    print >>sys.stderr,'Removing bottom and top %i episodes for quantile %g' % (fracToRemove,options.quantile)
   if options.matchNumEpisodes:
     print 'MATCHING number of episodes, via sorting first axis (MIGHT BE WRONG)'
   for i,path in enumerate(paths):
@@ -144,13 +141,25 @@ def loadAndProcessResults(paths,options,postProcessFunc=None):
       numSteps = numSteps[:numEpisodes,:]
       trials = trials[:numEpisodes,:]
     else:
-      if options.useQuantile and (numSteps is not None):
+      num = numSteps.shape[0]
+      if options.useQuantile:
+        numToRemoveTop = numpy.floor((1.0 - options.quantile) * 0.5 * num + 0.5)
+        numToRemoveBottom = numToRemoveTop
+        if options.assumeMissingLong:
+          numToRemoveTop = numpy.floor((1.0 - options.quantile) * 0.5 * 1000 + 0.5)
+          print numToRemoveTop,1000-num
+          numToRemoveBottom = numToRemoveTop - (1000 - num)
+          if numToRemoveBottom < 0:
+            print >>sys.stderr,'Missing too many episodes, wanted to remove %i' % (numToRemoveTop)
+            sys.exit(2)
+        print >>sys.stderr,'Removing bottom %i and top %i episodes for quantile %g' % (numToRemoveBottom,numToRemoveTop,options.quantile)
+
         inds = numpy.argsort(numSteps,axis=0)
         numSteps = numSteps[inds,:]
         trials = trials[inds]
         
-        numSteps = numSteps[fracToRemove:-fracToRemove]
-        trials = trials[fracToRemove:-fracToRemove]
+        numSteps = numSteps[numToRemoveTop:-numToRemoveBottom]
+        trials = trials[numToRemoveTop:-numToRemoveBottom]
     if options.maxLength is not None:
       if options.removeLongerThanMax:
         inds = (numSteps <= options.maxLength)
@@ -185,6 +194,7 @@ def parseArgs(args,parserOptions=[]):
   parser.add_option('-x','--exclude',action='append',dest='excludeStudents',default=[],help='output excluding specified students',metavar='STUDENT')
   parser.add_option('-m','--match',action='store_true',dest='matchNumEpisodes',default=False,help='matches the number of episodes between the results')
   parser.add_option('-q','--quantile',action='store',dest='quantile',default=1.0,help='fraction of data to use, 0.9 removes the lowest and highest 0.05',type='float',metavar='NUM')
+  parser.add_option('--assumeMissingLong',action='store_true',dest='assumeMissingLong',default=False,help='assumes that any missing episodes are long for quantiles, and that there are 1000 episodes')
   parser.add_option('--maxLength',action='store',dest='maxLength',default=None,type='int',help='Max length of episodes, longer ones get reduced to this value or removed if removeLongerThanMax is set',metavar='NUM')
   parser.add_option('--removeLongerThanMax',action='store_true',dest='removeLongerThanMax',default=False)
   parser.add_option('--requireNumTrials',action='store',type='int',default=None,dest='requireNumTrials',help='Ignore results without the proper number of trials',metavar='NUM')
