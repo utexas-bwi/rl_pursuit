@@ -18,9 +18,18 @@ Modified: 2011-08-23
 #include <controller/QuandryDetector.h>
 #include <controller/AStar.h>
 
+#include <common/Params.h>
+
 class PredatorMCTS: public Agent {
 public:
-  PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater, boost::shared_ptr<QuandryDetector> quandryDetector);
+#define PARAMS(_) \
+  _(float,randomActionFrac,randomActionFrac,0.f)
+
+  Params_STRUCT(PARAMS)
+#undef PARAMS
+
+public:
+  PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater, boost::shared_ptr<QuandryDetector> quandryDetector, const Params &p);
 
   ActionProbs step(const Observation &obs);
   void restart();
@@ -42,6 +51,8 @@ protected:
   bool movingToTarget;
   Point2D target;
   AStar pathPlanner;
+
+  Params p;
 };
 
 #endif /* end of include guard: PREDATORMCTS_ERF6V5UK */

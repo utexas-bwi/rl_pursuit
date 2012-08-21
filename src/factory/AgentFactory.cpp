@@ -232,9 +232,11 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     boost::shared_ptr<MCTS<State_t,Action::Type> > mcts = createMCTS(estimator,modelUpdater,plannerOptions);
     // create the quandry detector
     boost::shared_ptr<QuandryDetector> quandryDetector = createQuandryDetector(dims,plannerOptions);
+    
+    PredatorMCTS::Params p;
+    p.fromJson(options);
 
-
-    return ptr(new PredatorMCTS(rng,dims,mcts,modelUpdater,quandryDetector));
+    return ptr(new PredatorMCTS(rng,dims,mcts,modelUpdater,quandryDetector,p));
   } else {
     std::cerr << "createAgent: unknown agent name: " << name << std::endl;
     exit(25);

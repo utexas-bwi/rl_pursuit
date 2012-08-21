@@ -7,14 +7,15 @@ double PREDATOR_MCTS_TIMING_SEARCH = 0.;
 double PREDATOR_MCTS_TIMING_UPDATE_CONTROLLER = 0.;
 double PREDATOR_MCTS_TIMING_PRUNING = 0.;
 
-PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater, boost::shared_ptr<QuandryDetector> quandryDetector):
+PredatorMCTS::PredatorMCTS(boost::shared_ptr<RNG> rng, const Point2D &dims, boost::shared_ptr<MCTS<State_t,Action::Type> > planner, boost::shared_ptr<ModelUpdater> modelUpdater, boost::shared_ptr<QuandryDetector> quandryDetector, const Params &p):
   Agent(rng,dims),
   planner(planner),
   modelUpdater(modelUpdater),
   quandryDetector(quandryDetector),
   prevAction(Action::NUM_MOVES),
   movingToTarget(false),
-  pathPlanner(dims)
+  pathPlanner(dims),
+  p(p)
 {
   PREDATOR_MCTS_TIMING_MODEL_UPDATE = 0.;
   PREDATOR_MCTS_TIMING_SEARCH = 0.;
@@ -103,6 +104,10 @@ ActionProbs PredatorMCTS::step(const Observation &obs) {
         //std::cout << "following plan: " << prevAction << " for " << obs<< std::endl;
       } // else, go with the uct chosen action
     }
+  } else if (p.randomActionFrac > 1e-10) {
+    // if above just to not change the rng unless we care
+    if (rng->randomFloat() < p.randomActionFrac)
+      prevAction = (Action::Type)rng->randomInt(Action::NUM_ACTIONS);
   }
 
   
