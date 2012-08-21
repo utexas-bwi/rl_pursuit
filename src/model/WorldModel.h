@@ -36,6 +36,7 @@ public:
   }
 
   int getPreyInd() const {return preyInd;}
+  int getAdhocInd() const;
 
 protected:
   const Point2D dims;

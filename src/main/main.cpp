@@ -130,6 +130,7 @@ int main(int argc, const char *argv[])
 
     boost::shared_ptr<World> world = createWorldAgents(randomSeed,trialNum,trialOptions);
     boost::shared_ptr<const WorldModel> model = world->getModel();
+    std::cout << "Ad hoc agent ind: " << model->getAdhocInd() << std::endl;
 
     // INITIALIZATION
     if (trial == 0) {

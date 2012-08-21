@@ -102,3 +102,11 @@ std::string WorldModel::generateDescription(unsigned int indentation) {
   s += indent(indentation) + "WorldModel " + dims.toString();
   return s;
 }
+  
+int WorldModel::getAdhocInd() const {
+  for (int i = 0; i < (int)agents.size(); i++) {
+    if (agents[i].type == ADHOC)
+      return i;
+  }
+  return -1;
+}
