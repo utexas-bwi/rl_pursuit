@@ -72,7 +72,9 @@ def main(args):
     print 'Combining',sourceDir
     res = run(options.target,sourceDir,expectedNumEpisodes)
     if res != 0:
-      return res
+      print 'Skipping %s' % sourceDir
+    #if res != 0:
+      #return res
   return res
 
 if __name__ == '__main__':
