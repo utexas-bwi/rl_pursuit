@@ -147,7 +147,6 @@ def loadAndProcessResults(paths,options,postProcessFunc=None):
         numToRemoveBottom = numToRemoveTop
         if options.assumeMissingLong:
           numToRemoveTop = numpy.floor((1.0 - options.quantile) * 0.5 * 1000 + 0.5)
-          print numToRemoveTop,1000-num
           numToRemoveBottom = numToRemoveTop - (1000 - num)
           if numToRemoveBottom < 0:
             print >>sys.stderr,'Missing too many episodes, wanted to remove %i' % (numToRemoveTop)
