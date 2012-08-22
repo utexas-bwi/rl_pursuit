@@ -55,80 +55,29 @@ void World::generateObservation(Observation &obs) {
 }
 
 void World::step() {
-  step(boost::shared_ptr<std::vector<Action::Type> >());//,agents);
+  std::vector<ActionProbs> actionProbList(agents.size());
+  step(boost::shared_ptr<std::vector<Action::Type> >(),actionProbList);
 }
 
-void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
-  //step(actions,agents);
-//}
-
-//void World::step(std::vector<boost::shared_ptr<Agent> > &agents) {
-  //step(boost::shared_ptr<std::vector<Action::Type> >(),agents);
-//}
-
-//void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents) {
-  //std::cout << "START WORLD STEP" << std::endl;
+void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<ActionProbs> &actionProbList) {
   Action::Type action;
   Observation obs;
   std::vector<Point2D> requestedPositions(agents.size());
   
   generateObservation(obs);
 
-  std::vector<ActionProbs> actionProbList;
-/*  
-  // check if we already have this in the cache
-  if (cachingEnabled) {
-    ActionCache::iterator it = actionCache->find(obs);
-    if (it != actionCache->end()) {
-      //for (unsigned int i = 0; i < agents.size(); i++) {
-        //if ((int)i == uncachedAgentInd)
-          //continue;
-        //ActionProbs p = getAgentAction(i,agents[i],obs);
-        //Observation temp(it->first);
-        //ActionProbs p2 = getAgentAction(i,agents[i],temp);
-        //for (int j = 0; j < 5; j++) {
-          //Action::Type a = (Action::Type)j;
-          //double val = abs(p[a] - it->second[i][a]);
-          //if (val > 0.01) {
-            //std::cout << i << " " << j << std::endl;
-            //std::cout << "  " << obs << std::endl;
-            //std::cout << "  " << it->first << std::endl;
-            //std::cout << "  " << val << " " << agents[i]->generateDescription() << std::endl;
-            //std::cout << "    " << p[a] << " " << it->second[i][a] << " " << p2[a] << std::endl;
-          //}
-        //}
-      //}
-      actionProbList = it->second;
-      if (uncachedAgentInd >= 0) {
-        actionProbList[uncachedAgentInd] = getAgentAction(uncachedAgentInd,agents[uncachedAgentInd],obs);
-      }
-      for (unsigned int i = 0; i < agents.size(); i++) {
-        if ((int)i == uncachedAgentInd)
-          continue;
-        obs.myInd = i;
-        agents[i]->minimalStep(obs);
-      }
+  //std::vector<ActionProbs> actionProbList(agents.size());
+  // get the agents actions if they weren't in the cache
+  for (unsigned int i = 0; i < agents.size(); i++) {
+    actionProbList[i] = getAgentAction(i,agents[i],obs);
+    OUTPUT("action for " << i << ": " << actionProbList[i]);
+    if (!actionProbList[i].checkTotal()) {
+      for (unsigned int j = 0; j < Action::NUM_ACTIONS; j++)
+        std::cout << actionProbList[i][(Action::Type)j] << " ";
+      std::cout << std::endl;
+      assert(actionProbList[i].checkTotal());
     }
   }
-*/  
-  // get the agents actions if they weren't in the cache
-  //if (actionProbList.size() == 0) {
-    actionProbList.resize(agents.size());
-    for (unsigned int i = 0; i < agents.size(); i++) {
-      actionProbList[i] = getAgentAction(i,agents[i],obs);
-      OUTPUT("action for " << i << ": " << actionProbList[i]);
-      if (!actionProbList[i].checkTotal()) {
-        for (unsigned int j = 0; j < Action::NUM_ACTIONS; j++)
-          std::cout << actionProbList[i][(Action::Type)j] << " ";
-        std::cout << std::endl;
-        assert(actionProbList[i].checkTotal());
-      }
-    }
-    //if (cachingEnabled) {
-      //obs.myInd = 0;
-      //(*actionCache)[obs] = actionProbList;
-    //}
-  //}
 
   // now select the actions from the probs
   for (unsigned int i = 0; i < agents.size(); i++) {

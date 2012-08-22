@@ -77,6 +77,14 @@ Action::Type ActionProbs::maxAction() {
   }
   return (Action::Type)maxAction;
 }
+  
+float ActionProbs::overlap(const ActionProbs &other) const {
+  float overlap = 0;
+  for (unsigned int i = 0; i < Action::NUM_MOVES; i++) {
+    overlap += fmin(probs[i],other.probs[i]);
+  }
+  return overlap;
+}
 
 std::ostream& operator<<(std::ostream &out, const ActionProbs &action) {
   out << "ActionProbs(";

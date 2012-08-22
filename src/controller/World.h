@@ -41,7 +41,8 @@ public:
   
   void generateObservation(Observation &obs);
   void step();
-  void step(boost::shared_ptr<std::vector<Action::Type> > actions);
+  //void step(boost::shared_ptr<std::vector<Action::Type> > actions);
+  void step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<ActionProbs> &actionProbList);
   //void setUncachedAgent(boost::shared_ptr<Agent> agent);
   //void step(std::vector<boost::shared_ptr<Agent> > &agents);
   //void step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<boost::shared_ptr<Agent> > &agents);

@@ -49,6 +49,7 @@ public:
   Action::Type selectAction(boost::shared_ptr<RNG> rng);
   bool checkTotal();
   Action::Type maxAction();
+  float overlap(const ActionProbs &other) const;
 
 private:
   float probs[Action::NUM_MOVES];
