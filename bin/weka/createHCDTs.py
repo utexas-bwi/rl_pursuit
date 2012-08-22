@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from createDT import main as createDT
-from common import getUniqueStudents, getFilename, TRAIN, parseArgs
+from common import getFilename, TRAIN, parseArgs
 
 def main(basename,dataDir,stayWeight,treeOptions,options):
   students = ['gr','ta','gp','pd']
