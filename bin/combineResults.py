@@ -50,11 +50,13 @@ def run(targetBase,sourceDir,expectedNumEpisodes,options):
   targetCSV = os.path.join(targetBase,'%s.csv'%targetName)
   targetJSON = os.path.join(targetBase,'configs','%s.json'%targetName)
   if os.path.exists(targetCSV):
-    print 'Target csv already exists:',targetCSV
-    return 2
+    print '  Target csv already exists:',targetCSV
+    if not options.overwriteOld:
+      return 2
   if os.path.exists(targetJSON):
-    print 'Target json already exists:',targetJSON
-    return 2
+    print '  Target json already exists:',targetJSON
+    if not options.overwriteOld:
+      return 2
   contents = ''
   for i,(filename,isModelFile) in enumerate(filenames):
     if isModelFile:
@@ -75,6 +77,7 @@ def main(args):
   parser = OptionParser(usage)
   parser.add_option('-t','--target',dest='target',action='store',type='str',default='results',help='Target directory for the results')
   parser.add_option('--allowIncomplete',dest='allowIncomplete',action='store_true',default=False,help='Allow incomplete runs to be summarized')
+  parser.add_option('--overwriteOld',dest='overwriteOld',action='store_true',default=False,help='Overwrite old files')
   retCode = 0
   options,args = parser.parse_args(args)
   if len(args) < 1:
