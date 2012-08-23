@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+# NEW THOUGHTS: USE THE PDF BACKEND, then use "pdftops -eps filename.pdf" to convert it to an eps - this seems to work better right now - 8/23/12
+
 # NOTE: for the PS backend to work correctly, you may need to install a better version of xpdf (the one in ubuntu 11.10 seems to suck), try this: http://ctan.math.utah.edu/ctan/tex-archive/support/xpdf/xpdfbin-linux-3.03.tar.gz
 # NOTE: for better hatching, hack /usr/lib/pymodules/python2.7/matplotlib/backends/backend_ps.py
 #  change line: "0 setlinewidth" to "1 setlinewidth"
+
 
 import sys, numpy
 import matplotlib.pyplot as plt
@@ -74,7 +77,7 @@ def makeBarGraph(values,options):
   if options.filename is None:
     plt.show()
   else:
-    plt.savefig(options.filename,format='eps',bbox_inches='tight',pad_inches=0.1)
+    plt.savefig(options.filename,format='pdf',bbox_inches='tight',pad_inches=0.1)
 
 def readFile(filename):
   data = numpy.loadtxt(filename,dtype=float,delimiter=',')
