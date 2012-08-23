@@ -2,9 +2,9 @@
 
 import os, sys, shutil
 
-def getFilenames(sourceDir,expectedNumEpisodes):
+def getFilenames(sourceDir,expectedNumEpisodes,allowIncomplete=False):
   filenames = []
-  usedModelFiles = False
+  incomplete = False
   for i in range(expectedNumEpisodes):
     filename = os.path.join(sourceDir,'results','%i.csv' % i)
     if not(os.path.isfile(filename)):
@@ -12,14 +12,17 @@ def getFilenames(sourceDir,expectedNumEpisodes):
       modelFile = os.path.join(sourceDir,'models','%i.txt' % i)
       if os.path.isfile(modelFile):
         filenames.append([modelFile,True])
-        usedModelFiles = True
+        incomplete = True
       else:
          print >>sys.stderr,'Missing episode: %i' % i
-         return None
+         if allowIncomplete:
+           incomplete = True
+         else:
+           return None, True
     else:
       filenames.append([filename,False])
       
-  return filenames, usedModelFiles
+  return filenames, incomplete
 
 def run(targetBase,sourceDir,expectedNumEpisodes):
   sourceJSON = os.path.join(sourceDir,'config.json')
@@ -29,12 +32,11 @@ def run(targetBase,sourceDir,expectedNumEpisodes):
   dirPath,targetName = os.path.split(sourceDir)
   if targetName == '':
     _,targetName = os.path.split(dirPath)
-  res = getFilenames(sourceDir,expectedNumEpisodes)
-  if res is None:
+  filenames,incomplete = getFilenames(sourceDir,expectedNumEpisodes)
+  if filenames is None:
     return 3
-  filenames,usedModelFiles  = res
   assert(len(filenames) == expectedNumEpisodes)
-  if usedModelFiles:
+  if incomplete:
     targetName += '-incomplete'
     print '  Incomplete, using model output'
   targetCSV = os.path.join(targetBase,'%s.csv'%targetName)
@@ -64,6 +66,7 @@ def main(args):
   usage = 'Usage: combineResults.py sourceDirectory [sourceDirectory ...]'
   parser = OptionParser(usage)
   parser.add_option('-t','--target',dest='target',action='store',type='str',default='results',help='Target directory for the results')
+  parser.add_option('--allowIncomplete',dest='allowIncomplete',action='store_true',default=False,help='Allow incomplete runs to be summarized')
   retCode = 0
   options,args = parser.parse_args(args)
   if len(args) < 1:
