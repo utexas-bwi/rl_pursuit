@@ -37,6 +37,8 @@ def getAxisBounds(values,errors,yMinFixed,xOffset):
     vals += [v-e for v,e in zip(values,errors)]
   yMin = min(vals)
   yMax = max(vals)
+  if yMinFixed is not None:
+    yMin = yMinFixed
   yFudge = (yMax - yMin) * 0.1
   yMin -= yFudge
   yMax += yFudge
