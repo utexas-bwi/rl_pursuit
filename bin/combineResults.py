@@ -8,17 +8,17 @@ def getFilenames(sourceDir,expectedNumEpisodes,allowIncomplete=False):
   for i in range(expectedNumEpisodes):
     filename = os.path.join(sourceDir,'results','%i.csv' % i)
     if not(os.path.isfile(filename)):
+      if allowIncomplete:
+        incomplete = True
+        continue
       # try to recover using the length of the models file
       modelFile = os.path.join(sourceDir,'models','%i.txt' % i)
       if os.path.isfile(modelFile):
         filenames.append([modelFile,True])
         incomplete = True
       else:
-         print >>sys.stderr,'Missing episode: %i' % i
-         if allowIncomplete:
-           incomplete = True
-         else:
-           return None, True
+        print >>sys.stderr,'Missing episode: %i' % i
+        return None, True
     else:
       filenames.append([filename,False])
       
