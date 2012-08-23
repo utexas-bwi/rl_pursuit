@@ -16,6 +16,7 @@ def getFilenames(sourceDir,expectedNumEpisodes,allowIncomplete=False):
       if os.path.isfile(modelFile):
         filenames.append([modelFile,True])
         incomplete = True
+        print 'model file'
       else:
         print >>sys.stderr,'Missing episode: %i' % i
         return None, True
@@ -24,7 +25,7 @@ def getFilenames(sourceDir,expectedNumEpisodes,allowIncomplete=False):
       
   return filenames, incomplete
 
-def run(targetBase,sourceDir,expectedNumEpisodes):
+def run(targetBase,sourceDir,expectedNumEpisodes,options):
   sourceJSON = os.path.join(sourceDir,'config.json')
   if not(os.path.isfile(sourceJSON)):
     print 'Source json not found:',sourceJSON
@@ -32,13 +33,20 @@ def run(targetBase,sourceDir,expectedNumEpisodes):
   dirPath,targetName = os.path.split(sourceDir)
   if targetName == '':
     _,targetName = os.path.split(dirPath)
-  filenames,incomplete = getFilenames(sourceDir,expectedNumEpisodes)
+  filenames,incomplete = getFilenames(sourceDir,expectedNumEpisodes,options.allowIncomplete)
   if filenames is None:
     return 3
-  assert(len(filenames) == expectedNumEpisodes)
+  if options.allowIncomplete and incomplete:
+    pass
+  else:
+    assert(len(filenames) == expectedNumEpisodes)
   if incomplete:
     targetName += '-incomplete'
-    print '  Incomplete, using model output'
+    print '  Incomplete',
+    if options.allowIncomplete:
+      print ''
+    else:
+      print ', using model output'
   targetCSV = os.path.join(targetBase,'%s.csv'%targetName)
   targetJSON = os.path.join(targetBase,'configs','%s.json'%targetName)
   if os.path.exists(targetCSV):
@@ -77,7 +85,7 @@ def main(args):
   expectedNumEpisodes = 1000
   for sourceDir in sourceDirs:
     print 'Combining',sourceDir
-    res = run(options.target,sourceDir,expectedNumEpisodes)
+    res = run(options.target,sourceDir,expectedNumEpisodes,options)
     if res != 0:
       print 'Skipping %s' % sourceDir
       retCode = res
