@@ -125,5 +125,5 @@ bin/$(ARCH)/%:
 
 # Special finicky files:
 $(BUILD_DIR)/learning/WekaClassifier.o: FLAGS := $(FLAGS) -D COMPILE_ARCH=\"$(ARCH)\"
-#$(BUILD_DIR)/learning/Communicator.o: FLAGS = $(FLAGS_NO_STD)
+$(BUILD_DIR)/learning/Communicator.o: FLAGS := $(FLAGS_NO_STD)
 $(BUILD_DIR)/learning/libsvm.o: FLAGS = -O3 -w
