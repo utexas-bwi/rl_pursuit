@@ -58,6 +58,11 @@ void World::step() {
   std::vector<ActionProbs> actionProbList(agents.size());
   step(boost::shared_ptr<std::vector<Action::Type> >(),actionProbList);
 }
+  
+void World::step(boost::shared_ptr<std::vector<Action::Type> > actions) {
+  std::vector<ActionProbs> actionProbList(agents.size());
+  step(actions,actionProbList);
+}
 
 void World::step(boost::shared_ptr<std::vector<Action::Type> > actions, std::vector<ActionProbs> &actionProbList) {
   Action::Type action;
