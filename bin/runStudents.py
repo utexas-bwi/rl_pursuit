@@ -55,8 +55,8 @@ def main(desc,numTrials,numTrainingSamples):
     processes.append(p)
   waitForProcesses(processes,0)
 
-  combinedFilename = os.path.join(dtTrainDir,'combined.arff')
-  combineARFFs(outputFilenames,combinedFilename)
+  #combinedFilename = os.path.join(dtTrainDir,'combined.arff')
+  #combineARFFs(outputFilenames,combinedFilename)
 
 if __name__ == '__main__':
   import sys
