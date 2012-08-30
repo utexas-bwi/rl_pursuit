@@ -27,10 +27,14 @@ InstancePtr ArffReader::next() {
   float val;
   InstancePtr instance(new Instance());
   instance->weight = 1.0;
-  for (unsigned int i = 0; i < featureTypes.size(); i++) {
+  unsigned int featureInd = 0;
+  for (unsigned int i = 0; i < useFeatures.size(); i++) {
     in >> val;
     in.ignore(1,',');
-    (*instance)[featureTypes[i].feat] = val;
+    if (useFeatures[i]) {
+      (*instance)[featureTypes[featureInd].feat] = val;
+      featureInd++;
+    }
   }
   instance->label = (*instance)[getClassFeature()];
   // check if there's a weight
@@ -79,20 +83,25 @@ void ArffReader::readHeader() {
     Feature feature;
     std::string name = str.substr(startInd+1,endInd-startInd-1);
     boost::replace_all(name,".","_"); // because . is unusable for the enum
-    feature.feat = FeatureType::fromName(name);
-    feature.numeric = str.substr(endInd + 1) == "numeric";
-    if (!feature.numeric) {
-      unsigned int start = endInd + 1;
-      for (unsigned int i = endInd + 1; i < str.size(); i++) {
-        if (str[i] == '{')
-          start = i + 1;
-        if ((str[i] == ',') || (str[i] == '}')) {
-          feature.values.push_back(boost::lexical_cast<int>(str.substr(start,i - start)));
-          start = i + 1;
+    feature.feat = FeatureType::fromName(name,true);
+    if (feature.feat == FeatureType::NUM) {
+      useFeatures.push_back(false);
+    } else {
+      feature.numeric = str.substr(endInd + 1) == "numeric";
+      if (!feature.numeric) {
+        unsigned int start = endInd + 1;
+        for (unsigned int i = endInd + 1; i < str.size(); i++) {
+          if (str[i] == '{')
+            start = i + 1;
+          if ((str[i] == ',') || (str[i] == '}')) {
+            feature.values.push_back(boost::lexical_cast<int>(str.substr(start,i - start)));
+            start = i + 1;
+          }
         }
       }
+      featureTypes.push_back(feature);
+      useFeatures.push_back(true);
     }
-    featureTypes.push_back(feature);
     std::getline(in,str);
   }
   header += str + '\n';

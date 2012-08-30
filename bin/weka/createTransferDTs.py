@@ -4,7 +4,8 @@ import subprocess, os
 from common import getUniqueStudents, getArch
 
 studentFile = 'data/newStudents29.txt'
-sourceData = 4000
+#sourceData = 4000
+sourceData = -1
 
 def main(targetDir,sourceDir,prefix,studentInd):
   students = getUniqueStudents(studentFile)

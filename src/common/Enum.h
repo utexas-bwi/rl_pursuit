@@ -69,16 +69,17 @@ public:
   typedef Enum::type Enum##_t; \
   inline static const char* getName(Enum::type e) {static EnumName en(#__VA_ARGS__, (size_t) Enum::NUM); return en.getName((size_t) e);} \
   namespace Enum { \
-    inline type fromName(const char* name) { \
+    inline type fromName(const char* name, bool ignoreUnknown = false) { \
       for (size_t i = 0; i < NUM; i++) { \
         if (strcmp(getName((type)i),name) == 0) \
           return (type)i; \
       } \
+      if (ignoreUnknown) \
+        return NUM; \
       std::cerr << "Problem converting " << name << " to type " << #Enum << std::endl; \
       exit(13); \
-      return NUM; \
     } \
-    inline type fromName(const std::string &name) {return fromName(name.c_str());} \
+    inline type fromName(const std::string &name, bool ignoreUnknown = false) {return fromName(name.c_str(),ignoreUnknown);} \
   } \
   SET_FROM_JSON_ENUM(Enum)
 

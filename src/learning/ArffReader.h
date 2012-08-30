@@ -34,6 +34,7 @@ private:
   std::ifstream &in;
   std::vector<Feature> featureTypes;
   std::string header;
+  std::vector<bool> useFeatures;
 };
 
 #endif /* end of include guard: ARFFREADER_996VDU7E */
