@@ -59,7 +59,10 @@ ClassifierPtr createClassifier(const std::string &filename, const Json::Value &o
       }
     }
     */
+  } else {
+    FeatureType::getFeatures(features);
   }
+
   return createClassifier(filename,dataFilename,features,options);
 }
 
@@ -84,9 +87,9 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &d
   } else if ((type == "lsvm") || (type == "linearsvm")) {
     unsigned int maxNumInstances = options.get("maxNumInstances",630000).asUInt();
     unsigned int solverType = options.get("solverType",0).asUInt();
-    classifier = ClassifierPtr(new LinearSVM(features,caching,solverType,maxNumInstances));
+    classifier = ClassifierPtr(new LinearSVM(filename,features,caching,solverType,maxNumInstances));
   } else if (type == "nb") {
-    classifier = ClassifierPtr(new NaiveBayes(features,caching));
+    classifier = ClassifierPtr(new NaiveBayes(filename,features,caching));
   } else if (type == "svm") {
     unsigned int maxNumInstances = options.get("maxNumInstances",630000).asUInt();
     classifier = ClassifierPtr(new SVM(features,caching,maxNumInstances));
@@ -210,13 +213,15 @@ boost::shared_ptr<TwoStageTrAdaBoost> createTwoStageTrAdaBoost(const std::string
 }
 
 boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
-  assert(filename == "");
   unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   Json::Value baseLearnerOptions = options["baseLearner"];
   Json::Value fallbackLearnerOptions = options["fallbackLearner"];
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
 
-  return boost::shared_ptr<TrBagg>(new TrBagg(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,baseLearner,fallbackLearnerOptions));
+  boost::shared_ptr<TrBagg> ptr(new TrBagg(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,baseLearner,fallbackLearnerOptions));
+  if (filename != "")
+    assert(ptr->load(filename));
+  return ptr;
 }
 
 boost::shared_ptr<Committee> createCommittee(const std::string &/*filename*/, const std::vector<Feature> &inFeatures, bool caching, const Json::Value &options) {

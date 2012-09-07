@@ -23,11 +23,13 @@ public:
     std::vector<float> stdevs;
   };
 
-  NaiveBayes(const std::vector<Feature> &features, bool caching);
+  NaiveBayes(const std::string &filename, const std::vector<Feature> &features, bool caching);
   virtual ~NaiveBayes();
   virtual void addData(const InstancePtr &instance);
 
   virtual void outputDescription(std::ostream &out) const;
+  virtual void save(const std::string &filename) const;
+  virtual bool load(const std::string &filename);
 
 protected:
   virtual void trainInternal(bool incremental);

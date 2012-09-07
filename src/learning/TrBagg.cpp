@@ -8,6 +8,7 @@ Modified: 2012-01-18
 
 #include "TrBagg.h"
 #include <common/Util.h>
+#include <fstream>
   
 TrBagg::TrBagg(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, BaseLearnerGenerator fallbackLearner, const Json::Value &fallbackLearnerOptions):
   Classifier(features,caching),
@@ -36,6 +37,49 @@ void TrBagg::outputDescription(std::ostream &out) const {
   out << "TrBagg: " << std::endl;
   for (unsigned int i = 0; i < classifiers.size(); i++)
     out << *(classifiers[i].classifier) << std::endl;
+}
+
+void TrBagg::save(const std::string &filename) const {
+  std::ofstream out(filename);
+  for (unsigned int i = 0; i < classifiers.size(); i++) {
+    std::string subFilename = getSubFilename(filename,i);
+    out << classifiers[i].alpha << " ";
+    out << typeid(*(classifiers[i].classifier)).name() << " ";
+    out << subFilename << std::endl;
+    classifiers[i].classifier->save(subFilename);
+  }
+
+  out.close();
+}
+  
+bool TrBagg::load(const std::string &filename) {
+  std::string type;
+  std::string subFilename;
+  std::ifstream in(filename);
+  ClassifierPtr x = baseLearner(features,baseLearnerOptions);
+  std::string basename = typeid(*x).name();
+  x = fallbackLearner(features,fallbackLearnerOptions);
+  std::string fallbackname = typeid(*x).name();
+  while (in.good()) {
+    BoostingClassifier c;
+    in >> c.alpha;
+    in >> type;
+    in >> subFilename;
+    if (type == basename)
+      c.classifier = baseLearner(features,baseLearnerOptions);
+    else if (type == fallbackname)
+      c.classifier = fallbackLearner(features,fallbackLearnerOptions);
+    else {
+      std::cerr << "Expected a subclass of either " << basename << " or " << fallbackname << " but got: " << type << std::endl;
+      return false;
+    }
+    if (!c.classifier->load(subFilename))
+      return false;
+    classifiers.push_back(c);
+  }
+  in.close();
+  std::cout << "size: " << classifiers.size() << std::endl;
+  return true;
 }
   
 void TrBagg::trainInternal(bool /*incremental*/) {
@@ -190,4 +234,4 @@ double TrBagg::calcErrorOfSet(unsigned int size, const std::vector<std::vector<C
     //std::cout << "  " << dataInd << " " << err << std::endl;
   }
   return err;
-}
+} 

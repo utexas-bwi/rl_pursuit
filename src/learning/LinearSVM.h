@@ -13,11 +13,13 @@ typedef parameter svm_parameter;
 
 class LinearSVM: public Classifier {
 public:
-  LinearSVM(const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances);
+  LinearSVM(const std::string &filename, const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances);
   virtual ~LinearSVM();
 
   virtual void addData(const InstancePtr &instance);
   virtual void outputDescription(std::ostream &out) const;
+  virtual void save(const std::string &filename) const;
+  virtual bool load(const std::string &filename);
 
 protected:
   virtual void trainInternal(bool incremental);

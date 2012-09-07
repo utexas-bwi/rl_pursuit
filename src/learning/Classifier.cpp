@@ -9,6 +9,7 @@ Modified: 2011-12-27
 #include "Classifier.h"
 #include <iostream>
 #include <common/Util.h>
+#include <boost/lexical_cast.hpp>
 
 std::size_t hash_value(const Instance &inst) {
   std::size_t seed = 0;
@@ -80,6 +81,13 @@ void Classifier::setPredictSingleClass(bool flag) {
   if (flag)
     std::cout << "SETTING PREDICT SINGLE CLASS" << std::endl;
   predictSingleClass = flag;
+}
+
+
+std::string Classifier::getSubFilename(const std::string &baseFilename, unsigned int i) const {
+  unsigned int ind = baseFilename.rfind(".");
+  assert(ind != std::string::npos);
+  return baseFilename.substr(0,ind-1) + "-" + boost::lexical_cast<std::string>(i) + baseFilename.substr(ind);
 }
   
 std::ostream& operator<<(std::ostream &out, const Classifier &c) {

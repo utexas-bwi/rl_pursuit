@@ -1,11 +1,12 @@
 #include "LinearSVM.h"
 #include <iostream>
+#include <fstream>
 
 namespace liblinear {
 void print_null(const char *) {}
 }
 
-LinearSVM::LinearSVM(const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances):
+LinearSVM::LinearSVM(const std::string &filename, const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances):
   Classifier(features,caching),
   MAX_NUM_INSTANCES(maxNumInstances),
   minVals(features.size()-1,std::numeric_limits<float>::infinity()),
@@ -44,6 +45,10 @@ LinearSVM::LinearSVM(const std::vector<Feature> &features, bool caching, unsigne
   
   // disable liblinear's printing
   liblinear::set_print_string_function(liblinear::print_null);
+
+  // load the filename
+  if (filename != "")
+    load(filename);
 }
 
 LinearSVM::~LinearSVM() {
@@ -69,6 +74,15 @@ void LinearSVM::addData(const InstancePtr &instance) {
 void LinearSVM::outputDescription(std::ostream &out) const {
   // TODO
   out << "LinearSVM" << std::endl;
+}
+
+void LinearSVM::save(const std::string &filename) const {
+  liblinear::save_model(filename.c_str(),model);
+}
+  
+bool LinearSVM::load(const std::string &filename) {
+  model = liblinear::load_model(filename.c_str());
+  return true;
 }
 
 void LinearSVM::trainInternal(bool /*incremental*/) {

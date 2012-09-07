@@ -1,14 +1,17 @@
 #include "NaiveBayes.h"
 #include <iostream>
+#include <fstream>
 
 #undef DEBUG_NB
 
 const float NaiveBayes::ALPHA = 0.5;
 
-NaiveBayes::NaiveBayes(const std::vector<Feature> &features, bool caching):
+NaiveBayes::NaiveBayes(const std::string &filename, const std::vector<Feature> &features, bool caching):
   Classifier(features,caching),
   data(numClasses)
 {
+  if (filename != "")
+    assert(load(filename));
 }
 
 NaiveBayes::~NaiveBayes() {
@@ -21,9 +24,12 @@ void NaiveBayes::addData(const InstancePtr &instance) {
 void NaiveBayes::outputDescription(std::ostream &out) const {
   out << "Naive Bayes" << std::endl;
   return;
-/*
+}
+
+void NaiveBayes::save(const std::string &filename) const {
+  std::ofstream out(filename);
   for (unsigned int i = 0; i < attributes.size(); i++) {
-    out << features[i].name << std::endl;
+    out << getName(features[i].feat) << std::endl;
     if (attributes[i].numeric) {
       out << "mean  ";
       for (unsigned int c = 0; c < numClasses; c++)
@@ -44,7 +50,54 @@ void NaiveBayes::outputDescription(std::ostream &out) const {
     }
     out << std::endl;
   }
-*/
+  out.close();
+}
+
+#define CHECK_VAL(val,expected) \
+  in >> val; \
+  if (val != expected) { \
+    std::cerr << "Expected " << expected << " but got " << val << std::endl; \
+    return false; \
+  }
+
+#define CHECK_STR(expected) CHECK_VAL(str,expected)
+
+bool NaiveBayes::load(const std::string &filename) {
+  std::ifstream in(filename);
+  attributes.clear();
+
+  std::string str;
+  unsigned int val;
+  for (unsigned int i = 0; i < features.size() - 1; i++) { // -1 for no class
+    Attribute attribute;
+    attribute.numeric = features[i].numeric;
+    
+    CHECK_STR(getName(features[i].feat));
+
+    if (attribute.numeric) {
+      attribute.means.resize(numClasses);
+      attribute.stdevs.resize(numClasses);
+      CHECK_STR("mean");
+      for (unsigned int c = 0; c < numClasses; c++) {
+        in >> attribute.means[c];
+      }
+      CHECK_STR("stdev");
+      for (unsigned int c = 0; c < numClasses; c++)
+        in >> attribute.stdevs[c];
+    } else {
+      attribute.probs.resize(features[i].values.size());
+      for (unsigned int j = 0; j < attribute.probs.size(); j++) {
+        CHECK_VAL(val,features[i].values[j]);
+        attribute.probs[j].resize(numClasses);
+        for (unsigned int c = 0; c < numClasses; c++) {
+          in >> attribute.probs[j][c];
+        }
+      }
+    }
+    attributes.push_back(attribute);
+  }
+  in.close();
+  return true;
 }
 
 void NaiveBayes::trainInternal(bool /*incremental*/) {
@@ -110,7 +163,7 @@ void NaiveBayes::classifyInternal(const InstancePtr &instance, Classification &c
 
 void NaiveBayes::learnDiscreteAttribute(const Feature &feature) {
 #ifdef DEBUG_NB
-  std::cout << "learn " << feature.name << std::endl;
+  std::cout << "learn " << getName(feature.feat) << std::endl;
 #endif
   Attribute attr;
   // just calculate the fraction with each val 

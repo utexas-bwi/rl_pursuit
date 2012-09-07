@@ -35,9 +35,19 @@ public:
     rng = newRNG;
   }
 
+  virtual void save(const std::string &filename) const {
+    std::cerr << "SAVE NOT IMPLEMENTED, not saving to " << filename << std::endl;
+  }
+  
+  virtual bool load(const std::string &filename) {
+    std::cerr << "load NOT IMPLEMENTED, not loading from " << filename << std::endl;
+    return false;
+  }
+
 protected:
   virtual void trainInternal(bool incremental) = 0;
   virtual void classifyInternal(const InstancePtr &instance, Classification &classification) = 0;
+  std::string getSubFilename(const std::string &baseFilename, unsigned int i) const;
 
 
 protected:
