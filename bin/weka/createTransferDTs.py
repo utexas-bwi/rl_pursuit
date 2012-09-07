@@ -4,11 +4,12 @@ import subprocess, os
 from common import getUniqueStudents, getArch
 
 studentFile = 'data/newStudents29.txt'
-#sourceData = 4000
-sourceData = -1
+sourceData = 4000
+#sourceData = -1
 
-def main(targetDir,sourceDir,prefix,studentInd):
+def main(targetDir,sourceDir,destDir,prefix,studentInd):
   students = getUniqueStudents(studentFile)
+  prefix = prefix + '-using%sSource' % (sourceData if sourceData > 0 else 'All')
   for i,student in enumerate(students):
     if (studentInd is not None) and (i != studentInd):
       continue
@@ -16,8 +17,8 @@ def main(targetDir,sourceDir,prefix,studentInd):
     print student
     print '-------------------'
     cmd = ['bin/%s/boostTest' % getArch(),student,studentFile,targetDir,sourceDir,str(sourceData)]
-    descFile = os.path.join(targetDir,'desc',prefix + '-' + student + '.desc')
-    resultFile = os.path.join(targetDir,'weighted',prefix + '-' + student + '.weka')
+    descFile = os.path.join(destDir,'desc',prefix + '-' + student + '.desc')
+    resultFile = os.path.join(destDir,'weighted',prefix + '-' + student + '.weka')
     subprocess.check_call(cmd,stdout=open(descFile,'w'))
     extractTree(descFile,resultFile)
 
@@ -34,7 +35,7 @@ def extractTree(inFile,outFile):
 
 if __name__ == '__main__':
   import sys
-  usage = 'Usage: createTransferTrees.py targetDir sourceDir prefix [--only NUM]'
+  usage = 'Usage: createTransferTrees.py targetDir sourceDir destDir prefix [--only NUM]'
   args = sys.argv[1:]
   studentInd = None
   if ('-h' in args) or ('--help' in args):
@@ -49,6 +50,7 @@ if __name__ == '__main__':
     sys.exit(1)
   targetDir = args[0]
   sourceDir = args[1]
-  prefix = args[2]
-  main(targetDir,sourceDir,prefix,studentInd)
+  destDir = args[2]
+  prefix = args[3]
+  main(targetDir,sourceDir,destDir,prefix,studentInd)
 
