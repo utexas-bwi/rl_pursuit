@@ -10,6 +10,7 @@ Modified: 2011-12-01
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include "WekaParser.h"
 
 #undef DEBUG_DT_SPLITS
 
@@ -395,4 +396,16 @@ void DecisionTree::outputDescription(std::ostream &out) const {
   outputHeader(out);
   out << std::endl;
   root->output(out,0);
+}
+  
+void DecisionTree::save(const std::string &filename) const {
+  std::ofstream out(filename);
+  outputDescription(out);
+  out.close();
+}
+
+bool DecisionTree::load(const std::string &filename) {
+  WekaParser parser(filename,Action::NUM_ACTIONS);
+  root = parser.makeTreeRoot();
+  return true;
 }
