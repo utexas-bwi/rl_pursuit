@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   }
   
   std::cout << "------------------------------------------" << std::endl;
-  std::cout << *classifier << std::endl;
+  //std::cout << *classifier << std::endl;
 
   double correct = 0.0;
   int correctCount = 0;

@@ -10,12 +10,12 @@ Modified: 2012-01-18
 */
 
 #include "Classifier.h"
-#include "AdaBoost.h"
+#include "SubClassifier.h"
 #include <common/RNG.h>
 
 class TrBagg: public Classifier {
 public:
-  TrBagg(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, BaseLearnerGenerator fallbackLearner, const Json::Value &fallbackLearnerOptions);
+  TrBagg(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, SubClassifierGenerator fallbackLearner, const Json::Value &fallbackLearnerOptions);
   virtual void addData(const InstancePtr &instance);
   virtual void addSourceData(const InstancePtr &instance);
 
@@ -26,21 +26,21 @@ public:
 protected:
   virtual void trainInternal(bool incremental);
   virtual void classifyInternal(const InstancePtr &instance, Classification &classification);
-  virtual void classifyInternal(const InstancePtr &instance, Classification &classification, const std::vector<BoostingClassifier> &classifiers);
+  virtual void classifyInternal(const InstancePtr &instance, Classification &classification, const std::vector<SubClassifier> &classifiers);
 
-  virtual void calcErrorOfClassifier(BoostingClassifier &c);
+  virtual void calcErrorOfClassifier(SubClassifier &c);
   virtual double calcErrorOfSet(unsigned int size);
-  virtual double calcErrorOfSet(const std::vector<BoostingClassifier> &classifiers);
+  virtual double calcErrorOfSet(const std::vector<SubClassifier> &classifiers);
 
-  virtual unsigned int selectSize(const std::vector<BoostingClassifier> &classifiers);
+  virtual unsigned int selectSize(const std::vector<SubClassifier> &classifiers);
   virtual double calcErrorOfSet(unsigned int size, const std::vector<std::vector<Classification> > &classifications);
 
 protected:
-  BaseLearnerGenerator baseLearner;
+  SubClassifierGenerator baseLearner;
   Json::Value baseLearnerOptions;
-  BaseLearnerGenerator fallbackLearner;
+  SubClassifierGenerator fallbackLearner;
   Json::Value fallbackLearnerOptions;
-  std::vector<BoostingClassifier> classifiers;
+  std::vector<SubClassifier> classifiers;
   InstanceSet data;
   const unsigned int maxBoostingIterations;
   int targetDataStart;

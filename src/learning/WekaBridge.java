@@ -81,6 +81,22 @@ public class WekaBridge {
             String msg = readMsg();
             System.out.println(msg);
             break;
+          case 's':
+            String outFilename = readMsg();
+            System.out.println("Saving weka classifier from " + outFilename);
+            FileOutputStream fos = new FileOutputStream(outFilename);
+            ObjectOutputStream out = new ObjectOutputStream(fos);
+            out.writeObject(classifier);
+            out.close();
+            break;
+          case 'l':
+            String inFilename = readMsg();
+            System.out.println("Loading weka classifier from " + inFilename);
+            FileInputStream fis = new FileInputStream(inFilename);
+            ObjectInputStream in = new ObjectInputStream(fis);
+            classifier = (Classifier)in.readObject();
+            in.close();
+            break;
         }
         send();
       }

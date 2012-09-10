@@ -161,10 +161,12 @@ boost::shared_ptr<DecisionTree> createDecisionTreeFromWeka(const std::string &fi
 }
 
 boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
-  assert(filename == "");
   assert(features.size() > 0);
   std::string wekaOptions = options.get("options","").asString();
-  return boost::shared_ptr<WekaClassifier>(new WekaClassifier(features,caching, wekaOptions));
+  boost::shared_ptr<WekaClassifier> ptr(new WekaClassifier(features,caching, wekaOptions));
+  if (filename != "")
+    assert(ptr->load(filename));
+  return ptr;
 }
 
 boost::shared_ptr<DecisionTree> createBoostDT(const std::vector<Feature> &features, bool caching) {
@@ -179,7 +181,6 @@ boost::shared_ptr<WekaClassifier> createBoostWeka(const std::vector<Feature> &fe
 }
 
 boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &type, const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
-  assert(filename == "");
   unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
   Json::Value baseLearnerOptions = options["baseLearner"];
@@ -198,18 +199,22 @@ boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &type, const std::s
   }
   bool verbose = options.get("verbose",true).asBool();
   c->setVerbose(verbose);
+  if (filename != "")
+    assert(c->load(filename));
   return c;
 }
 
 boost::shared_ptr<TwoStageTrAdaBoost> createTwoStageTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
-  assert(filename == "");
   unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
   unsigned int numFolds = options.get("folds",5).asUInt();
   int bestT = options.get("bestT",-1).asInt();
   Json::Value baseLearnerOptions = options["baseLearner"];
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
 
-  return boost::shared_ptr<TwoStageTrAdaBoost>(new TwoStageTrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,numFolds,bestT));
+  boost::shared_ptr<TwoStageTrAdaBoost> ptr(new TwoStageTrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,numFolds,bestT));
+  if (filename != "")
+    assert(ptr->load(filename));
+  return ptr;
 }
 
 boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
@@ -239,7 +244,7 @@ boost::shared_ptr<Committee> createCommittee(const std::string &/*filename*/, co
   p.fromJson(options);
 
   // read in sub classifiers
-  std::vector<Committee::SubClassifier> classifiers;
+  std::vector<SubClassifier> classifiers;
   const Json::Value &classifiersJson = options["classifiers"];
 
   for (unsigned int i = 0; i < classifiersJson.size(); i++) {
@@ -254,8 +259,8 @@ boost::shared_ptr<Committee> createCommittee(const std::string &/*filename*/, co
       //std::cout << "  " << tempOpts.get("filename","").asCString() << std::endl;
       
       // create the classifier
-      Committee::SubClassifier c;
-      c.weight = weight;
+      SubClassifier c;
+      c.alpha = weight;
       c.classifier = createClassifier(tempOpts);
       classifiers.push_back(c);
     }

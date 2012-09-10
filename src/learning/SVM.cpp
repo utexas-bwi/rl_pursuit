@@ -66,6 +66,15 @@ void SVM::outputDescription(std::ostream &out) const {
   out << "SVM" << std::endl;
 }
 
+void SVM::save(const std::string &filename) const {
+  libsvm::svm_save_model(filename.c_str(),model);
+}
+  
+bool SVM::load(const std::string &filename) {
+  model = libsvm::svm_load_model(filename.c_str());
+  return true;
+}
+
 void SVM::trainInternal(bool /*incremental*/) {
   //libsvm::svm_problem prob;
   //prob.l = numInstances;

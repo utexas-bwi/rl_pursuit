@@ -1,6 +1,6 @@
 #include "TrAdaBoost.h"
 
-TrAdaBoost::TrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
+TrAdaBoost::TrAdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
   AdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations),
   onlySourceData(true)
 {

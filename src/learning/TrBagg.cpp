@@ -10,7 +10,7 @@ Modified: 2012-01-18
 #include <common/Util.h>
 #include <fstream>
   
-TrBagg::TrBagg(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, BaseLearnerGenerator fallbackLearner, const Json::Value &fallbackLearnerOptions):
+TrBagg::TrBagg(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, SubClassifierGenerator fallbackLearner, const Json::Value &fallbackLearnerOptions):
   Classifier(features,caching),
   baseLearner(baseLearner),
   baseLearnerOptions(baseLearnerOptions),
@@ -40,53 +40,24 @@ void TrBagg::outputDescription(std::ostream &out) const {
 }
 
 void TrBagg::save(const std::string &filename) const {
-  std::ofstream out(filename);
-  for (unsigned int i = 0; i < classifiers.size(); i++) {
-    std::string subFilename = getSubFilename(filename,i);
-    out << classifiers[i].alpha << " ";
-    out << typeid(*(classifiers[i].classifier)).name() << " ";
-    out << subFilename << std::endl;
-    classifiers[i].classifier->save(subFilename);
-  }
-
-  out.close();
+  saveSubClassifiers(classifiers,filename,getSubFilenames(filename,classifiers.size()));
 }
   
 bool TrBagg::load(const std::string &filename) {
-  std::string type;
-  std::string subFilename;
-  std::ifstream in(filename);
-  ClassifierPtr x = baseLearner(features,baseLearnerOptions);
-  std::string basename = typeid(*x).name();
-  x = fallbackLearner(features,fallbackLearnerOptions);
-  std::string fallbackname = typeid(*x).name();
-  while (in.good()) {
-    BoostingClassifier c;
-    in >> c.alpha;
-    in >> type;
-    in >> subFilename;
-    if (type == basename)
-      c.classifier = baseLearner(features,baseLearnerOptions);
-    else if (type == fallbackname)
-      c.classifier = fallbackLearner(features,fallbackLearnerOptions);
-    else {
-      std::cerr << "Expected a subclass of either " << basename << " or " << fallbackname << " but got: " << type << std::endl;
-      return false;
-    }
-    if (!c.classifier->load(subFilename))
-      return false;
-    classifiers.push_back(c);
-  }
-  in.close();
-  std::cout << "size: " << classifiers.size() << std::endl;
-  return true;
+  std::vector<SubClassifierGenerator> learners(2);
+  learners[0] = baseLearner;
+  learners[1] = fallbackLearner;
+  std::vector<Json::Value> options(2);
+  options[0] = baseLearnerOptions;
+  options[1] = fallbackLearnerOptions;
+  return createAndLoadSubClassifiers(classifiers,filename,features,learners,options);
 }
   
 void TrBagg::trainInternal(bool /*incremental*/) {
   classifiers.clear();
   if (targetDataStart < 0) {
     std::cerr << "WARNING: Trying to train TrBagg with no target data, just falling back on the fallback learner applied to the source data" << std::endl;
-    BoostingClassifier fallbackModel;
+    SubClassifier fallbackModel;
     fallbackModel.classifier = fallbackLearner(features,fallbackLearnerOptions);
     for (unsigned int i = 0; i < data.size(); i++)
       fallbackModel.classifier->addData(data[i]);
@@ -105,7 +76,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
   for (unsigned int n = 0; n < maxBoostingIterations; n++) {
     //if (n % 10 == 0)
       //std::cout << "BOOSTING ITERATION: " << n << std::endl;
-    BoostingClassifier c;
+    SubClassifier c;
     c.classifier = baseLearner(features,baseLearnerOptions);
     // sample data set with replacements
     //std::cout << "TRAINING DATA: " << n << std::endl;
@@ -118,8 +89,8 @@ void TrBagg::trainInternal(bool /*incremental*/) {
     //std::cout << "CLASSIFIER: " << *c.classifier << std::endl;
     calcErrorOfClassifier(c);
     // add it to the list of models, but sort the list by error
-    std::vector<BoostingClassifier>::iterator it;
-    std::vector<BoostingClassifier>::iterator prev = classifiers.begin();
+    std::vector<SubClassifier>::iterator it;
+    std::vector<SubClassifier>::iterator prev = classifiers.begin();
     if ((prev != classifiers.end()) && (prev->alpha > c.alpha)) {
       classifiers.insert(prev,c);
     } else {
@@ -132,7 +103,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
     }
   }
   // create the fallback model
-  BoostingClassifier fallbackModel;
+  SubClassifier fallbackModel;
   fallbackModel.classifier = fallbackLearner(features,fallbackLearnerOptions);
   if (targetDataStart >= 0)  {
     for (int i = targetDataStart; i < (int)data.size(); i++)
@@ -143,7 +114,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
   // add the fallback model to the beginning of the list
   classifiers.insert(classifiers.begin(),fallbackModel);
 
-  //for (std::vector<BoostingClassifier>::iterator it = classifiers.begin(); it != classifiers.end(); it++) {
+  //for (std::vector<SubClassifier>::iterator it = classifiers.begin(); it != classifiers.end(); it++) {
     //std::cout << it->alpha << " ";
   //}
   //std::cout << std::endl;
@@ -158,7 +129,7 @@ void TrBagg::classifyInternal(const InstancePtr &instance, Classification &class
   classifyInternal(instance,classification,classifiers);
 }
   
-void TrBagg::classifyInternal(const InstancePtr &instance, Classification &classification, const std::vector<BoostingClassifier> &classifiers) {
+void TrBagg::classifyInternal(const InstancePtr &instance, Classification &classification, const std::vector<SubClassifier> &classifiers) {
   float factor = 1.0 / classifiers.size();
   for (unsigned int j = 0; j < classifiers.size(); j++) {
     Classification temp(numClasses,0);
@@ -169,17 +140,17 @@ void TrBagg::classifyInternal(const InstancePtr &instance, Classification &class
   }
 }
   
-void TrBagg::calcErrorOfClassifier(BoostingClassifier &c) {
-  std::vector<BoostingClassifier> subset(1,c);
+void TrBagg::calcErrorOfClassifier(SubClassifier &c) {
+  std::vector<SubClassifier> subset(1,c);
   c.alpha = calcErrorOfSet(subset);
 }
 
 double TrBagg::calcErrorOfSet(unsigned int size) {
-  std::vector<BoostingClassifier> subset(classifiers.begin(),classifiers.begin() + size);
+  std::vector<SubClassifier> subset(classifiers.begin(),classifiers.begin() + size);
   return calcErrorOfSet(subset);
 }
 
-double TrBagg::calcErrorOfSet(const std::vector<BoostingClassifier> &classifiers) {
+double TrBagg::calcErrorOfSet(const std::vector<SubClassifier> &classifiers) {
   double error = 0.0;
   //std::cout << "  -" << std::endl;
   for (unsigned int i = targetDataStart; i < data.size(); i++) {
@@ -192,7 +163,7 @@ double TrBagg::calcErrorOfSet(const std::vector<BoostingClassifier> &classifiers
   return error;
 }
   
-unsigned int TrBagg::selectSize(const std::vector<BoostingClassifier> &classifiers) {
+unsigned int TrBagg::selectSize(const std::vector<SubClassifier> &classifiers) {
   // want to store classification per inst per classifier
   int targetSize = data.size() - targetDataStart;
   assert(targetSize > 0);

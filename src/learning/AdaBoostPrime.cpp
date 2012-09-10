@@ -8,7 +8,7 @@ Modified: 2012-01-20
 
 #include "AdaBoostPrime.h"
   
-AdaBoostPrime::AdaBoostPrime(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
+AdaBoostPrime::AdaBoostPrime(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
   AdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations),
   onlySourceData(true)
 {

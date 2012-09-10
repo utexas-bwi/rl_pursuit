@@ -21,6 +21,9 @@ public:
   void addData(const InstancePtr &instance);
   virtual void outputDescription(std::ostream &out) const;
 
+  virtual void save(const std::string &filename) const;
+  virtual bool load(const std::string &filename);
+
 protected:
   void trainInternal(bool incremental);
   void classifyInternal(const InstancePtr &instance, Classification &classification);

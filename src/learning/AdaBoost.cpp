@@ -11,7 +11,7 @@ Modified: 2012-01-16
 #include <iostream>
 #include <common/Util.h>
 
-AdaBoost::AdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
+AdaBoost::AdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
   Classifier(features,caching),
   name("AdaBoost"),
   baseLearner(baseLearner),
@@ -45,7 +45,7 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
       std::cout << "BOOSTING ITERATION: " << t << std::endl;
     normalizeWeights();
 
-    BoostingClassifier c;
+    SubClassifier c;
     c.classifier = baseLearner(features,baseLearnerOptions);
     for (unsigned int i = 0; i < endSourceData; i++)
       c.classifier->addSourceData(data[i]);
@@ -119,7 +119,7 @@ void AdaBoost::normalizeWeights() {
   }
 }
   
-double AdaBoost::calcError(BoostingClassifier &c) {
+double AdaBoost::calcError(SubClassifier &c) {
   absError.resize(data.size());
   InstancePtr inst;
   Classification temp;
@@ -146,4 +146,12 @@ void AdaBoost::outputDescription(std::ostream &out) const {
   out << name << std::endl;
   for (unsigned int i = 0; i < classifiers.size(); i++)
     out << *(classifiers[i].classifier) << std::endl;
+}
+  
+void AdaBoost::save(const std::string &filename) const {
+  saveSubClassifiers(classifiers,filename,getSubFilenames(filename,classifiers.size()));
+}
+
+bool AdaBoost::load(const std::string &filename) {
+  return createAndLoadSubClassifiers(classifiers,filename,features,baseLearner,baseLearnerOptions);
 }

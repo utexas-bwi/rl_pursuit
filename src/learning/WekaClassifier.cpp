@@ -63,6 +63,23 @@ void WekaClassifier::addData(const InstancePtr &instance) {
   //comm->send();
   //comm->wait();
 }
+  
+void WekaClassifier::save(const std::string &filename) const {
+  *(comm->cmd) = 's';
+  strncpy(comm->msg,filename.c_str(),comm->MSG_SIZE-2);
+  comm->msg[comm->MSG_SIZE-1] = '\0';
+  comm->send();
+  comm->wait();
+}
+
+bool WekaClassifier::load(const std::string &filename) {
+  *(comm->cmd) = 'l';
+  strncpy(comm->msg,filename.c_str(),comm->MSG_SIZE-2);
+  comm->msg[comm->MSG_SIZE-1] = '\0';
+  comm->send();
+  comm->wait();
+  return true;
+}
 
 void WekaClassifier::trainInternal(bool /*incremental*/) {
   //std::cout << "train" << std::endl;

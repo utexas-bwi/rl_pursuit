@@ -87,7 +87,14 @@ void Classifier::setPredictSingleClass(bool flag) {
 std::string Classifier::getSubFilename(const std::string &baseFilename, unsigned int i) const {
   unsigned int ind = baseFilename.rfind(".");
   assert(ind != std::string::npos);
-  return baseFilename.substr(0,ind-1) + "-" + boost::lexical_cast<std::string>(i) + baseFilename.substr(ind);
+  return baseFilename.substr(0,ind) + "-" + boost::lexical_cast<std::string>(i) + baseFilename.substr(ind);
+}
+  
+std::vector<std::string> Classifier::getSubFilenames(const std::string &baseFilename, unsigned int maxInd) const {
+  std::vector<std::string> filenames(maxInd);
+  for (unsigned int i = 0; i < maxInd; i++)
+    filenames[i] = getSubFilename(baseFilename,i);
+  return filenames;
 }
   
 std::ostream& operator<<(std::ostream &out, const Classifier &c) {

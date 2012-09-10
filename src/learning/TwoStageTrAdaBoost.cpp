@@ -8,7 +8,7 @@ Modified: 2012-01-20
 
 #include "TwoStageTrAdaBoost.h"
   
-TwoStageTrAdaBoost::TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds, int bestT):
+TwoStageTrAdaBoost::TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds, int bestT):
   Classifier(features,caching),
   baseLearner(baseLearner),
   baseLearnerOptions(baseLearnerOptions),
@@ -164,4 +164,18 @@ ClassifierPtr TwoStageTrAdaBoost::createModel(int fold, std::vector<InstanceSet>
     newModel->addSourceData(fixedData[i]);
   newModel->train(false);
   return newModel;
+}
+    
+void TwoStageTrAdaBoost::save(const std::string &filename) const {
+  if (model.get() == NULL) {
+    std::cerr << "NO MODEL TO SAVE" << std::endl;
+    exit(43);
+  }
+  model->save(filename);
+}
+
+bool TwoStageTrAdaBoost::load(const std::string &filename) {
+  if (model.get() == NULL)
+    model = baseLearner(features,baseLearnerOptions);
+  return model->load(filename);
 }

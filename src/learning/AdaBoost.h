@@ -10,19 +10,12 @@ Modified: 2012-01-16
 */
 
 #include "Classifier.h"
-#include <boost/function.hpp>
+#include "SubClassifier.h"
 #include <json/json.h>
-
-struct BoostingClassifier {
-  boost::shared_ptr<Classifier> classifier;
-  double alpha;
-};
-
-typedef boost::function<ClassifierPtr (const std::vector<Feature> &features, const Json::Value &options)> BaseLearnerGenerator;
 
 class AdaBoost: public Classifier {
 public:
-  AdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations);
+  AdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations);
 
   virtual ~AdaBoost();
   virtual void addData(const InstancePtr &instance);
@@ -30,6 +23,9 @@ public:
   virtual void setVerbose(bool flag) {
     verbose = flag;
   }
+  
+  virtual void save(const std::string &filename) const;
+  virtual bool load(const std::string &filename);
 
 protected:
   virtual void trainInternal(bool incremental);
@@ -37,13 +33,13 @@ protected:
   virtual void resetWeights();
   virtual void normalizeWeights();
   virtual void reweightData(double alpha);
-  virtual double calcError(BoostingClassifier &c);
+  virtual double calcError(SubClassifier &c);
 
 protected:
   std::string name;
-  BaseLearnerGenerator baseLearner;
+  SubClassifierGenerator baseLearner;
   Json::Value baseLearnerOptions;
-  std::vector<BoostingClassifier> classifiers;
+  std::vector<SubClassifier> classifiers;
   InstanceSet data;
   std::vector<float> initialWeights;
   std::vector<float> absError;

@@ -14,6 +14,8 @@ public:
 
   virtual void addData(const InstancePtr &instance);
   virtual void outputDescription(std::ostream &out) const;
+  virtual void save(const std::string &filename) const;
+  virtual bool load(const std::string &filename);
 
 protected:
   virtual void trainInternal(bool incremental);

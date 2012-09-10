@@ -13,7 +13,7 @@ Modified: 2012-01-20
 
 class TwoStageTrAdaBoost: public Classifier {
 public:
-  TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, BaseLearnerGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds, int bestT = -1);
+  TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds, int bestT = -1);
   
   virtual void addData(const InstancePtr &instance);
   virtual void addSourceData(const InstancePtr &instance);
@@ -22,6 +22,8 @@ public:
   virtual float getBestSourceInstanceWeight();
 
   virtual void outputDescription(std::ostream &out) const;
+  virtual void save(const std::string &filename) const;
+  virtual bool load(const std::string &filename);
 
 protected:
   virtual void trainInternal(bool incremental);
@@ -33,7 +35,7 @@ protected:
   virtual ClassifierPtr createModel(int fold, std::vector<InstanceSet> &folds);
 
 protected:
-  BaseLearnerGenerator baseLearner;
+  SubClassifierGenerator baseLearner;
   Json::Value baseLearnerOptions;
   InstanceSet sourceData;
   InstanceSet targetData;
