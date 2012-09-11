@@ -24,6 +24,9 @@ def getFilename(base,name,filetype):
   ext = FILETYPE_EXTS[filetype]
   return os.path.join(BASE_DIR,base,d,'%s%s' % (name,ext))
 
+def baseExists(base):
+  return os.path.exists(os.path.join(BASE_DIR,base))
+
 def getStudents(filename=DEFAULT_STUDENT_FILENAME):
   return numpy.loadtxt(filename,dtype=str)
 
