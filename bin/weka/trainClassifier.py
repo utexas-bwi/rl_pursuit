@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, subprocess, sys
+import os, subprocess, sys, re
 from common import getArch, getUniqueStudents, getFilename, baseExists, TRAIN, makeTemp
 
 def getClassifier(c):
@@ -55,13 +55,15 @@ def combineConfigs(learner,baseLearner,fallbackLearner,saveConfigFilename,saveFi
   filename = makeTemp()
   with open(filename,'w') as f:
     f.write(res)
-
+  
+  # for save config
   ind = res.find('{')
   ind += 1
   while res[ind] in ['\n','\r',' ','\t']:
     ind += 1
   filenameLine = '"filename": "%s",\n  ' % saveFile
   res = res[:ind] + filenameLine + res[ind:]
+  res = re.sub('.*"partialFilename".*\n','',res)
   with open(saveConfigFilename,'w') as f:
     f.write(res)
 
@@ -132,6 +134,8 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
       options.fallbackLearner += '-base'
   # get name
   name = options.classifier[0]
+  if name == 'trbagg-partialLoad':
+    name = 'trbagg'
   if options.baseLearner is not None:
     name += '_base' + options.baseLearner
   if options.fallbackLearner is not None:
