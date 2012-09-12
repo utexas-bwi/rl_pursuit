@@ -9,8 +9,10 @@ def getClassifier(c):
     ['lsvm',False,False],
     ['nb',False,False],
     ['dt',False,False],
+    ['dt-noweka',False,False],
     ['twostagetradaboost',True,False],
-    ['trbagg',True,True]
+    ['trbagg',True,True],
+    ['trbagg-partialLoad',True,True]
   ]
 
   KNOWN_CLASSIFIER_NAMES = [x[0] for x in KNOWN_CLASSIFIERS]
@@ -24,12 +26,15 @@ def getClassifier(c):
 def getConfigFilename(classifier):
   return os.path.join('configs','learners','%s.json' % classifier)
 
-def getSaveFilename(classifier,numTarget,numSource):
-  return os.path.join('configs','learners','saved','%s-target%i-source%i.txt' % (classifier,numTarget,numSource))
+def getSaveFilename(classifier,numTarget,numSource,student):
+  return os.path.join('configs','learners','saved','%s-target%i-source%i-%s.txt' % (classifier,numTarget,numSource,student))
 
-def combineConfigs(learner,baseLearner,fallbackLearner,saveConfigFilename,saveFile):
+def combineConfigs(learner,baseLearner,fallbackLearner,saveConfigFilename,saveFile,student):
   with open(getConfigFilename(learner),'r') as f:
     content = f.read().strip()
+  if learner == 'trbagg-partialLoad':
+    # TODO
+    content = content.replace('$(PARTIAL_FILENAME)','data/dt/studentsNew29-unperturbed-transfer/target10000-source50000/weighted/trBagg-%s.weka' % student)
   endInd = content.rfind('}')
   if content[endInd-1] == '\n':
     endInd -= 1
@@ -70,6 +75,7 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
   #parser.add_option('--student',action='store',dest='student',type='str',default=None)
   parser.add_option('-s','--source',action='store',dest='numSource',type='int',default=None,help='num source instances')
   parser.add_option('-t','--target',action='store',dest='numTarget',type='int',default=None,help='num target instances')
+  parser.add_option('--no-source',action='store_false',dest='useSource',default=True,help='don\'t use the source data, but use the name')
   for option in parserOptions:
     parser.add_option(option)
   options,args = parser.parse_args(args)
@@ -142,10 +148,10 @@ def main(args = sys.argv[1:]):
   options,_ = parseArgs(args)
   
   try:
-    saveFile = getSaveFilename(options.name,options.numTarget,options.numSource)
-    filename = combineConfigs(options.classifier[0],options.baseLearner,options.fallbackLearner,options.saveConfigFilename,saveFile)
+    saveFile = getSaveFilename(options.name,options.numTarget,options.numSource,options.student)
+    filename = combineConfigs(options.classifier[0],options.baseLearner,options.fallbackLearner,options.saveConfigFilename,saveFile,options.student)
     targetData = getFilename(options.targetBase,options.student,TRAIN)
-    if options.numSource == 0:
+    if (options.numSource == 0) or not(options.useSource):
       sourceData = []
     else:
       sourceData = [getFilename(options.sourceBase,s,TRAIN) for s in options.otherStudents]
