@@ -76,6 +76,9 @@ struct InstanceSet {
   InstancePtr& operator[](unsigned int ind);
   void getValuesForFeature(const FeatureType_t &key, FloatSet &values);
   void recalculateWeight();
+  void clearData() {
+    instances.clear();
+  }
 
   std::vector<InstancePtr> instances;
   float weight;

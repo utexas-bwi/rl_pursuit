@@ -34,6 +34,9 @@ protected:
   virtual void normalizeWeights();
   virtual void reweightData(double alpha);
   virtual double calcError(SubClassifier &c);
+  virtual void clearData() {
+    data.clearData();
+  }
 
 protected:
   std::string name;

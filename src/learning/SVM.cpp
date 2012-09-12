@@ -42,11 +42,7 @@ SVM::SVM(const std::vector<Feature> &features, bool caching, unsigned int maxNum
 }
 
 SVM::~SVM() {
-  delete[] prob.y;
-  delete[] prob.W;
-  for (int i = 0; i < prob.l; i++)
-    delete[] prob.x[i];
-  delete[] prob.x;
+  clearData();
 
   delete[] svmInst;
   libsvm::svm_free_and_destroy_model(&model);
@@ -73,6 +69,17 @@ void SVM::save(const std::string &filename) const {
 bool SVM::load(const std::string &filename) {
   model = libsvm::svm_load_model(filename.c_str());
   return true;
+}
+
+void SVM::clearData() {
+  if (prob.y == NULL)
+    return;
+  delete[] prob.y;
+  delete[] prob.W;
+  for (int i = 0; i < prob.l; i++)
+    delete[] prob.x[i];
+  delete[] prob.x;
+  prob.y = NULL;
 }
 
 void SVM::trainInternal(bool /*incremental*/) {

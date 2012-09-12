@@ -52,11 +52,7 @@ LinearSVM::LinearSVM(const std::string &filename, const std::vector<Feature> &fe
 }
 
 LinearSVM::~LinearSVM() {
-  delete[] prob.y;
-  delete[] prob.W;
-  for (int i = 0; i < prob.l; i++)
-    delete[] prob.x[i];
-  delete[] prob.x;
+  clearData();
 
   delete[] svmInst;
   liblinear::free_and_destroy_model(&model);
@@ -83,6 +79,17 @@ void LinearSVM::save(const std::string &filename) const {
 bool LinearSVM::load(const std::string &filename) {
   model = liblinear::load_model(filename.c_str());
   return true;
+}
+  
+void LinearSVM::clearData() {
+  if (prob.y == NULL)
+    return;
+  delete[] prob.y;
+  delete[] prob.W;
+  for (int i = 0; i < prob.l; i++)
+    delete[] prob.x[i];
+  delete[] prob.x;
+  prob.y = NULL;
 }
 
 void LinearSVM::trainInternal(bool /*incremental*/) {

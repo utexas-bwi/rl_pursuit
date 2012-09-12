@@ -59,6 +59,9 @@ public class WekaBridge {
             //}
             classifier.buildClassifier(trainData);
             break;
+          case 'x':
+            trainData.delete();
+            break;
           case 'c':
             inst = new DenseInstance(weight[0],features);
             testData.add(inst);

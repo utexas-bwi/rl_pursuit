@@ -42,6 +42,7 @@ public:
   public:
     virtual void classify(const InstancePtr &instance, Classification &classification) const = 0;
     virtual void addData(const InstancePtr &instance) = 0;
+    virtual void clearData() = 0;
     virtual void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth) = 0;
     virtual void output(std::ostream &out, unsigned int depth) = 0;
     virtual void collectInstances(InstanceSetPtr &instances) = 0;
@@ -53,6 +54,7 @@ public:
     void addChild(const NodePtr &child, float splitValue);
     void classify(const InstancePtr &instance, Classification &classification) const;
     void addData(const InstancePtr &instance);
+    void clearData();
     void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
     void output(std::ostream &out, unsigned int depth = 0);
     void collectInstances(InstanceSetPtr &instances);
@@ -71,6 +73,7 @@ public:
     LeafNode(const InstanceSetPtr &instances);
     void classify(const InstancePtr &instance, Classification &classification) const;
     void addData(const InstancePtr &instance);
+    void clearData();
     void train(NodePtr &ptr, const DecisionTree &dt, int maxDepth);
     void output(std::ostream &out, unsigned int depth = 0);
     void collectInstances(InstanceSetPtr &instances);
@@ -94,6 +97,7 @@ public:
   virtual void outputDescription(std::ostream &out) const;
   virtual void save(const std::string &filename) const;
   virtual bool load(const std::string &filename);
+  virtual void clearData();
 protected:
   void classifyInternal(const InstancePtr &instance, Classification &classification);
   void trainInternal(bool incremental);

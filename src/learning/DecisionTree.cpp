@@ -43,6 +43,11 @@ void DecisionTree::InteriorNode::addData(const InstancePtr &instance) {
   getChild(instance)->addData(instance);
 }
 
+void DecisionTree::InteriorNode::clearData() {
+  for (unsigned int i = 0; i < children.size(); i++)
+    children[i]->clearData();
+}
+
 DecisionTree::NodePtr DecisionTree::InteriorNode::getChild(const InstancePtr &instance) const {
   float const &val = (*instance)[splitKey];
   for (unsigned int i = 0; i < splitValues.size(); i++) {
@@ -138,6 +143,10 @@ void DecisionTree::LeafNode::addData(const InstancePtr &instance) {
   instances->add(instance);
   hasNewData = true;
   //std::cout << " -> " << instances->weight << std::endl;
+}
+
+void DecisionTree::LeafNode::clearData() {
+  instances->clearData();
 }
 
 void DecisionTree::LeafNode::train(NodePtr &ptr, const DecisionTree &dt, int maxDepth) {
@@ -408,4 +417,8 @@ bool DecisionTree::load(const std::string &filename) {
   WekaParser parser(filename,Action::NUM_ACTIONS);
   root = parser.makeTreeRoot();
   return true;
+}
+
+void DecisionTree::clearData() {
+  root->clearData();
 }

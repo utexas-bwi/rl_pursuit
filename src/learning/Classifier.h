@@ -39,6 +39,8 @@ public:
   
   virtual bool load(const std::string &filename) = 0;
 
+  virtual void clearData() = 0;
+
 protected:
   virtual void trainInternal(bool incremental) = 0;
   virtual void classifyInternal(const InstancePtr &instance, Classification &classification) = 0;

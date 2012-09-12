@@ -26,6 +26,11 @@ bool Committee::load(const std::string &filename) {
   loadSubClassifiers(classifiers,filename);
   return true;
 }
+  
+void Committee::clearData() {
+  for (unsigned int i = 0; i < classifiers.size(); i++)
+    classifiers[i].classifier->clearData();
+}
 
 void Committee::trainInternal(bool incremental) {
   for (unsigned int i = 0; i < classifiers.size(); i++)

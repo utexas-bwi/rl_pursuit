@@ -52,6 +52,12 @@ bool TrBagg::load(const std::string &filename) {
   options[1] = fallbackLearnerOptions;
   return createAndLoadSubClassifiers(classifiers,filename,features,learners,options);
 }
+
+void TrBagg::clearData() {
+  data.clearData();
+  for (unsigned int i = 0; i < classifiers.size(); i++)
+    classifiers[i].classifier->clearData();
+}
   
 void TrBagg::trainInternal(bool /*incremental*/) {
   classifiers.clear();
@@ -62,6 +68,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
     for (unsigned int i = 0; i < data.size(); i++)
       fallbackModel.classifier->addData(data[i]);
     fallbackModel.classifier->train(false);
+    fallbackModel.classifier->clearData();
     fallbackModel.alpha = 1.0;
     classifiers.push_back(fallbackModel);
     return;
@@ -86,6 +93,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
       c.classifier->addData(data[ind]);
     }
     c.classifier->train(false);
+    c.classifier->clearData();
     //std::cout << "CLASSIFIER: " << *c.classifier << std::endl;
     calcErrorOfClassifier(c);
     // add it to the list of models, but sort the list by error

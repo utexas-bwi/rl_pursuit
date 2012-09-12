@@ -81,6 +81,12 @@ bool WekaClassifier::load(const std::string &filename) {
   return true;
 }
 
+void WekaClassifier::clearData() {
+  *(comm->cmd) = 'x';
+  comm->send();
+  comm->wait();
+}
+
 void WekaClassifier::trainInternal(bool /*incremental*/) {
   //std::cout << "train" << std::endl;
   *(comm->cmd) = 't';

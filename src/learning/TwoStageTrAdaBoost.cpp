@@ -179,3 +179,11 @@ bool TwoStageTrAdaBoost::load(const std::string &filename) {
     model = baseLearner(features,baseLearnerOptions);
   return model->load(filename);
 }
+
+void TwoStageTrAdaBoost::clearData() {
+  sourceData.clearData();
+  targetData.clearData();
+  fixedData.clearData();
+  if (model.get() != NULL)
+    model->clearData();
+}
