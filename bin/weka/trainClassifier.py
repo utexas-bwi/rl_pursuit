@@ -71,7 +71,7 @@ def combineConfigs(learner,baseLearner,fallbackLearner,saveConfigFilename,saveFi
 
 def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString=''):
   from optparse import OptionParser
-  parser = OptionParser('%prog [options] classifier student numTarget numSource ' + additionalArgsString)
+  parser = OptionParser('%prog [options] classifier student ' + additionalArgsString)
   parser.add_option('-b','--baseLearner',action='store',dest='baseLearner',type='str',default=None,help='use the classifier as the base learner')
   parser.add_option('-f','--fallbackLearner',action='store',dest='fallbackLearner',type='str',default=None,help='use the classifier file as the fallback learner')
   #parser.add_option('--student',action='store',dest='student',type='str',default=None)
