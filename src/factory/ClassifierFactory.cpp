@@ -222,10 +222,13 @@ boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::v
   Json::Value baseLearnerOptions = options["baseLearner"];
   Json::Value fallbackLearnerOptions = options["fallbackLearner"];
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
+  std::string partialFilename = options.get("partialFilename","").asString();
 
   boost::shared_ptr<TrBagg> ptr(new TrBagg(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,baseLearner,fallbackLearnerOptions));
   if (filename != "")
     assert(ptr->load(filename));
+  if (partialFilename != "")
+    assert(ptr->partialLoad(partialFilename));
   return ptr;
 }
 

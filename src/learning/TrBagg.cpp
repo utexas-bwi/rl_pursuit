@@ -18,7 +18,8 @@ TrBagg::TrBagg(const std::vector<Feature> &features, bool caching, SubClassifier
   fallbackLearnerOptions(fallbackLearnerOptions),
   data(numClasses),
   maxBoostingIterations(maxBoostingIterations),
-  targetDataStart(-1)
+  targetDataStart(-1),
+  didPartialLoad(false)
 {
 }
 
@@ -53,6 +54,20 @@ bool TrBagg::load(const std::string &filename) {
   return createAndLoadSubClassifiers(classifiers,filename,features,learners,options);
 }
 
+bool TrBagg::partialLoad(const std::string &filename) {
+  didPartialLoad = true;
+
+  for (unsigned int i = 0; i < maxBoostingIterations; i++) {
+    SubClassifier c;
+    c.alpha = 1.0;
+    c.classifier = baseLearner(features,baseLearnerOptions);
+    c.classifier->load(getSubFilename(filename,i));
+    partiallyLoadedClassifiers.push_back(c);
+  }
+
+  return true;
+}
+
 void TrBagg::clearData() {
   data.clearData();
   for (unsigned int i = 0; i < classifiers.size(); i++)
@@ -79,35 +94,32 @@ void TrBagg::trainInternal(bool /*incremental*/) {
   assert(targetSize > 0);
   int sampleSize = 1 * targetSize;
   //int sampleSize = 1000;
-  // LEARNING PHASE
-  for (unsigned int n = 0; n < maxBoostingIterations; n++) {
-    //if (n % 10 == 0)
-      //std::cout << "BOOSTING ITERATION: " << n << std::endl;
-    SubClassifier c;
-    c.classifier = baseLearner(features,baseLearnerOptions);
-    // sample data set with replacements
-    //std::cout << "TRAINING DATA: " << n << std::endl;
-    for (int i = 0; i < sampleSize; i++) {
-      int32_t ind = rng->randomInt(data.size());
-      //std::cout << "  " << ind << " " << *data[ind] << std::endl;
-      c.classifier->addData(data[ind]);
+  if (didPartialLoad) {
+    for (unsigned int n = 0; n < partiallyLoadedClassifiers.size(); n++) {
+      calcErrorOfClassifier(partiallyLoadedClassifiers[n]);
+      insertClassifier(partiallyLoadedClassifiers[n]);
     }
-    c.classifier->train(false);
-    c.classifier->clearData();
-    //std::cout << "CLASSIFIER: " << *c.classifier << std::endl;
-    calcErrorOfClassifier(c);
-    // add it to the list of models, but sort the list by error
-    std::vector<SubClassifier>::iterator it;
-    std::vector<SubClassifier>::iterator prev = classifiers.begin();
-    if ((prev != classifiers.end()) && (prev->alpha > c.alpha)) {
-      classifiers.insert(prev,c);
-    } else {
-      for (it = classifiers.begin(); it != classifiers.end(); it++) {
-        if (it->alpha > c.alpha)
-          break;
-        prev = it;
+    partiallyLoadedClassifiers.clear();
+    didPartialLoad = false;
+  } else {
+    // LEARNING PHASE
+    for (unsigned int n = 0; n < maxBoostingIterations; n++) {
+      //if (n % 10 == 0)
+        //std::cout << "BOOSTING ITERATION: " << n << std::endl;
+      SubClassifier c;
+      c.classifier = baseLearner(features,baseLearnerOptions);
+      // sample data set with replacements
+      //std::cout << "TRAINING DATA: " << n << std::endl;
+      for (int i = 0; i < sampleSize; i++) {
+        int32_t ind = rng->randomInt(data.size());
+        //std::cout << "  " << ind << " " << *data[ind] << std::endl;
+        c.classifier->addData(data[ind]);
       }
-      classifiers.insert(it,c);
+      c.classifier->train(false);
+      c.classifier->clearData();
+      //std::cout << "CLASSIFIER: " << *c.classifier << std::endl;
+      calcErrorOfClassifier(c);
+      insertClassifier(c);
     }
   }
   // create the fallback model
@@ -131,6 +143,22 @@ void TrBagg::trainInternal(bool /*incremental*/) {
   std::cout << "CHOOSING SIZE: " << bestSize2 << std::endl;
   // remove other classifiers
   classifiers.resize(bestSize2);
+}
+
+void TrBagg::insertClassifier(const SubClassifier &c) {
+  // add it to the list of models, but sort the list by error
+  std::vector<SubClassifier>::iterator it;
+  std::vector<SubClassifier>::iterator prev = classifiers.begin();
+  if ((prev != classifiers.end()) && (prev->alpha > c.alpha)) {
+    classifiers.insert(prev,c);
+  } else {
+    for (it = classifiers.begin(); it != classifiers.end(); it++) {
+      if (it->alpha > c.alpha)
+        break;
+      prev = it;
+    }
+    classifiers.insert(it,c);
+  }
 }
 
 void TrBagg::classifyInternal(const InstancePtr &instance, Classification &classification) {

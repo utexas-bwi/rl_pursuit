@@ -22,6 +22,7 @@ public:
   virtual void outputDescription(std::ostream &out) const;
   virtual void save(const std::string &filename) const;
   virtual bool load(const std::string &filename);
+  bool partialLoad(const std::string &filename);
   virtual void clearData();
 
 protected:
@@ -35,6 +36,7 @@ protected:
 
   virtual unsigned int selectSize(const std::vector<SubClassifier> &classifiers);
   virtual double calcErrorOfSet(unsigned int size, const std::vector<std::vector<Classification> > &classifications);
+  void insertClassifier(const SubClassifier &c);
 
 protected:
   SubClassifierGenerator baseLearner;
@@ -45,6 +47,8 @@ protected:
   InstanceSet data;
   const unsigned int maxBoostingIterations;
   int targetDataStart;
+  bool didPartialLoad;
+  std::vector<SubClassifier> partiallyLoadedClassifiers;
 };
 
 #endif /* end of include guard: TRBAGG_LVCVABXW */
