@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
 import sys, random, os
-from common import getUniqueStudents, makeTemp, getFilename, TRAIN
-from createDT import resample, removeTrialStep, makeTree
+from common import getUniqueStudents, makeTemp, getFilename, TRAIN, DESC
+from createDT import resample, makeTree #, removeTrialStep
 
 def main(args=sys.argv[1:]):
+  usage = 'createTrBagg numTarget numSource jobStart [numJobs]'
+  if (len(args) < 3) or (len(args) > 4):
+    print >>sys.stderr,usage
+    sys.exit(1)
   numClassifiers = 1000
   numTarget = int(args[0])
   numSource = int(args[1])
@@ -13,14 +17,19 @@ def main(args=sys.argv[1:]):
     numJobs = int(args[3])
   else:
     numJobs = 1
+  jobStart *= numJobs
   base = 'studentsNew29-unperturbed-%i'
   outputBase = 'studentsNew29-unperturbed-transfer/target%i-source%i' % (numTarget,numSource)
+  if not os.path.exists('data/dt/' + outputBase + '/desc'):
+    os.makedirs('data/dt/' + outputBase + '/desc')
+  if not os.path.exists('data/dt/' + outputBase + '/weighted'):
+    os.makedirs('data/dt/' + outputBase + '/weighted')
 
   for jobOffset in range(numJobs):
     jobNum = jobStart + jobOffset
     studentInd = jobNum / numClassifiers
     classifierInd = jobNum % numClassifiers
-    print studentInd,classifierInd
+    print 'job,student,classifier:',jobNum,studentInd,classifierInd
 
     students = getUniqueStudents()
     if studentInd >= len(students):
@@ -48,7 +57,7 @@ def main(args=sys.argv[1:]):
 
     try:
       arffFilename = makeTemp('.arff')
-      arffFilenameFilt = makeTemp('.arff')
+      #arffFilenameFilt = makeTemp('.arff')
       tempFile = makeTemp('.arff')
       with open(arffFilename,'w') as arffFile:
         for i,(student,prop) in enumerate(zip(students,props)):
@@ -63,13 +72,15 @@ def main(args=sys.argv[1:]):
             for line in f:
               arffFile.write(line)
       print 'removing trial step'
-      removeTrialStep(arffFilename,arffFilenameFilt)
-      makeTree(arffFilename,True,None,outputBase,'trBagg-%s-%i' % (students[studentInd],classifierInd),[],False,1.0)
+      #removeTrialStep(arffFilename,arffFilenameFilt)
+      name = 'trBagg-%s-%i' % (students[studentInd],classifierInd)
+      makeTree(arffFilename,True,None,outputBase,name,[],False,1.0)
+      #makeTree(arffFilenameFilt,True,None,outputBase,'trBagg-%s-%i' % (students[studentInd],classifierInd),[],False,1.0)
     finally:
-      #os.remove(arffFilename)
-      print arffFilename
-      os.remove(arffFilenameFilt)
+      os.remove(arffFilename)
+      #os.remove(arffFilenameFilt)
       os.remove(tempFile)
+      os.remove(getFilename(outputBase,name,DESC))
 
 
 if __name__ == '__main__':
