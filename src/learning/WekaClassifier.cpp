@@ -18,7 +18,8 @@ const std::string WekaClassifier::WEKA_CMD = std::string("java -DWEKA_HOME=./bin
 int WekaClassifier::classifierCount = 0;
 
 WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts) :
-  Classifier(features,caching)
+  Classifier(features,caching),
+  dropFrac(0.0)
 {
   classifierCount++;
   memSegName = "WEKA_BRIDGE_" + boost::lexical_cast<std::string>(getpid()) + "_" + boost::lexical_cast<std::string>(classifierCount);
@@ -52,6 +53,8 @@ WekaClassifier::~WekaClassifier () {
 }
   
 void WekaClassifier::addData(const InstancePtr &instance) {
+  if ((dropFrac > 1e-10) && (rng->randomFloat() < dropFrac))
+    return;
   //std::cout << "adding " << *instance << std::endl;
   writeInstance(instance);
   *(comm->cmd) = 'a';

@@ -27,6 +27,10 @@ public:
 
   void outputDescriptionToFile(const std::string &filename) const;
 
+  void setDropFrac(float dropFrac) {
+    this->dropFrac = dropFrac;
+  }
+
 protected:
   void trainInternal(bool incremental);
   void classifyInternal(const InstancePtr &instance, Classification &classification);
@@ -43,6 +47,7 @@ private:
   
   std::string memSegName;
   boost::shared_ptr<Communicator> comm;
+  float dropFrac;
   
   static int classifierCount;
 };

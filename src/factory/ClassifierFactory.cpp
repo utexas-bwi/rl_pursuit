@@ -166,6 +166,8 @@ boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filena
   boost::shared_ptr<WekaClassifier> ptr(new WekaClassifier(features,caching, wekaOptions));
   if (filename != "")
     assert(ptr->load(filename));
+  float dropFrac = options.get("dropFrac",-1).asDouble();
+  ptr->setDropFrac(dropFrac);
   return ptr;
 }
 
