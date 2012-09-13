@@ -11,10 +11,7 @@ Modified: 2012-01-16
 #include <iostream>
 #include <common/Util.h>
 
-#include "WekaClassifier.h"
-#include "DecisionTree.h"
 #include "LinearSVM.h"
-#include <factory/ClassifierFactory.h>
 
 AdaBoost::AdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
   Classifier(features,caching),
@@ -69,7 +66,7 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
 
     c.classifier->train(false);
     
-    convertWeka(c);
+    convertWekaToDT(c);
 
     double eps = calcError(c);
     if (verbose)
@@ -172,17 +169,4 @@ void AdaBoost::save(const std::string &filename) const {
 
 bool AdaBoost::load(const std::string &filename) {
   return createAndLoadSubClassifiers(classifiers,filename,features,baseLearner,baseLearnerOptions);
-}
-
-void AdaBoost::convertWeka(SubClassifier &c) {
-  WekaClassifier *temp = dynamic_cast<WekaClassifier*>(c.classifier.get());
-  if (temp != NULL) {
-    // convert to DT
-    std::string filename = tmpnam(NULL);
-    std::cout << "converting" << std::endl;
-    temp->saveAsOutput(filename);
-    c.classifier = createDecisionTree(filename,features,false,Json::Value());
-    remove(filename.c_str());
-    std::cout << "done converting" << std::endl;
-  }
 }

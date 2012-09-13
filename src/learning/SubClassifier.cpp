@@ -1,6 +1,10 @@
 #include "SubClassifier.h"
 #include <fstream>
 
+#include "WekaClassifier.h"
+#include "DecisionTree.h"
+#include <factory/ClassifierFactory.h>
+
 void saveSubClassifiers(const std::vector<SubClassifier> &classifiers, const std::string &filename, const std::vector<std::string> &subFilenames) {
   std::ofstream out(filename);
   for (unsigned int i = 0; i < classifiers.size(); i++) {
@@ -88,4 +92,17 @@ bool loadSubClassifiers(std::vector<SubClassifier> &classifiers, const std::stri
     return false;
   }
   return true;
+}
+
+void convertWekaToDT(SubClassifier &c) {
+  WekaClassifier *temp = dynamic_cast<WekaClassifier*>(c.classifier.get());
+  if (temp != NULL) {
+    // convert to DT
+    std::string filename = tmpnam(NULL);
+    std::cout << "converting" << std::endl;
+    temp->saveAsOutput(filename);
+    c.classifier = createDecisionTree(filename,temp->getFeatures(),false,Json::Value());
+    remove(filename.c_str());
+    std::cout << "done converting" << std::endl;
+  }
 }
