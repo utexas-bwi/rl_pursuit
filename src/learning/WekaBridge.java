@@ -80,10 +80,13 @@ public class WekaBridge {
           case 'p':
             System.out.println(classifier.toString());
             break;
-          case 'w':
-            String msg = readMsg();
-            System.out.println(msg);
+          case 'w': {
+            String outFilename = readMsg();
+            FileWriter out = new FileWriter(outFilename);
+            out.write(classifier.toString());
+            out.close();
             break;
+          }
           case 's':
             String outFilename = readMsg();
             System.out.println("Saving weka classifier from " + outFilename);

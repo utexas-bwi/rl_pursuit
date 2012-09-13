@@ -25,6 +25,8 @@ public:
   virtual bool load(const std::string &filename);
   virtual void clearData();
 
+  void outputDescriptionToFile(const std::string &filename) const;
+
 protected:
   void trainInternal(bool incremental);
   void classifyInternal(const InstancePtr &instance, Classification &classification);

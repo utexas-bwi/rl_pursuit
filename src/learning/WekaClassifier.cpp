@@ -80,6 +80,14 @@ bool WekaClassifier::load(const std::string &filename) {
   comm->wait();
   return true;
 }
+  
+void WekaClassifier::outputDescriptionToFile(const std::string &filename) const {
+  *(comm->cmd) = 'w';
+  strncpy(comm->msg,filename.c_str(),comm->MSG_SIZE-2);
+  comm->msg[comm->MSG_SIZE-1] = '\0';
+  comm->send();
+  comm->wait();
+}
 
 void WekaClassifier::clearData() {
   *(comm->cmd) = 'x';

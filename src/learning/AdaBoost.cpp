@@ -11,6 +11,10 @@ Modified: 2012-01-16
 #include <iostream>
 #include <common/Util.h>
 
+#include "WekaClassifier.h"
+#include "DecisionTree.h"
+#include <factory/ClassifierFactory.h>
+
 AdaBoost::AdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations):
   Classifier(features,caching),
   name("AdaBoost"),
@@ -53,6 +57,36 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
       c.classifier->addData(data[i]);
 
     c.classifier->train(false);
+
+    WekaClassifier *temp = dynamic_cast<WekaClassifier*>(c.classifier.get());
+    if (temp != NULL) {
+      // convert to DT
+      std::string filename = tmpnam(NULL);
+      std::string filename2 = tmpnam(NULL);
+      std::cout << "converting " << filename << " " << filename2 << std::endl;
+      temp->outputDescriptionToFile(filename);
+      int numInitialLinesToRemove = 3;
+      std::ifstream in(filename.c_str());
+      std::ofstream out(filename2.c_str());
+      std::string line;
+      std::getline(in,line);
+      temp->outputHeader(out);
+      out << std::endl;
+      while (in.good()) {
+        if (numInitialLinesToRemove > 0)
+          numInitialLinesToRemove--;
+        else
+          out << line << std::endl;
+        std::getline(in,line);
+      }
+      in.close();
+      out.close();
+      c.classifier = createDecisionTree(filename2,features,false,Json::Value());
+      remove(filename.c_str());
+      remove(filename2.c_str());
+      std::cout << "done converting" << std::endl;
+    }
+
     double eps = calcError(c);
     if (verbose)
       std::cout << "  EPS: " << eps << std::endl;
