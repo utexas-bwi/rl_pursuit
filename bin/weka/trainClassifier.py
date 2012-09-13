@@ -11,6 +11,7 @@ def getClassifier(c):
     ['dt',False,False],
     ['dt-drop0.33',False,False],
     ['dt-drop0.8',False,False],
+    ['dt-depth5',False,False],
     ['dt-noweka',False,False],
     ['twostagetradaboost',True,False],
     ['trbagg',True,True],
