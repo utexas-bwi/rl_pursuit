@@ -7,6 +7,7 @@ def getClassifier(c):
   # in format name, needs base learner, needs fallback learner
   KNOWN_CLASSIFIERS = [
     ['lsvm',False,False],
+    ['svm',False,False],
     ['nb',False,False],
     ['dt',False,False],
     ['dt-drop0.33',False,False],
