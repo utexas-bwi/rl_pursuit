@@ -153,8 +153,10 @@ void parseCommandLineArgs(int *argc, char ***argv, const std::string &usage, int
     std::cerr << "WARNING: Incorrect number of arguments, got " << *argc - 1 << " expected ";
     if (maxArgs == minArgs)
       std::cerr << minArgs;
-    else
+    else if (maxArgs >= 0)
       std::cerr << minArgs << "-" << maxArgs;
+    else
+      std::cerr << "at least " << minArgs;
     std::cerr << std::endl;
     printCommandLineHelpAndExit();
   }

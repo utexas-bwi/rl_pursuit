@@ -38,6 +38,8 @@ protected:
     data.clearData();
   }
 
+  void convertWeka(SubClassifier &c);
+
 protected:
   std::string name;
   SubClassifierGenerator baseLearner;

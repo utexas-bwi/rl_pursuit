@@ -9,6 +9,7 @@ void print_null(const char *) {}
 LinearSVM::LinearSVM(const std::string &filename, const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances):
   Classifier(features,caching),
   MAX_NUM_INSTANCES(maxNumInstances),
+  sharedProblem(false),
   minVals(features.size()-1,std::numeric_limits<float>::infinity()),
   maxVals(features.size()-1,-1 * std::numeric_limits<float>::infinity()),
   currentMinVals(minVals),
@@ -51,6 +52,21 @@ LinearSVM::LinearSVM(const std::string &filename, const std::vector<Feature> &fe
     load(filename);
 }
 
+LinearSVM::LinearSVM(const LinearSVM &svm, bool newWeights):
+  Classifier(svm.features,svm.caching),
+  MAX_NUM_INSTANCES(svm.MAX_NUM_INSTANCES),
+  sharedProblem(true)
+{
+  assert(newWeights);
+  this->prob = svm.prob;
+  this->param = svm.param;
+  this->prob.W = new double[MAX_NUM_INSTANCES];
+  // disable liblinear's printing
+  liblinear::set_print_string_function(liblinear::print_null);
+  createNode(&svmInst);
+}
+
+
 LinearSVM::~LinearSVM() {
   clearData();
 
@@ -84,12 +100,20 @@ bool LinearSVM::load(const std::string &filename) {
 void LinearSVM::clearData() {
   if (prob.y == NULL)
     return;
-  delete[] prob.y;
+  if (!sharedProblem) {
+    delete[] prob.y;
+    for (int i = 0; i < prob.l; i++)
+      delete[] prob.x[i];
+    delete[] prob.x;
+  }
   delete[] prob.W;
-  for (int i = 0; i < prob.l; i++)
-    delete[] prob.x[i];
-  delete[] prob.x;
   prob.y = NULL;
+}
+
+void LinearSVM::setWeights(const InstanceSet &data) {
+  assert((int)data.size() == prob.l);
+  for (unsigned int i = 0; i < data.size(); i++)
+    prob.W[i] = data[i]->weight;
 }
 
 void LinearSVM::trainInternal(bool /*incremental*/) {

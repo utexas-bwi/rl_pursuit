@@ -14,6 +14,7 @@ typedef parameter svm_parameter;
 class LinearSVM: public Classifier {
 public:
   LinearSVM(const std::string &filename, const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances);
+  LinearSVM(const LinearSVM &svm, bool newWeights);
   virtual ~LinearSVM();
 
   virtual void addData(const InstancePtr &instance);
@@ -21,6 +22,7 @@ public:
   virtual void save(const std::string &filename) const;
   virtual bool load(const std::string &filename);
   virtual void clearData();
+  void setWeights(const InstanceSet &data);
 
 protected:
   virtual void trainInternal(bool incremental);
@@ -37,6 +39,7 @@ protected:
   liblinear::svm_model *model;
   liblinear::svm_parameter param;
   liblinear::svm_node *svmInst;
+  bool sharedProblem;
 
   std::vector<float> minVals;
   std::vector<float> maxVals;

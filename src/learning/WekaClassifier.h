@@ -31,6 +31,8 @@ public:
     this->dropFrac = dropFrac;
   }
 
+  void saveAsOutput(const std::string &filename) const;
+
 protected:
   void trainInternal(bool incremental);
   void classifyInternal(const InstancePtr &instance, Classification &classification);
