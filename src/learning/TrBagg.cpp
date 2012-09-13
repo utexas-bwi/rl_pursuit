@@ -85,6 +85,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
     fallbackModel.classifier->train(false);
     fallbackModel.classifier->clearData();
     fallbackModel.alpha = 1.0;
+    convertWekaToDT(fallbackModel);
     classifiers.push_back(fallbackModel);
     return;
   }
@@ -116,6 +117,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
         c.classifier->addData(data[ind]);
       }
       c.classifier->train(false);
+      convertWekaToDT(c);
       c.classifier->clearData();
       //std::cout << "CLASSIFIER: " << *c.classifier << std::endl;
       calcErrorOfClassifier(c);
@@ -130,6 +132,7 @@ void TrBagg::trainInternal(bool /*incremental*/) {
       fallbackModel.classifier->addData(data[i]);
   }
   fallbackModel.classifier->train(false);
+  convertWekaToDT(fallbackModel);
   calcErrorOfClassifier(fallbackModel);
   // add the fallback model to the beginning of the list
   classifiers.insert(classifiers.begin(),fallbackModel);
