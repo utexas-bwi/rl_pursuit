@@ -12,7 +12,9 @@ def getClassifier(c):
     ['dt-noweka',False,False],
     ['twostagetradaboost',True,False],
     ['trbagg',True,True],
-    ['trbagg-partialLoad',True,True]
+    ['trbagg-partialLoad',True,True],
+    ['adaboostprime-baselsvm',False,False],
+    ['adaboostprime-dt',False,False]
   ]
 
   KNOWN_CLASSIFIER_NAMES = [x[0] for x in KNOWN_CLASSIFIERS]
