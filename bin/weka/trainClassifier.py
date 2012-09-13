@@ -17,7 +17,7 @@ def getClassifier(c):
     ['twostagetradaboost',True,False],
     ['trbagg',True,True],
     ['trbagg-partialLoad',True,True],
-    ['adaboostprime-baselsvm',False,False],
+    ['adaboostprime-lsvm',False,False],
     ['adaboostprime-dt',False,False]
   ]
 
