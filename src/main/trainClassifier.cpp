@@ -2,6 +2,7 @@
 #include <vector>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <gflags/gflags.h>
 
 #include <learning/Common.h>
 #include <learning/ArffReader.h>
@@ -10,12 +11,18 @@
 #include <factory/AgentFactory.h>
 #include <common/Util.h>
 
-void addData(const std::string &filename, const ClassifierPtr &c, bool sourceData) {
+DEFINE_double(fracSourceData,1.0,"Frac of source data to use");
+
+void addData(const std::string &filename, const ClassifierPtr &c, bool sourceData, boost::shared_ptr<RNG> rng) {
   std::ifstream in(filename.c_str());
   ArffReader arff(in);
   if (sourceData) {
-    while (!arff.isDone())
-      c->addSourceData(arff.next());
+    while (!arff.isDone()) {
+      if ((FLAGS_fracSourceData < 1.0 - 1e-10) && (rng->randomFloat() > FLAGS_fracSourceData))
+        (void)arff.next();
+      else
+        c->addSourceData(arff.next());
+    }
   } else {
     while (!arff.isDone())
       c->addData(arff.next());
@@ -23,15 +30,10 @@ void addData(const std::string &filename, const ClassifierPtr &c, bool sourceDat
   in.close();
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
   const char *usage = "Usage: trainClassifier jsonFile saveFile targetData [sourceData1 sourceData2 ...]";
-  int numExpectedArgs = 3;
-
-  if (argc < numExpectedArgs + 1) {
-    std::cerr << "Expected at least " << numExpectedArgs << " arguments" << std::endl;
-    std::cerr << usage << std::endl;
-    return 1;
-  }
+  parseCommandLineArgs(&argc,&argv,usage,3,-1);
+  
   int ind = 1;
   const char *jsonFile = argv[ind++];
   const char *saveFile = argv[ind++];
@@ -41,13 +43,15 @@ int main(int argc, const char *argv[]) {
   Json::Value options;
   if (! readJson(jsonFile,options))
     return 1;
+  boost::shared_ptr<RNG> rng(new RNG(time(NULL)));
+
   ClassifierPtr c = createClassifier(options);
   std::cout << "Created classifier" << std::endl;
   for (int i = sourceDataStart; i < argc; i++) {
-    addData(argv[i],c,true);
+    addData(argv[i],c,true,rng);
     std::cout << "Added source data from " << i - sourceDataStart + 1 << " / " << argc - sourceDataStart << ": " << argv[i] << std::endl;
   }
-  addData(targetData,c,false);
+  addData(targetData,c,false,rng);
   std::cout << "Added target data from: " << targetData << std::endl;
   c->train(false);
   std::cout << "Trained" << std::endl;

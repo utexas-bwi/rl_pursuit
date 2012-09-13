@@ -26,5 +26,6 @@ bool createAndLoadSubClassifiers(std::vector<SubClassifier> &classifiers, const 
 
 bool loadSubClassifiers(std::vector<SubClassifier> &classifiers, const std::string &filename);
 
+void convertWekaToDT(SubClassifier &c);
 
 #endif /* end of include guard: SUBCLASSIFIER_YDWGKH6C */

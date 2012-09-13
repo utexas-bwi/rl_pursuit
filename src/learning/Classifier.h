@@ -40,6 +40,9 @@ public:
   virtual bool load(const std::string &filename) = 0;
 
   virtual void clearData() = 0;
+  std::vector<Feature> getFeatures() const {
+    return features;
+  }
 
 protected:
   virtual void trainInternal(bool incremental) = 0;

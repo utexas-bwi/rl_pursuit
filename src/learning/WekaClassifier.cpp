@@ -75,6 +75,29 @@ void WekaClassifier::save(const std::string &filename) const {
   comm->wait();
 }
 
+void WekaClassifier::saveAsOutput(const std::string &filename) const {
+  // convert to DT
+  std::string tempfile = tmpnam(NULL);
+  outputDescriptionToFile(tempfile);
+  int numInitialLinesToRemove = 3;
+  std::ifstream in(tempfile.c_str());
+  std::ofstream out(filename.c_str());
+  std::string line;
+  std::getline(in,line);
+  outputHeader(out);
+  out << std::endl;
+  while (in.good()) {
+    if (numInitialLinesToRemove > 0)
+      numInitialLinesToRemove--;
+    else
+      out << line << std::endl;
+    std::getline(in,line);
+  }
+  in.close();
+  out.close();
+  remove(tempfile.c_str());
+}
+
 bool WekaClassifier::load(const std::string &filename) {
   *(comm->cmd) = 'l';
   strncpy(comm->msg,filename.c_str(),comm->MSG_SIZE-2);

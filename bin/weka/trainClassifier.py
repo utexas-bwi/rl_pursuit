@@ -84,6 +84,7 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
   parser.add_option('-s','--source',action='store',dest='numSource',type='int',default=None,help='num source instances')
   parser.add_option('-t','--target',action='store',dest='numTarget',type='int',default=None,help='num target instances')
   parser.add_option('--no-source',action='store_false',dest='useSource',default=True,help='don\'t use the source data, but use the name')
+  parser.add_option('--fracSourceData',action='store',dest='fracSourceData',default=None,help='frac of source data to use')
   for option in parserOptions:
     parser.add_option(option)
   options,args = parser.parse_args(args)
@@ -168,6 +169,8 @@ def main(args = sys.argv[1:]):
     # run the cmd
     print 'save config will be at',options.saveConfigFilename
     cmd = ['bin/%s/trainClassifier' % getArch(),filename,saveFile,targetData] + sourceData
+    if options.fracSourceData is not None:
+      cmd += ['--fracSourceData',str(options.fracSourceData)]
     subprocess.check_call(cmd)
   finally:
     if filename is not None:
