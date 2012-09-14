@@ -44,6 +44,10 @@ public:
     return features;
   }
 
+  virtual Classifier* copyWithWeights(const InstanceSet &) {
+    return NULL;
+  }
+
 protected:
   virtual void trainInternal(bool incremental) = 0;
   virtual void classifyInternal(const InstancePtr &instance, Classification &classification) = 0;

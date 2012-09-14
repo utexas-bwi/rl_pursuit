@@ -99,10 +99,8 @@ void convertWekaToDT(SubClassifier &c) {
   if (temp != NULL) {
     // convert to DT
     std::string filename = tmpnam(NULL);
-    std::cout << "converting" << std::endl;
     temp->saveAsOutput(filename);
     c.classifier = createDecisionTree(filename,temp->getFeatures(),false,Json::Value());
     remove(filename.c_str());
-    std::cout << "done converting" << std::endl;
   }
 }

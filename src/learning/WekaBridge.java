@@ -9,8 +9,8 @@ import java.nio.ByteOrder;
 public class WekaBridge {
 	static Classifier classifier;
 
-  static private native void init(String memSegName, int numFeatures, int numClasses);
-  static private native byte readCommand(double[] features,double[] weight);
+  static private native int init(String memSegName, int numFeatures, int numClasses);
+  static private native byte readCommand(double[] features,double[] weight, double weightList[]);
   static private native void writeDistr(double[] distr);
   static private native void send();
   static private native String readMsg();
@@ -39,20 +39,30 @@ public class WekaBridge {
       // initialize the memory for communication
       byte commandByte = '\0';
       Instance inst;
-      init(memSegName,trainData.numAttributes(),trainData.numClasses());
+      int numWeights = init(memSegName,trainData.numAttributes(),trainData.numClasses());
       // create the classifier
       classifier = (Classifier)Utils.forName(Classifier.class,classifierName,opts);
       //classifier.buildClassifier(trainData);
       // wait for commands
+      double[] features = new double[trainData.numAttributes()];
+      double[] weight = new double[1];
+      double[] distr;
+      double[] weightList = new double[numWeights];
+      int weightInd = 0;
       while (true) {
-        double[] features = new double[trainData.numAttributes()];
-        double[] weight = new double[1];
-        double[] distr;
-        commandByte = readCommand(features,weight);
-        if (commandByte == 'e')
+        commandByte = readCommand(features,weight,weightList);
+        if (commandByte == 'e') {
+          //System.out.println("Asked to exit");
           break;
+        }
         switch (commandByte) {
           case 't':
+            if (weightInd != 0) {
+              if (weightInd != trainData.size()) {
+                System.out.println("BAD WEIGHT SIZE: " + weightInd + " expected " + trainData.size());
+              }
+              weightInd = 0;
+            }
             //System.out.format("TRAINING %d%n",trainData.numInstances());
             //for (int i = 0; i < trainData.numInstances(); i++) {
               //System.out.println(trainData.instance(i).toString());
@@ -102,6 +112,15 @@ public class WekaBridge {
             ObjectInputStream in = new ObjectInputStream(fis);
             classifier = (Classifier)in.readObject();
             in.close();
+            break;
+          case 'r':
+            for (int i = 0; i < numWeights; i++) {
+              if (weightList[i] < 0) {
+                break;
+              }
+              trainData.get(weightInd).setWeight(weightList[i]);
+              weightInd++;
+            }
             break;
         }
         send();

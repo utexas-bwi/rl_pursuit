@@ -33,6 +33,8 @@ public:
 
   void saveAsOutput(const std::string &filename) const;
 
+  virtual WekaClassifier* copyWithWeights(const InstanceSet &data);
+
 protected:
   void trainInternal(bool incremental);
   void classifyInternal(const InstancePtr &instance, Classification &classification);
@@ -50,6 +52,7 @@ private:
   std::string memSegName;
   boost::shared_ptr<Communicator> comm;
   float dropFrac;
+  bool trainAllowed;
   
   static int classifierCount;
 };

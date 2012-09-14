@@ -22,7 +22,7 @@ public:
   virtual void save(const std::string &filename) const;
   virtual bool load(const std::string &filename);
   virtual void clearData();
-  void setWeights(const InstanceSet &data);
+  virtual LinearSVM* copyWithWeights(const InstanceSet &data);
 
 protected:
   virtual void trainInternal(bool incremental);

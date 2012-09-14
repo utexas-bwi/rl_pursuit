@@ -3,8 +3,9 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/thread/thread_time.hpp>
 
-const int Communicator::MEMORY_SIZE = 2000;
-const int Communicator::MSG_SIZE = 1000;
+const unsigned int Communicator::MSG_SIZE = 1000;
+const unsigned int Communicator::NUM_WEIGHTS = 10000;
+const unsigned int Communicator::MEMORY_SIZE = 2000 + NUM_WEIGHTS * sizeof(weightList[0]);
 
 Communicator::Communicator(const std::string &memoryName, bool removeOnExit, unsigned int numFeatures, unsigned int numClasses):
   removeOnExit(removeOnExit)
@@ -19,6 +20,7 @@ Communicator::Communicator(const std::string &memoryName, bool removeOnExit, uns
   cmd = memSegment->find_or_construct<char>("command")();
   weight = memSegment->find_or_construct<float>("weight")();
   msg = memSegment->find_or_construct<char>("msg")[MSG_SIZE]();
+  weightList = memSegment->find_or_construct<float>("weightList")[NUM_WEIGHTS]();
 }
 
 Communicator::~Communicator() {
@@ -49,4 +51,10 @@ void Communicator::wait() {
     cond->timed_wait(lock,t);
     //cond->wait(lock);
   }
+}
+
+void Communicator::sendWait(char ch) {
+  *cmd = ch;
+  send();
+  wait();
 }

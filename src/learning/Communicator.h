@@ -19,10 +19,11 @@ public:
   
   void send();
   void wait();
+  void sendWait(char ch);
 
 protected:
   const std::string memoryName;
-  static const int MEMORY_SIZE;
+  static const unsigned int MEMORY_SIZE;
   boost::interprocess::managed_shared_memory *memSegment;
   bool removeOnExit;
   boost::interprocess::interprocess_condition *cond;
@@ -30,12 +31,14 @@ protected:
   unsigned int numClasses;
 
 public:
-  static const int MSG_SIZE;
+  static const unsigned int MSG_SIZE;
+  static const unsigned int NUM_WEIGHTS;
   float *features;
   float *classes;
   char *cmd;
   float *weight;
   char *msg;
+  float *weightList;
 };
 
 #endif /* end of include guard: COMMUNICATOR_5AAH7E5U */

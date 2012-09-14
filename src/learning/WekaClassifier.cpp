@@ -19,7 +19,8 @@ int WekaClassifier::classifierCount = 0;
 
 WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts) :
   Classifier(features,caching),
-  dropFrac(0.0)
+  dropFrac(0.0),
+  trainAllowed(true)
 {
   classifierCount++;
   memSegName = "WEKA_BRIDGE_" + boost::lexical_cast<std::string>(getpid()) + "_" + boost::lexical_cast<std::string>(classifierCount);
@@ -45,11 +46,15 @@ WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool cachin
 }
 
 WekaClassifier::~WekaClassifier () {
-  // kill the other process hopefully
-  *(comm->cmd) = 'e';
-  comm->send();
-  int status;
-  wait(&status);
+  //std::cout << "DESTRUCTOR" << std::endl;
+  if (comm.unique()) {
+    //std::cout << "Stop Weka" << std::endl;
+    // kill the other process hopefully
+    *(comm->cmd) = 'e';
+    comm->send();
+    int status;
+    wait(&status);
+  }
 }
   
 void WekaClassifier::addData(const InstancePtr &instance) {
@@ -57,9 +62,7 @@ void WekaClassifier::addData(const InstancePtr &instance) {
     return;
   //std::cout << "adding " << *instance << std::endl;
   writeInstance(instance);
-  *(comm->cmd) = 'a';
-  comm->send();
-  comm->wait();
+  comm->sendWait('a');
 
   //strcpy(comm->msg,"TESTING THIS OUT");
   //*(comm->cmd) = 'w';
@@ -68,11 +71,9 @@ void WekaClassifier::addData(const InstancePtr &instance) {
 }
   
 void WekaClassifier::save(const std::string &filename) const {
-  *(comm->cmd) = 's';
   strncpy(comm->msg,filename.c_str(),comm->MSG_SIZE-2);
   comm->msg[comm->MSG_SIZE-1] = '\0';
-  comm->send();
-  comm->wait();
+  comm->sendWait('s');
 }
 
 void WekaClassifier::saveAsOutput(const std::string &filename) const {
@@ -99,42 +100,32 @@ void WekaClassifier::saveAsOutput(const std::string &filename) const {
 }
 
 bool WekaClassifier::load(const std::string &filename) {
-  *(comm->cmd) = 'l';
   strncpy(comm->msg,filename.c_str(),comm->MSG_SIZE-2);
   comm->msg[comm->MSG_SIZE-1] = '\0';
-  comm->send();
-  comm->wait();
+  comm->sendWait('l');
   return true;
 }
   
 void WekaClassifier::outputDescriptionToFile(const std::string &filename) const {
-  *(comm->cmd) = 'w';
   strncpy(comm->msg,filename.c_str(),comm->MSG_SIZE-2);
   comm->msg[comm->MSG_SIZE-1] = '\0';
-  comm->send();
-  comm->wait();
+  comm->sendWait('w');
 }
 
 void WekaClassifier::clearData() {
-  *(comm->cmd) = 'x';
-  comm->send();
-  comm->wait();
+  comm->sendWait('x');
 }
 
 void WekaClassifier::trainInternal(bool /*incremental*/) {
+  assert(trainAllowed);
   //std::cout << "train" << std::endl;
-  *(comm->cmd) = 't';
-  comm->send();
-  comm->wait();
+  comm->sendWait('t');
 }
 
 void WekaClassifier::classifyInternal(const InstancePtr &instance, Classification &classification) {
   //std::cout << "classifying" << std::endl;
   writeInstance(instance);
-  *(comm->cmd) = 'c';
-  comm->send();
-  //std::cout << "waiting" << std::endl;
-  comm->wait();
+  comm->sendWait('c');
   classification.resize(numClasses);
   
   const float EPS = 0.001;
@@ -216,7 +207,27 @@ void WekaClassifier::freeCommand(char **cmdArr) {
 void WekaClassifier::outputDescription(std::ostream &out) const {
   outputHeader(out);
   out << std::endl;
-  *(comm->cmd) = 'p';
-  comm->send();
-  comm->wait();
+  comm->sendWait('p');
+}
+  
+WekaClassifier* WekaClassifier::copyWithWeights(const InstanceSet &data) {
+  trainAllowed = false;
+  WekaClassifier *c = new WekaClassifier(*this);
+  c->trainAllowed = true; // need this in case we copy from one where it's not allowed
+  unsigned int ind = 0;
+  for (unsigned int i = 0; i < data.size(); i++) {
+    comm->weightList[ind] = data[i]->weight;
+    ind++;
+    if (ind == comm->NUM_WEIGHTS) {
+      //std::cout << "sending full weights" << std::endl;
+      comm->sendWait('r');
+      ind = 0;
+    }
+  }
+  if (ind != 0) {
+    comm->weightList[ind] = -1;
+    //std::cout << "sending " << ind << " weights" << std::endl;
+    comm->sendWait('r');
+  }
+  return c;
 }

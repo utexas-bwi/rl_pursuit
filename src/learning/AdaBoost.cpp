@@ -41,6 +41,7 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
   //assert(!incremental); // NOT handled for now
   resetWeights();
   classifiers.clear();
+  ClassifierPtr lastClassifier;
   
   for (unsigned int t = 0; t < maxBoostingIterations; t++) {
     if (verbose)
@@ -48,24 +49,20 @@ void AdaBoost::trainInternal(bool /*incremental*/) {
     normalizeWeights();
 
     SubClassifier c;
-    LinearSVM *temp = NULL;
-    if (t > 0)
-      temp = dynamic_cast<LinearSVM*>(classifiers.back().classifier.get());
-    if (temp == NULL) {
+    if (lastClassifier.get() != NULL)
+      c.classifier = ClassifierPtr(lastClassifier->copyWithWeights(data));
+    if (c.classifier.get() == NULL) {
       baseLearnerOptions["maxNumInstances"] = data.size();
       c.classifier = baseLearner(features,baseLearnerOptions);
       for (unsigned int i = 0; i < endSourceData; i++)
         c.classifier->addSourceData(data[i]);
       for (unsigned int i = endSourceData; i < data.size(); i++)
         c.classifier->addData(data[i]);
-    } else {
-      boost::shared_ptr<LinearSVM> newC(new LinearSVM(*temp,true));
-      newC->setWeights(data);
-      c.classifier = newC;
     }
 
     c.classifier->train(false);
-    
+    if (lastClassifier.get() == NULL)
+      lastClassifier = c.classifier;
     convertWekaToDT(c);
 
     double eps = calcError(c);

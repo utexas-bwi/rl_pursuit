@@ -110,10 +110,12 @@ void LinearSVM::clearData() {
   prob.y = NULL;
 }
 
-void LinearSVM::setWeights(const InstanceSet &data) {
+LinearSVM* LinearSVM::copyWithWeights(const InstanceSet &data) {
+  LinearSVM *svm = new LinearSVM(*this,true);
   assert((int)data.size() == prob.l);
   for (unsigned int i = 0; i < data.size(); i++)
-    prob.W[i] = data[i]->weight;
+    svm->prob.W[i] = data[i]->weight;
+  return svm;
 }
 
 void LinearSVM::trainInternal(bool /*incremental*/) {

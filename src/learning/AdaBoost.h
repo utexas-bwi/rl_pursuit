@@ -49,6 +49,7 @@ protected:
   const unsigned int maxBoostingIterations;
   unsigned int classifierStartInd;
   bool verbose;
+  //ClassifierPtr lastClassifier;
 
   unsigned int endSourceData;
   unsigned int errorStartInd;
