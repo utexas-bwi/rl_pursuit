@@ -135,13 +135,9 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
   if options.baseLearner is not None:
     temp = getClassifier(options.baseLearner)
     assert((not temp[1]) and (not temp[2]))
-    if options.baseLearner == 'lsvm':
-      options.baseLearner += '-base'
   if options.fallbackLearner is not None:
     temp = getClassifier(options.fallbackLearner)
     assert((not temp[1]) and (not temp[2]))
-    if options.fallbackLearner == 'lsvm':
-      options.fallbackLearner += '-base'
   # get name
   name = options.classifier[0]
   if name == 'trbagg-partialLoad':
@@ -178,8 +174,11 @@ def main(args = sys.argv[1:]):
       print ' '.join(cmd)
     subprocess.check_call(cmd)
   finally:
-    if not(DEBUG) and (filename is not None):
-      os.remove(filename)
+    if not(DEBUG):
+      try:
+        os.remove(filename)
+      except:
+        pass
 
 if __name__ == '__main__':
   main()
