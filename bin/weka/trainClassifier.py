@@ -3,6 +3,8 @@
 import os, subprocess, sys, re
 from common import getArch, getUniqueStudents, getFilename, baseExists, TRAIN, makeTemp
 
+DEBUG = False
+
 def getClassifier(c):
   # in format name, needs base learner, needs fallback learner
   KNOWN_CLASSIFIERS = [
@@ -171,9 +173,11 @@ def main(args = sys.argv[1:]):
     cmd = ['bin/%s/trainClassifier' % getArch(),filename,saveFile,targetData] + sourceData
     if options.fracSourceData is not None:
       cmd += ['--fracSourceData',str(options.fracSourceData)]
+    if DEBUG:
+      print ' '.join(cmd)
     subprocess.check_call(cmd)
   finally:
-    if filename is not None:
+    if not(DEBUG) and (filename is not None):
       os.remove(filename)
 
 if __name__ == '__main__':
