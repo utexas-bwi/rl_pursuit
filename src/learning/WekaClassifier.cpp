@@ -60,7 +60,7 @@ WekaClassifier::~WekaClassifier () {
 void WekaClassifier::sendInstances(bool force) {
   int &n = *(comm->n);
   if ((n > 0) && (force || (n == (int)comm->NUM_INSTANCES))) {
-    std::cout << "SENDING" << std::endl;
+    //std::cout << "SENDING" << std::endl;
     comm->sendWait('a');
     *(comm->n) = 0;
   }
