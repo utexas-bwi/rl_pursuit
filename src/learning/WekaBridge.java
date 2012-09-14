@@ -10,7 +10,7 @@ public class WekaBridge {
 	static Classifier classifier;
 
   static private native int init(String memSegName, int numFeatures, int numClasses);
-  static private native byte readCommand(double[] features,double[] weight, double weightList[]);
+  static private native byte readCommand(double[][] features,double[] weight, int[] n);
   static private native void writeDistr(double[] distr);
   static private native void send();
   static private native String readMsg();
@@ -39,18 +39,18 @@ public class WekaBridge {
       // initialize the memory for communication
       byte commandByte = '\0';
       Instance inst;
-      int numWeights = init(memSegName,trainData.numAttributes(),trainData.numClasses());
+      int numInstances = init(memSegName,trainData.numAttributes(),trainData.numClasses());
       // create the classifier
       classifier = (Classifier)Utils.forName(Classifier.class,classifierName,opts);
       //classifier.buildClassifier(trainData);
       // wait for commands
-      double[] features = new double[trainData.numAttributes()];
-      double[] weight = new double[1];
+      double[][] features = new double[numInstances][trainData.numAttributes()];
+      double[] weight = new double[numInstances];
       double[] distr;
-      double[] weightList = new double[numWeights];
+      int[] n = new int[1];
       int weightInd = 0;
       while (true) {
-        commandByte = readCommand(features,weight,weightList);
+        commandByte = readCommand(features,weight,n);
         if (commandByte == 'e') {
           //System.out.println("Asked to exit");
           break;
@@ -73,19 +73,19 @@ public class WekaBridge {
             trainData.delete();
             break;
           case 'c':
-            inst = new DenseInstance(weight[0],features);
+            assert(n[0] == 1): "Only classify 1 instance at once";
+            inst = new DenseInstance(weight[0],features[0]);
             testData.add(inst);
             distr = classifier.distributionForInstance(testData.lastInstance());
             writeDistr(distr);
             testData.delete();
             break;
           case 'a':
-            inst = new DenseInstance(weight[0],features);
-            //System.err.format("ADDING: %s {%f}%n",inst.toString(),inst.weight());
-            //System.out.format("compat: %b%n",trainData.checkInstance(inst));
-            //System.out.println(trainData.toString());
-            trainData.add(inst);
-            //System.out.format("ADDING2: %s {%f}%n",trainData.instance(0).toString(),trainData.instance(0).weight());
+            for (int i = 0; i < n[0]; i++) {
+              inst = new DenseInstance(weight[i],features[i]);
+              trainData.add(inst);
+              //System.out.println("New inst:" + inst);
+            }
             break;
           case 'p':
             System.out.println(classifier.toString());
@@ -114,11 +114,8 @@ public class WekaBridge {
             in.close();
             break;
           case 'r':
-            for (int i = 0; i < numWeights; i++) {
-              if (weightList[i] < 0) {
-                break;
-              }
-              trainData.get(weightInd).setWeight(weightList[i]);
+            for (int i = 0; i < n[0]; i++) {
+              trainData.get(weightInd).setWeight(weight[i]);
               weightInd++;
             }
             break;

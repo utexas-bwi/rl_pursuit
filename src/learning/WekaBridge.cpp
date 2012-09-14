@@ -18,40 +18,45 @@ JNIEXPORT jint JNICALL Java_WekaBridge_init(JNIEnv *env, jobject , jstring memSe
 
   assert(str != NULL);
   //std::cout << str << std::endl;
-  comm = boost::shared_ptr<Communicator>(new Communicator(str,false,NUM_FEATURES,NUM_FEATURES));
+  comm = boost::shared_ptr<Communicator>(new Communicator(str,false,NUM_FEATURES,NUM_CLASSES));
   FIRST_TIME = true;
 
   //delete[] str;
   env->ReleaseStringUTFChars(memSegName,str);
-  return comm->NUM_WEIGHTS;
+  return comm->NUM_INSTANCES;
 }
 
 extern "C"
-JNIEXPORT jbyte JNICALL Java_WekaBridge_readCommand (JNIEnv *env, jclass , jdoubleArray features, jdoubleArray weight, jdoubleArray weightList) {
+JNIEXPORT jbyte JNICALL Java_WekaBridge_readCommand (JNIEnv *env, jclass , jobjectArray features, jdoubleArray weight, jintArray nArr) {
   //std::cout << "java waiting" << std::endl;
   comm->wait();
 
   char cmd = *(comm->cmd);
+  int &n = *(comm->n);
+  env->SetIntArrayRegion(nArr,0,1,comm->n);
   //std::cout << "java received " << cmd << std::endl;
-  double *arr;
+  //double *arr;
   switch(cmd) {
     case 'r':
-      arr = env->GetDoubleArrayElements(weightList,NULL);
-      for (unsigned int i = 0; i < comm->NUM_WEIGHTS; i++)
-        arr[i] = comm->weightList[i];
-      env->ReleaseDoubleArrayElements(weightList, arr, 0);
+      env->SetDoubleArrayRegion(weight,0,n,comm->weight);
+      //arr = env->GetDoubleArrayElements(weight,NULL);
+      //for (int i = 0; i < n; i++)
+        //arr[i] = comm->weight[i];
+      //env->ReleaseDoubleArrayElements(weight, arr, 0);
       break;
     case 'c':
     case 'a':
-      arr = env->GetDoubleArrayElements(features,NULL);
-      assert(arr != NULL);
-      for (unsigned int i = 0; i < NUM_FEATURES; i++)
-        arr[i] = comm->features[i];
-      env->ReleaseDoubleArrayElements(features, arr, 0);
-      arr = env->GetDoubleArrayElements(weight,NULL);
-      arr[0] = *(comm->weight);
-      env->ReleaseDoubleArrayElements(weight, arr, 0);
-
+      //env->SetDoubleArrayRegion(features);
+      //arr = env->GetDoubleArrayElements(features,NULL);
+      //assert(arr != NULL);
+      //for (unsigned int i = 0; i < NUM_FEATURES * n; i++)
+        //arr[i] = comm->features[i];
+      //env->ReleaseDoubleArrayElements(features, arr, 0);
+      env->SetDoubleArrayRegion(weight,0,n,comm->weight);
+      for (int i = 0; i < n; i++) {
+        jdoubleArray arr = (jdoubleArray)(env->GetObjectArrayElement(features,i));
+        env->SetDoubleArrayRegion(arr,0,NUM_FEATURES,&(comm->features[i*NUM_FEATURES]));
+      }
       break;
     default:
       // pass
@@ -63,11 +68,7 @@ JNIEXPORT jbyte JNICALL Java_WekaBridge_readCommand (JNIEnv *env, jclass , jdoub
 
 extern "C"
 JNIEXPORT void JNICALL Java_WekaBridge_writeDistr (JNIEnv *env, jclass obj, jdoubleArray distr) {
-  double *arr = env->GetDoubleArrayElements(distr,NULL);
-  assert(arr != NULL);
-  for (unsigned int i = 0; i < NUM_CLASSES; i++)
-    comm->classes[i] = arr[i];
-  env->ReleaseDoubleArrayElements(distr, arr, 0);
+  env->GetDoubleArrayRegion(distr,0,NUM_CLASSES,comm->classes);
 }
 
 extern "C"

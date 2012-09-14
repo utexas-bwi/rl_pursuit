@@ -45,6 +45,8 @@ private:
   char** splitCommand(const std::string &cmd);
   void freeCommand(char **cmdArr);
 
+  void sendInstances(bool force);
+
 private:
   pid_t pid;
   static const std::string WEKA_CMD;

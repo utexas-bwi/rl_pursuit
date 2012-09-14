@@ -4,8 +4,8 @@
 #include <boost/thread/thread_time.hpp>
 
 const unsigned int Communicator::MSG_SIZE = 1000;
-const unsigned int Communicator::NUM_WEIGHTS = 10000;
-const unsigned int Communicator::MEMORY_SIZE = 2000 + NUM_WEIGHTS * sizeof(weightList[0]);
+const unsigned int Communicator::NUM_INSTANCES = 10000;
+const unsigned int Communicator::MEMORY_SIZE = MSG_SIZE + NUM_INSTANCES * (21 * sizeof(double)) + 20;
 
 Communicator::Communicator(const std::string &memoryName, bool removeOnExit, unsigned int numFeatures, unsigned int numClasses):
   removeOnExit(removeOnExit)
@@ -15,12 +15,12 @@ Communicator::Communicator(const std::string &memoryName, bool removeOnExit, uns
 
   memSegment = new boost::interprocess::managed_shared_memory(boost::interprocess::open_or_create,memoryName.c_str(),MEMORY_SIZE);
   cond = memSegment->find_or_construct<boost::interprocess::interprocess_condition>("cond")();
-  features = memSegment->find_or_construct<float>("features")[numFeatures]();
-  classes = memSegment->find_or_construct<float>("classes")[numClasses]();
+  features = memSegment->find_or_construct<double>("features")[numFeatures * NUM_INSTANCES]();
+  classes = memSegment->find_or_construct<double>("classes")[numClasses]();
   cmd = memSegment->find_or_construct<char>("command")();
-  weight = memSegment->find_or_construct<float>("weight")();
+  weight = memSegment->find_or_construct<double>("weight")[NUM_INSTANCES]();
   msg = memSegment->find_or_construct<char>("msg")[MSG_SIZE]();
-  weightList = memSegment->find_or_construct<float>("weightList")[NUM_WEIGHTS]();
+  n = memSegment->find_or_construct<int>("n")();
 }
 
 Communicator::~Communicator() {

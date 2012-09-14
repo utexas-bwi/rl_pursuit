@@ -56,13 +56,22 @@ WekaClassifier::~WekaClassifier () {
     wait(&status);
   }
 }
+
+void WekaClassifier::sendInstances(bool force) {
+  int &n = *(comm->n);
+  if ((n > 0) && (force || (n == (int)comm->NUM_INSTANCES))) {
+    std::cout << "SENDING" << std::endl;
+    comm->sendWait('a');
+    *(comm->n) = 0;
+  }
+}
   
 void WekaClassifier::addData(const InstancePtr &instance) {
   if ((dropFrac > 1e-10) && (rng->randomFloat() < dropFrac))
     return;
   //std::cout << "adding " << *instance << std::endl;
   writeInstance(instance);
-  comm->sendWait('a');
+  sendInstances(false);
 
   //strcpy(comm->msg,"TESTING THIS OUT");
   //*(comm->cmd) = 'w';
@@ -118,14 +127,17 @@ void WekaClassifier::clearData() {
 
 void WekaClassifier::trainInternal(bool /*incremental*/) {
   assert(trainAllowed);
+  sendInstances(true);
   //std::cout << "train" << std::endl;
   comm->sendWait('t');
 }
 
 void WekaClassifier::classifyInternal(const InstancePtr &instance, Classification &classification) {
+  sendInstances(true);
   //std::cout << "classifying" << std::endl;
   writeInstance(instance);
   comm->sendWait('c');
+  *(comm->n) = 0;
   classification.resize(numClasses);
   
   const float EPS = 0.001;
@@ -142,11 +154,14 @@ void WekaClassifier::classifyInternal(const InstancePtr &instance, Classificatio
 }
 
 void WekaClassifier::writeInstance(const InstanceConstPtr &instance) {
+  int &n = *(comm->n);
+  assert(n < (int)comm->NUM_INSTANCES);
+  int offset = n * features.size();
   for (unsigned int i = 0; i < features.size(); i++) {
-    comm->features[i] = instance->get(features[i].feat,0);
-    //std::cout << i << " " << features[i].name << " " << comm->features[i] << std::endl;
+    comm->features[offset + i] = instance->get(features[i].feat,0);
   }
-  *(comm->weight) = instance->weight;
+  comm->weight[n] = instance->weight;
+  n++;
 }
   
 char** WekaClassifier::splitCommand(const std::string &cmd) {
@@ -214,20 +229,20 @@ WekaClassifier* WekaClassifier::copyWithWeights(const InstanceSet &data) {
   trainAllowed = false;
   WekaClassifier *c = new WekaClassifier(*this);
   c->trainAllowed = true; // need this in case we copy from one where it's not allowed
-  unsigned int ind = 0;
+  int &ind = *(comm->n);
+  assert(ind == 0);
   for (unsigned int i = 0; i < data.size(); i++) {
-    comm->weightList[ind] = data[i]->weight;
+    comm->weight[ind] = data[i]->weight;
     ind++;
-    if (ind == comm->NUM_WEIGHTS) {
+    if (ind == (int)comm->NUM_INSTANCES) {
       //std::cout << "sending full weights" << std::endl;
       comm->sendWait('r');
       ind = 0;
     }
   }
   if (ind != 0) {
-    comm->weightList[ind] = -1;
-    //std::cout << "sending " << ind << " weights" << std::endl;
     comm->sendWait('r');
+    ind = 0;
   }
   return c;
 }

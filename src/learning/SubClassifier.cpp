@@ -97,6 +97,7 @@ bool loadSubClassifiers(std::vector<SubClassifier> &classifiers, const std::stri
 void convertWekaToDT(SubClassifier &c) {
   WekaClassifier *temp = dynamic_cast<WekaClassifier*>(c.classifier.get());
   if (temp != NULL) {
+    std::cout << "converting weka->dt" << std::endl;
     // convert to DT
     std::string filename = tmpnam(NULL);
     temp->saveAsOutput(filename);

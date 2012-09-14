@@ -32,13 +32,13 @@ protected:
 
 public:
   static const unsigned int MSG_SIZE;
-  static const unsigned int NUM_WEIGHTS;
-  float *features;
-  float *classes;
+  static const unsigned int NUM_INSTANCES;
+  double *features;
+  double *classes;
   char *cmd;
-  float *weight;
+  double *weight;
   char *msg;
-  float *weightList;
+  int *n;
 };
 
 #endif /* end of include guard: COMMUNICATOR_5AAH7E5U */
