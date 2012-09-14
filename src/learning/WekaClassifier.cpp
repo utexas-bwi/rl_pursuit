@@ -14,7 +14,7 @@ Modified: 2011-12-26
 #include <sys/wait.h>
 #include <boost/lexical_cast.hpp>
 
-const std::string WekaClassifier::WEKA_CMD = std::string("java -DWEKA_HOME=./bin/weka/wekafiles -Djava.library.path=bin/") + COMPILE_ARCH + " -Xmx2G -cp bin/weka:bin/weka/weka.jar WekaBridge";
+const std::string WekaClassifier::WEKA_CMD = std::string("java -DWEKA_HOME=./bin/weka/wekafiles -Djava.library.path=bin/") + COMPILE_ARCH + " -Xmx4G -cp bin/weka:bin/weka/weka.jar WekaBridge";
 int WekaClassifier::classifierCount = 0;
 
 WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts) :

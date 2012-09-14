@@ -17,6 +17,7 @@ def getClassifier(c):
     ['dt-depth5',False,False],
     ['dt-noweka',False,False],
     ['twostagetradaboost',True,False],
+    ['tradaboost',True,False],
     ['trbagg',True,True],
     ['trbagg-partialLoad',True,True],
     ['adaboostprime-lsvm',False,False],
