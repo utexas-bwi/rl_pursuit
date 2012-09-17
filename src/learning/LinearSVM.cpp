@@ -9,6 +9,7 @@ void print_null(const char *) {}
 LinearSVM::LinearSVM(const std::string &filename, const std::vector<Feature> &features, bool caching, unsigned int solverType, unsigned int maxNumInstances):
   Classifier(features,caching),
   MAX_NUM_INSTANCES(maxNumInstances),
+  model(NULL),
   sharedProblem(false),
   minVals(features.size()-1,std::numeric_limits<float>::infinity()),
   maxVals(features.size()-1,-1 * std::numeric_limits<float>::infinity()),
@@ -71,7 +72,8 @@ LinearSVM::~LinearSVM() {
   clearData();
 
   delete[] svmInst;
-  liblinear::free_and_destroy_model(&model);
+  if (model != NULL)
+    liblinear::free_and_destroy_model(&model);
 }
 
 void LinearSVM::addData(const InstancePtr &instance) {
