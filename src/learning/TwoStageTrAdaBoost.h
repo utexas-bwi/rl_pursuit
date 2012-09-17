@@ -10,10 +10,21 @@ Modified: 2012-01-20
 */
 
 #include "TrAdaBoost.h"
+#include <common/Params.h>
 
 class TwoStageTrAdaBoost: public Classifier {
 public:
-  TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds, int bestT = -1);
+#define PARAMS(_) \
+  _(unsigned int,maxBoostingIterations,maxBoostingIterations,10) \
+  _(unsigned int,numFolds,folds,5) \
+  _(int,savedBestT,bestT,-1) \
+  _(bool,evaluateSavedBestT,evaluateBestT,false)
+
+  Params_STRUCT(PARAMS)
+#undef PARAMS
+
+public:
+  TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, const Params &p);
   
   virtual void addData(const InstancePtr &instance);
   virtual void addSourceData(const InstancePtr &instance);
@@ -35,6 +46,8 @@ protected:
   virtual void createFolds(std::vector<InstanceSet> &folds);
   virtual ClassifierPtr createModel(int fold, std::vector<InstanceSet> &folds);
 
+  float evaluateWeighting(unsigned int t, std::vector<InstanceSet> &foldedTargetData);
+
 protected:
   SubClassifierGenerator baseLearner;
   Json::Value baseLearnerOptions;
@@ -42,10 +55,8 @@ protected:
   InstanceSet targetData;
   InstanceSet fixedData;
   ClassifierPtr model;
-  const unsigned int maxBoostingIterations;
-  const unsigned int numFolds;
-  int savedBestT;
   float bestSourceInstanceWeight;
+  Params p;
 };
 
 #endif /* end of include guard: TWOSTAGETRADABOOST_7Q4CFB8O */

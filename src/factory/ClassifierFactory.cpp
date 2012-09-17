@@ -207,13 +207,13 @@ boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &type, const std::s
 }
 
 boost::shared_ptr<TwoStageTrAdaBoost> createTwoStageTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
-  unsigned int maxBoostingIterations = options.get("maxBoostingIterations",10).asUInt();
-  unsigned int numFolds = options.get("folds",5).asUInt();
-  int bestT = options.get("bestT",-1).asInt();
   Json::Value baseLearnerOptions = options["baseLearner"];
   ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
+  TwoStageTrAdaBoost::Params p;
+  p.fromJson(options);
 
-  boost::shared_ptr<TwoStageTrAdaBoost> ptr(new TwoStageTrAdaBoost(features,caching,baseLearner,baseLearnerOptions,maxBoostingIterations,numFolds,bestT));
+
+  boost::shared_ptr<TwoStageTrAdaBoost> ptr(new TwoStageTrAdaBoost(features,caching,baseLearner,baseLearnerOptions,p));
   if (filename != "")
     assert(ptr->load(filename));
   return ptr;

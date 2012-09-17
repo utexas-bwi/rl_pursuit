@@ -8,17 +8,15 @@ Modified: 2012-01-20
 
 #include "TwoStageTrAdaBoost.h"
   
-TwoStageTrAdaBoost::TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, unsigned int maxBoostingIterations, unsigned int numFolds, int bestT):
+TwoStageTrAdaBoost::TwoStageTrAdaBoost(const std::vector<Feature> &features, bool caching, SubClassifierGenerator baseLearner, const Json::Value &baseLearnerOptions, const Params &p):
   Classifier(features,caching),
   baseLearner(baseLearner),
   baseLearnerOptions(baseLearnerOptions),
   sourceData(numClasses),
   targetData(numClasses),
   fixedData(numClasses),
-  maxBoostingIterations(maxBoostingIterations),
-  numFolds(numFolds),
-  savedBestT(bestT),
-  bestSourceInstanceWeight(-1)
+  bestSourceInstanceWeight(-1),
+  p(p)
 {
   assert(baseLearner);
 }
@@ -69,35 +67,41 @@ void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
     model->train(false);
     return;
   }
-  std::vector<InstanceSet> foldedTargetData(numFolds,InstanceSet(numClasses));
+  std::vector<InstanceSet> foldedTargetData(p.numFolds,InstanceSet(numClasses));
   createFolds(foldedTargetData);
   
   unsigned int bestT = 0;
-  if (savedBestT <= 0) {
-    ClassifierPtr newModel;
-    float bestError = std::numeric_limits<float>::infinity();
-    for (unsigned int t = 0; t < maxBoostingIterations; t++) {
-      reweightData(t);
-      float error = 0.0;
-      for (unsigned int fold = 0; fold < numFolds; fold++) {
-        newModel = createModel(fold,foldedTargetData);
-        error += calcError(newModel,foldedTargetData[fold]) / numFolds;
-      }
-      //std::cout << "error: " << error << std::endl;
+  float bestError = std::numeric_limits<float>::infinity();
+  if (p.savedBestT < 0) {
+    for (unsigned int t = 0; t < p.maxBoostingIterations; t++) {
+      float error = evaluateWeighting(t,foldedTargetData);
       if (error < bestError) {
         bestError = error;
         bestT = t;
-        //std::cout << "NEW BEST: " << t << std::endl;
       }
     }
   } else {
-    bestT = savedBestT;
+    bestT = p.savedBestT;
+    if (p.evaluateSavedBestT)
+      bestError = evaluateWeighting(bestT,foldedTargetData);
     std::cout << "WARNING: TwoStageTrAdaBoost isn't figuring out the best weighting, just using the one provided" << std::endl;
   }
   // make the real model for the best t
   std::cout << "BEST T: " << bestT << std::endl;
+  std::cout << "BEST ERROR: " << bestError << std::endl;
   reweightData(bestT);
   model = createModel(-1,foldedTargetData);
+}
+
+float TwoStageTrAdaBoost::evaluateWeighting(unsigned int t, std::vector<InstanceSet> &foldedTargetData) {
+  ClassifierPtr newModel;
+  reweightData(t);
+  float error = 0.0;
+  for (unsigned int fold = 0; fold < p.numFolds; fold++) {
+    newModel = createModel(fold,foldedTargetData);
+    error += calcError(newModel,foldedTargetData[fold]) / p.numFolds;
+  }
+  return error;
 }
 
 void TwoStageTrAdaBoost::classifyInternal(const InstancePtr &instance, Classification &classification) {
@@ -108,7 +112,7 @@ void TwoStageTrAdaBoost::classifyInternal(const InstancePtr &instance, Classific
 void TwoStageTrAdaBoost::reweightData(unsigned int t) {
   float n = sourceData.size();
   float m = targetData.size();// + fixedData.weight;
-  float fracTargetWeight = m / (n + m) + (t / ((float)maxBoostingIterations - 1.0)) * (1 - m / (n + m));
+  float fracTargetWeight = m / (n + m) + (t / ((float)p.maxBoostingIterations - 1.0)) * (1 - m / (n + m));
   float fracSourceWeight = 1 - fracTargetWeight;
   // per instance
   float totalWeight = m / fracTargetWeight;
@@ -142,7 +146,7 @@ double TwoStageTrAdaBoost::calcError(ClassifierPtr newModel, InstanceSet &data) 
   
 void TwoStageTrAdaBoost::createFolds(std::vector<InstanceSet> &folds) {
   for (unsigned int i = 0; i < targetData.size(); i++) {
-    int fold = rng->randomInt(numFolds);
+    int fold = rng->randomInt(p.numFolds);
     folds[fold].add(targetData[i]);
   }
 }
@@ -154,7 +158,7 @@ ClassifierPtr TwoStageTrAdaBoost::createModel(int fold, std::vector<InstanceSet>
     for (unsigned int i = 0; i < sourceData.size(); i++)
       newModel->addSourceData(sourceData[i]);
   }
-  for (unsigned int i = 0; i < numFolds; i++) {
+  for (unsigned int i = 0; i < p.numFolds; i++) {
     if ((int)i == fold)
       continue;
     for (unsigned int j = 0; j < folds[i].size(); j++)
