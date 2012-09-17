@@ -55,7 +55,8 @@ int main(int argc, char *argv[]) {
   std::cout << "Added target data from: " << targetData << std::endl;
   c->train(false);
   std::cout << "Trained" << std::endl;
-  c->save(saveFile);
+  if (saveFile != std::string("/dev/null"))
+    c->save(saveFile);
 
   return 0;
 }

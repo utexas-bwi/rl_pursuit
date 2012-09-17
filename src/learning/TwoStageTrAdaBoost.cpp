@@ -89,8 +89,10 @@ void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
   // make the real model for the best t
   std::cout << "BEST T: " << bestT << std::endl;
   std::cout << "BEST ERROR: " << bestError << std::endl;
-  reweightData(bestT);
-  model = createModel(-1,foldedTargetData);
+  if (!p.evaluateSavedBestT) {
+    reweightData(bestT);
+    model = createModel(-1,foldedTargetData);
+  }
 }
 
 float TwoStageTrAdaBoost::evaluateWeighting(unsigned int t, std::vector<InstanceSet> &foldedTargetData) {

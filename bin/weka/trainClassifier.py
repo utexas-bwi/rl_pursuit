@@ -3,8 +3,6 @@
 import os, subprocess, sys, re
 from common import getArch, getUniqueStudents, getFilename, baseExists, TRAIN, makeTemp
 
-DEBUG = False
-
 def getClassifier(c):
   # in format name, needs base learner, needs fallback learner
   KNOWN_CLASSIFIERS = [
@@ -17,6 +15,7 @@ def getClassifier(c):
     ['dt-depth5',False,False],
     ['dt-noweka',False,False],
     ['twostagetradaboost',True,False],
+    ['twostagetradaboost-partial',True,False],
     ['tradaboost',True,False],
     ['trbagg',True,True],
     ['trbagg-partialLoad',True,True],
@@ -35,22 +34,28 @@ def getClassifier(c):
 def getConfigFilename(classifier):
   return os.path.join('configs','learners','%s.json' % classifier)
 
-def getSaveFilename(classifier,numTarget,numSource,student):
-  return os.path.join('configs','learners','saved','%s-target%i-source%i-%s.txt' % (classifier,numTarget,numSource,student))
+def getSaveFilename(options):
+  if options.save:
+    return os.path.join('configs','learners','saved','%s-target%i-source%i-%s.txt' % (options.name,options.numTarget,options.numSource,options.student))
+  else:
+    return '/dev/null'
 
-def combineConfigs(learner,baseLearner,fallbackLearner,saveConfigFilename,saveFile,student):
+def combineConfigs(saveFile,options):
+  learner = options.classifier[0]
   with open(getConfigFilename(learner),'r') as f:
     content = f.read().strip()
   if learner == 'trbagg-partialLoad':
     # TODO
-    content = content.replace('$(PARTIAL_FILENAME)','data/dt/studentsNew29-unperturbed-transfer/target10000-source50000/weighted/trBagg-%s.weka' % student)
+    content = content.replace('$(PARTIAL_FILENAME)','data/dt/studentsNew29-unperturbed-transfer/target10000-source50000/weighted/trBagg-%s.weka' % options.student)
+  if learner == 'twostagetradaboost-partial':
+    content = content.replace('$(BEST_T)',str(options.partialInd))
   endInd = content.rfind('}')
   if content[endInd-1] == '\n':
     endInd -= 1
   res = content[:endInd]
   
   prefixList = ['"baseLearner":','"fallbackLearner":']
-  configs = [baseLearner,fallbackLearner]
+  configs = [options.baseLearner,options.fallbackLearner]
   for conf,prefix in zip(configs,prefixList):
     if conf is None:
       continue
@@ -73,7 +78,7 @@ def combineConfigs(learner,baseLearner,fallbackLearner,saveConfigFilename,saveFi
   filenameLine = '"filename": "%s",\n  ' % saveFile
   res = res[:ind] + filenameLine + res[ind:]
   res = re.sub('.*"partialFilename".*\n','',res)
-  with open(saveConfigFilename,'w') as f:
+  with open(options.saveConfigFilename,'w') as f:
     f.write(res)
 
   return filename
@@ -87,7 +92,11 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
   parser.add_option('-s','--source',action='store',dest='numSource',type='int',default=None,help='num source instances')
   parser.add_option('-t','--target',action='store',dest='numTarget',type='int',default=None,help='num target instances')
   parser.add_option('--no-source',action='store_false',dest='useSource',default=True,help='don\'t use the source data, but use the name')
+  parser.add_option('--debug',action='store_true',dest='debug',default=False,help='print the cmd and don\'t remove the combined config')
   parser.add_option('--fracSourceData',action='store',dest='fracSourceData',default=None,help='frac of source data to use')
+  parser.add_option('--partialMax',action='store',dest='partialMax',type='int',default=None,help='num partial runs')
+  parser.add_option('--no-save',action='store_false',dest='save',default=True,help='disable saving of the classifier')
+  parser.add_option('--catchOutput',action='store_true',dest='catchOutput',default=False,help='catch the output of the training')
   for option in parserOptions:
     parser.add_option(option)
   options,args = parser.parse_args(args)
@@ -116,6 +125,10 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
   students = getUniqueStudents()
   try:
     ind = int(student)
+    if options.partialMax is not None:
+      options.partialInd = ind % options.partialMax
+      ind /= options.partialMax
+      print 'ind: %i partialInd: %i' % (ind,options.partialInd)
     student = students[ind]
   except:
     if student not in students:
@@ -158,8 +171,8 @@ def main(args = sys.argv[1:]):
   options,_ = parseArgs(args)
   
   try:
-    saveFile = getSaveFilename(options.name,options.numTarget,options.numSource,options.student)
-    filename = combineConfigs(options.classifier[0],options.baseLearner,options.fallbackLearner,options.saveConfigFilename,saveFile,options.student)
+    saveFile = getSaveFilename(options)
+    filename = combineConfigs(saveFile,options)
     targetData = getFilename(options.targetBase,options.student,TRAIN)
     if (options.numSource == 0) or not(options.useSource):
       sourceData = []
@@ -170,15 +183,21 @@ def main(args = sys.argv[1:]):
     cmd = ['bin/%s/trainClassifier' % getArch(),filename,saveFile,targetData] + sourceData
     if options.fracSourceData is not None:
       cmd += ['--fracSourceData',str(options.fracSourceData)]
-    if DEBUG:
+    if options.debug:
       print ' '.join(cmd)
-    subprocess.check_call(cmd)
+    if options.catchOutput:
+      p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
+      output,error = p.communicate()
+    else:
+      subprocess.check_call(cmd)
   finally:
-    if not(DEBUG):
+    if not(options.debug):
       try:
         os.remove(filename)
       except:
         pass
+  if options.catchOutput:
+    return options,output,error
 
 if __name__ == '__main__':
   main()
