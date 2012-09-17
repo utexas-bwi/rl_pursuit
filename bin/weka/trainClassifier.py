@@ -49,6 +49,7 @@ def combineConfigs(saveFile,options):
     content = content.replace('$(PARTIAL_FILENAME)','data/dt/studentsNew29-unperturbed-transfer/target10000-source50000/weighted/trBagg-%s.weka' % options.student)
   if learner == 'twostagetradaboost-partial':
     content = content.replace('$(BEST_T)',str(options.partialInd))
+    content = content.replace('$(EVALUATE_BEST_T)','false' if options.save else 'true')
   endInd = content.rfind('}')
   if content[endInd-1] == '\n':
     endInd -= 1
@@ -97,6 +98,7 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
   parser.add_option('--partialMax',action='store',dest='partialMax',type='int',default=None,help='num partial runs')
   parser.add_option('--no-save',action='store_false',dest='save',default=True,help='disable saving of the classifier')
   parser.add_option('--catchOutput',action='store_true',dest='catchOutput',default=False,help='catch the output of the training')
+  parser.add_option('--ignorePartialMax',action='store_true',dest='ignorePartialMax',default=False,help='ignore partialmax')
   for option in parserOptions:
     parser.add_option(option)
   options,args = parser.parse_args(args)
@@ -125,7 +127,7 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
   students = getUniqueStudents()
   try:
     ind = int(student)
-    if options.partialMax is not None:
+    if (options.partialMax is not None) and not options.ignorePartialMax:
       options.partialInd = ind % options.partialMax
       ind /= options.partialMax
       print 'ind: %i partialInd: %i' % (ind,options.partialInd)
@@ -155,6 +157,8 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
   name = options.classifier[0]
   if name == 'trbagg-partialLoad':
     name = 'trbagg'
+  if name == 'twostagetradaboost-partial':
+    name = 'twostagetradaboost'
   if options.baseLearner is not None:
     name += '_base' + options.baseLearner
   if options.fallbackLearner is not None:
@@ -169,7 +173,9 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
 
 def main(args = sys.argv[1:]):
   options,_ = parseArgs(args)
-  
+  return mainOptions(options)
+
+def mainOptions(options):
   try:
     saveFile = getSaveFilename(options)
     filename = combineConfigs(saveFile,options)
@@ -197,7 +203,7 @@ def main(args = sys.argv[1:]):
       except:
         pass
   if options.catchOutput:
-    return options,output,error
+    return output,error
 
 if __name__ == '__main__':
   main()
