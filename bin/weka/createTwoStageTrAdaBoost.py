@@ -28,6 +28,7 @@ def main(args=sys.argv[1:]):
         bestT = t
     options.partialInd = bestT
     print 'bestT:',bestT
+    print 'bestError:',bestError
     trainClassifierMain(options)
   else:
     args = args + ['--no-save','--catchOutput']
