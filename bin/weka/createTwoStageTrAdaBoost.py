@@ -13,13 +13,14 @@ def main(args=sys.argv[1:]):
     args = args + ['--ignorePartialMax']
 
   options,_ = parseArgs(args)
-  directory = os.path.join('configs/learners/saved/twostage-partial',options.student)
+  directory = os.path.join('configs/learners/saved/twostage-partial',options.baseLearner,options.student)
+  pathBase = os.path.join(directory,'%i.txt')
   if combine:
     print options.student,options.partialMax
     bestT = None
     bestError = numpy.inf
     for t in range(options.partialMax):
-      path = os.path.join(directory,'%i.txt' % t)
+      path = pathBase % t
       with open(path,'r') as f:
         error = float(f.read().strip())
       if error < bestError:
@@ -40,7 +41,7 @@ def main(args=sys.argv[1:]):
       os.makedirs(directory)
     except:
       pass
-    filename = os.path.join(directory,'%i.txt' % bestT)
+    filename = pathBase % bestT
     with open(filename,'w') as f:
       f.write('%f\n'%bestError)
 
