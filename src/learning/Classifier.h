@@ -51,6 +51,7 @@ public:
 protected:
   virtual void trainInternal(bool incremental) = 0;
   virtual void classifyInternal(const InstancePtr &instance, Classification &classification) = 0;
+  std::string getSubFilename(const std::string &baseFilename, const std::string &sub) const;
   std::string getSubFilename(const std::string &baseFilename, unsigned int i) const;
   std::vector<std::string> getSubFilenames(const std::string &baseFilename, unsigned int maxInd) const;
 

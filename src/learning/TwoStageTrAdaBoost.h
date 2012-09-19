@@ -9,7 +9,7 @@ Created:  2012-01-20
 Modified: 2012-01-20
 */
 
-#include "TrAdaBoost.h"
+#include "SubClassifier.h"
 #include <common/Params.h>
 
 class TwoStageTrAdaBoost: public Classifier {
