@@ -30,6 +30,10 @@ public:
   virtual void save(const std::string &filename) const;
   
   virtual bool load(const std::string &filename);
+  virtual void clearData() {
+    model.clearData();
+    targetData.clearData();
+  }
 
 protected:
   virtual void trainInternal(bool incremental);

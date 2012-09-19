@@ -26,6 +26,7 @@ Modified: 2011-12-28
 #include <learning/TrAdaBoost.h>
 #include <learning/TrBagg.h>
 #include <learning/TwoStageTrAdaBoost.h>
+#include <learning/TwoStageTransfer.h>
 #include <learning/WekaClassifier.h>
 
 ClassifierPtr createClassifier(const Json::Value &options) {
@@ -214,6 +215,20 @@ boost::shared_ptr<TwoStageTrAdaBoost> createTwoStageTrAdaBoost(const std::string
 
 
   boost::shared_ptr<TwoStageTrAdaBoost> ptr(new TwoStageTrAdaBoost(features,caching,baseLearner,baseLearnerOptions,p));
+  if (filename != "")
+    assert(ptr->load(filename));
+  return ptr;
+}
+
+boost::shared_ptr<TwoStageTransfer> createTwoStageTransfer(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options) {
+  ClassifierPtr (*baseLearner)(const std::vector<Feature>&,const Json::Value&) = &createClassifier;
+  Json::Value baseLearnerOptions = options["baseLearner"];
+  Json::Value evalOptions = options["evalOptions"];
+  TwoStageTrAdaBoost::Params baseP;
+  baseP.fromJson(options);
+  TwoStageTransfer::Params p;
+  p.fromJson(options);
+  boost::shared_ptr<TwoStageTransfer> ptr(new TwoStageTransfer(features,caching,baseLearner,baseLearnerOptions,baseLearner,evalOptions,baseP,p));
   if (filename != "")
     assert(ptr->load(filename));
   return ptr;

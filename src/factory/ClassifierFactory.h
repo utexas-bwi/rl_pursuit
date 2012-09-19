@@ -20,6 +20,7 @@ class NaiveBayes;
 class TrAdaBoost;
 class TrBagg;
 class TwoStageTrAdaBoost;
+class TwoStageTransfer;
 class WekaClassifier;
 
 ClassifierPtr createClassifier(const Json::Value &options);
@@ -37,6 +38,7 @@ boost::shared_ptr<WekaClassifier> createWekaClassifier(const std::string &filena
 
 boost::shared_ptr<AdaBoost> createAdaBoost(const std::string &type, const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 boost::shared_ptr<TwoStageTrAdaBoost> createTwoStageTrAdaBoost(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
+boost::shared_ptr<TwoStageTransfer> createTwoStageTransfer(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 boost::shared_ptr<TrBagg> createTrBagg(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
 
 boost::shared_ptr<Committee> createCommittee(const std::string &filename, const std::vector<Feature> &features, bool caching, const Json::Value &options);
