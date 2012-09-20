@@ -152,7 +152,6 @@ std::string TwoStageTransfer::getDataPath(const std::string &student) const {
 }
 
 void TwoStageTransfer::processStudent(unsigned int ind) {
-  std::cout << "proc " << ind << std::endl;
   if ((ind < studentWeights.size()) && (studentWeights[ind] < 1e-10))
     return;
   InstanceSet sourceData(numClasses);
