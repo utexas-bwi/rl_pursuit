@@ -148,6 +148,7 @@ void TwoStageTransfer::processStudent(unsigned int ind) {
   if (ind >= studentWeights.size()) {
     for (unsigned int i = 0; i < sourceData.size(); i++)
       model.addSourceData(sourceData[i]);
+    model.setTrainFinalModel(ind == numWeightsDesired - 1);
     model.train();
     model.clearSourceData();
     studentWeights.push_back(model.getBestSourceInstanceWeight());

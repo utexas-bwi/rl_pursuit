@@ -37,6 +37,9 @@ public:
   virtual bool load(const std::string &filename);
   virtual void clearData();
   void convertModelFromWekaToDT();
+  void setTrainFinalModel(bool b = true) {
+    trainFinalModel = b;
+  }
 
 protected:
   virtual void trainInternal(bool incremental);
@@ -57,6 +60,7 @@ protected:
   InstanceSet fixedData;
   ClassifierPtr model;
   float bestSourceInstanceWeight;
+  bool trainFinalModel;
   Params p;
 };
 

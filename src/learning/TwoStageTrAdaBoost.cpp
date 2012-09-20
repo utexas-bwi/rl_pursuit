@@ -16,9 +16,12 @@ TwoStageTrAdaBoost::TwoStageTrAdaBoost(const std::vector<Feature> &features, boo
   targetData(numClasses),
   fixedData(numClasses),
   bestSourceInstanceWeight(-1),
+  trainFinalModel(true),
   p(p)
 {
   assert(baseLearner);
+  if (p.evaluateSavedBestT)
+    trainFinalModel = false;
 }
 
 void TwoStageTrAdaBoost::addData(const InstancePtr &instance) {
@@ -89,7 +92,7 @@ void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
   // make the real model for the best t
   std::cout << "BEST T: " << bestT << std::endl;
   std::cout << "BEST ERROR: " << bestError << std::endl;
-  if (!p.evaluateSavedBestT) {
+  if (trainFinalModel) {
     reweightData(bestT);
     model = createModel(-1,foldedTargetData);
   }
