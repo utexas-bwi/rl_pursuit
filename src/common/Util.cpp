@@ -175,7 +175,7 @@ void printCommandLineHelpAndExit() {
 }
 
 std::string tempFilename() {
-  char filename[] = "/tme/tmpXXXXXX";
+  char filename[] = "/tmp/tmpXXXXXX";
   int fd = mkstemp(filename);
   if (fd == -1) {
     std::cerr << "Problem generating filename" << std::endl;
