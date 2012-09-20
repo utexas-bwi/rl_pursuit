@@ -16,6 +16,7 @@ def getClassifier(c):
     ['dt-noweka',False,False],
     ['twostagetradaboost',True,False],
     ['twostagetradaboost-partial',True,False],
+    ['twostagetransfer',True,False],
     ['tradaboost',True,False],
     ['trbagg',True,True],
     ['trbagg-partialLoad',True,True],
