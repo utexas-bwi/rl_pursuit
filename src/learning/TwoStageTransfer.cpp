@@ -90,8 +90,11 @@ void TwoStageTransfer::trainInternal(bool ) {
   for(unsigned int ind = 0; ind < numWeightsDesired; ind++)
     processStudent(ind);
   
-  if (orderedStudents.size() == studentWeights.size())
+  if (orderedStudents.size() == studentWeights.size()) {
+    model.setTrainFinalModel(true);
+    model.train();
     model.convertModelFromWekaToDT();
+  }
 }
 
 void TwoStageTransfer::classifyInternal(const InstancePtr &instance, Classification &classification) {
@@ -148,7 +151,7 @@ void TwoStageTransfer::processStudent(unsigned int ind) {
   if (ind >= studentWeights.size()) {
     for (unsigned int i = 0; i < sourceData.size(); i++)
       model.addSourceData(sourceData[i]);
-    model.setTrainFinalModel(ind == numWeightsDesired - 1);
+    model.setTrainFinalModel(false);
     model.train();
     model.clearSourceData();
     studentWeights.push_back(model.getBestSourceInstanceWeight());
