@@ -98,6 +98,8 @@ ClassifierPtr createClassifier(const std::string &filename, const std::string &d
     classifier = createTrBagg(filename,features,caching,options);
   } else if (type == "twostagetradaboost") {
     classifier = createTwoStageTrAdaBoost(filename,features,caching,options);
+  } else if (type == "twostagetransfer") {
+    classifier = createTwoStageTransfer(filename,features,caching,options);
   } else if (type == "weka") {
     classifier = createWekaClassifier(filename,features,caching,options);
   } else if (type == "committee") {

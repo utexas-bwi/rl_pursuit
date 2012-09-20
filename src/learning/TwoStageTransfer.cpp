@@ -72,7 +72,7 @@ bool TwoStageTransfer::load(const std::string &filename) {
     in >> w;
   }
   in.close();
-  std::cout << "Loaded " << orderedStudents.size() << " students and " << studentWeights << " weights" << std::endl;
+  std::cout << "Loaded " << orderedStudents.size() << " students and " << studentWeights.size() << " weights" << std::endl;
   return true;
 }
   
@@ -82,8 +82,9 @@ void TwoStageTransfer::trainInternal(bool ) {
   
   // set the num weights desired
   numWeightsDesired = orderedStudents.size();
-  if ((p.maxNumStudents >= 0) && (p.maxNumStudents > (int)numWeightsDesired))
-    numWeightsDesired = (unsigned int)p.maxNumStudents;
+  unsigned int newNum = studentWeights.size() + p.numStudentsToAdd;
+  if ((p.numStudentsToAdd >= 0) && (newNum < numWeightsDesired))
+    numWeightsDesired = newNum;
   
   // process all of the students
   for(unsigned int ind = 0; ind < numWeightsDesired; ind++)
@@ -95,21 +96,21 @@ void TwoStageTransfer::classifyInternal(const InstancePtr &instance, Classificat
 }
   
 void TwoStageTransfer::determineOrdering(std::vector<std::string> &orderedStudents) {
+  std::cout << "DET ORDERING" << std::endl;
   std::vector<double> orderedEvals;
   std::set<std::string> students;
   getAvailableStudents(p.studentList,students);
   students.erase(p.targetStudent);
    
   BOOST_FOREACH(const std::string &student, students) {
-    evalOptions["filename"] = getEvalPath(student);
     ClassifierPtr sourceClassifier = evalGenerator(features,evalOptions);
+    sourceClassifier->load(getEvalPath(student));
     double fracCorrect;
     double fracMaxCorrect;
     evaluateClassifier(sourceClassifier,fracCorrect,fracMaxCorrect);
     //double &correct = fracCorrect;
     //double &correct = fracMaxCorrect;
     double correct = 2.0 * fracCorrect * fracMaxCorrect / (fracCorrect + fracMaxCorrect);
-    //std::cout << *it << " " << fracCorrect << " " << fracMaxCorrect << std::endl;
     int ind;
     for (ind = 0; ind < (int)orderedEvals.size(); ind++) {
       if (correct > orderedEvals[ind])
@@ -139,7 +140,8 @@ std::string TwoStageTransfer::getDataPath(const std::string &student) const {
 void TwoStageTransfer::processStudent(unsigned int ind) {
   InstanceSet sourceData(numClasses);
   readArff(orderedStudents[ind],sourceData);
-  if (studentWeights.size() > ind) {
+  std::cout << "processStudent " << studentWeights.size() << " " << ind << std::endl;
+  if (studentWeights.size() <= ind) {
     for (unsigned int i = 0; i < sourceData.size(); i++)
       model.addSourceData(sourceData[i]);
     model.train();
@@ -178,6 +180,7 @@ void TwoStageTransfer::evaluateClassifier(ClassifierPtr classifier, double &frac
   
 void TwoStageTransfer::readArff(const std::string &student, InstanceSet &data) const {
   std::string filename = getDataPath(student);
+  std::cout << "READING " << filename << std::endl;
   std::ifstream in(filename.c_str());
   ArffReader arff(in);
   while (!arff.isDone())

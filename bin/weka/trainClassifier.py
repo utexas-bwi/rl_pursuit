@@ -41,16 +41,16 @@ def getSaveFilename(options):
   else:
     return '/dev/null'
 
-def combineConfigs(saveFile,options):
+def combineConfigs(saveFile,options,convertFunction):
   learner = options.classifier[0]
   with open(getConfigFilename(learner),'r') as f:
     content = f.read().strip()
   if learner == 'trbagg-partialLoad':
-    # TODO
     content = content.replace('$(PARTIAL_FILENAME)','data/dt/studentsNew29-unperturbed-transfer/target10000-source50000/weighted/trBagg-%s.weka' % options.student)
   if learner == 'twostagetradaboost-partial':
     content = content.replace('$(BEST_T)',str(options.partialInd))
     content = content.replace('$(EVALUATE_BEST_T)','false' if options.save else 'true')
+  content = convertFunction(content)
   endInd = content.rfind('}')
   if content[endInd-1] == '\n':
     endInd -= 1
@@ -138,6 +138,7 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
       print >>sys.stderr,'Unknown student:',student
       sys.exit(2)
   options.student = student
+  options.studentInd = students.index(student)
   options.otherStudents = list(students)
   options.otherStudents.remove(student)
   # check provided classifiers
@@ -169,6 +170,7 @@ def parseArgs(args,parserOptions=[],numAdditionalArgs=0,additionalArgsString='')
 
   # get the arguments
   options.saveConfigFilename = getConfigFilename('saved/' + options.saveName + '-' + student)
+  options.saveFile = getSaveFilename(options)
 
   return options,args[numExpectedArgs:]
 
@@ -176,10 +178,10 @@ def main(args = sys.argv[1:]):
   options,_ = parseArgs(args)
   return mainOptions(options)
 
-def mainOptions(options):
+def mainOptions(options,convertFunction=lambda x:x):
   try:
-    saveFile = getSaveFilename(options)
-    filename = combineConfigs(saveFile,options)
+    #options.saveFile = getSaveFilename(options)
+    filename = combineConfigs(options.saveFile,options,convertFunction)
     targetData = getFilename(options.targetBase,options.student,TRAIN)
     if (options.numSource == 0) or not(options.useSource):
       sourceData = []
@@ -187,7 +189,7 @@ def mainOptions(options):
       sourceData = [getFilename(options.sourceBase,s,TRAIN) for s in options.otherStudents]
     # run the cmd
     print 'save config will be at',options.saveConfigFilename
-    cmd = ['bin/%s/trainClassifier' % getArch(),filename,saveFile,targetData] + sourceData
+    cmd = ['bin/%s/trainClassifier' % getArch(),filename,options.saveFile,targetData] + sourceData
     if options.fracSourceData is not None:
       cmd += ['--fracSourceData',str(options.fracSourceData)]
     if options.debug:
