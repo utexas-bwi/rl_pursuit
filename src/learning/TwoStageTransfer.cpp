@@ -14,9 +14,6 @@ TwoStageTransfer::TwoStageTransfer(const std::vector<Feature> &features, bool ca
   p(p),
   fullyTrained(false)
 {
-  assert(p.evalClassifierPath != "");
-  assert(p.targetStudent != "");
-  assert(p.sourceDataPath != "");
 }
 
 void TwoStageTransfer::addData(const InstancePtr &instance) {
@@ -79,6 +76,10 @@ bool TwoStageTransfer::load(const std::string &filename) {
   
 void TwoStageTransfer::trainInternal(bool ) {
   assert(!fullyTrained); // because of the conversion of weka to dt
+  // check the necessary parameters
+  assert(p.evalClassifierPath != "");
+  assert(p.targetStudent != "");
+  assert(p.sourceDataPath != "");
 
   if (orderedStudents.size() == 0)
     determineOrdering(orderedStudents);
