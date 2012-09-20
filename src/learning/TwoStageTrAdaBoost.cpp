@@ -193,3 +193,7 @@ void TwoStageTrAdaBoost::clearData() {
   if (model.get() != NULL)
     model->clearData();
 }
+  
+void TwoStageTrAdaBoost::convertModelFromWekaToDT() {
+  convertWekaToDT(model);
+}

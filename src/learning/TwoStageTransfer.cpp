@@ -89,6 +89,9 @@ void TwoStageTransfer::trainInternal(bool ) {
   // process all of the students
   for(unsigned int ind = 0; ind < numWeightsDesired; ind++)
     processStudent(ind);
+  
+  if (orderedStudents.size() == studentWeights.size())
+    model.convertModelFromWekaToDT();
 }
 
 void TwoStageTransfer::classifyInternal(const InstancePtr &instance, Classification &classification) {

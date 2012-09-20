@@ -95,13 +95,17 @@ bool loadSubClassifiers(std::vector<SubClassifier> &classifiers, const std::stri
 }
 
 void convertWekaToDT(SubClassifier &c) {
-  WekaClassifier *temp = dynamic_cast<WekaClassifier*>(c.classifier.get());
+  convertWekaToDT(c.classifier);
+}
+
+void convertWekaToDT(ClassifierPtr &c) {
+  WekaClassifier *temp = dynamic_cast<WekaClassifier*>(c.get());
   if (temp != NULL) {
     std::cout << "converting weka->dt" << std::endl;
     // convert to DT
     std::string filename = tmpnam(NULL);
     temp->saveAsOutput(filename);
-    c.classifier = createDecisionTree(filename,temp->getFeatures(),false,Json::Value());
+    c = createDecisionTree(filename,temp->getFeatures(),false,Json::Value());
     remove(filename.c_str());
   }
 }
