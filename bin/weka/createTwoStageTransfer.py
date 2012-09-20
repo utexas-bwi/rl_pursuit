@@ -5,11 +5,11 @@ from trainClassifier import mainOptions as trainClassifierMain
 from trainClassifier import parseArgs
 
 def main(args=sys.argv[1:]):
+  args = ['twostagetransfer'] + args + ['--no-source']
   if '--monitor' in args:
     args.remove('--monitor')
     return monitorCondor(args)
 
-  args = ['twostagetransfer'] + args + ['--no-source']
   options,_ = parseArgs(args)
 
   if os.path.exists(options.saveFile):
@@ -39,7 +39,7 @@ def monitorCondor(args):
   needToRun = range(numStudents)
   saveFiles = []
   for studentInd in range(numStudents):
-    tempArgs = [str(studentInd)] + args
+    tempArgs = args + [str(studentInd)]
     options,_ = parseArgs(tempArgs)
     saveFiles.append(options.saveFile)
     
