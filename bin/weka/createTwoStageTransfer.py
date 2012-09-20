@@ -44,26 +44,27 @@ def monitorCondor(args):
   numStudents = 29
   jobs = [-1 for i in range(numStudents)]
   unfinished = range(numStudents)
-  needToRun = range(numStudents)
   saveFiles = []
   for studentInd in range(numStudents):
     options,_ = parseArgs(addArgs(args,studentInd))
     saveFiles.append(options.saveFile)
     
   while len(unfinished) > 0:
-    for studentInd in needToRun:
-      jobs[studentInd] = submit([str(studentInd)] + args)
     needToRun = []
-    # wait on jobs
-    time.sleep(20)
+    # check what's running and still needs to run
     p = subprocess.Popen(['condor_q','sbarrett'],stdout=subprocess.PIPE)
     out,_ = p.communicate()
-    for studentInd in unfinished:
+    for studentInd in list(unfinished):
       if out.find(str(jobs[studentInd])) < 0:
         if os.path.exists(saveFiles[studentInd]):
           unfinished.remove(studentInd)
         else:
           needToRun.append(studentInd)
+    # submit new jobs as needed
+    for studentInd in needToRun:
+      jobs[studentInd] = submit([str(studentInd)] + args)
+    # good-night sweet prince
+    time.sleep(20)
 
 def submit(args):
   options,_ = parseArgs(addArgs(args))
