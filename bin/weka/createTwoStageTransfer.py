@@ -91,7 +91,10 @@ def submit(args,suffix):
   with open(orig,'r') as f:
     contents = f.read()
   contents = contents.replace('$(Process)','%i%s' % (options.studentInd,suffix))
-  contents = contents.replace('$(ARGS)',' '.join(args))
+  argStr = ' '.join(args)
+  if suffix.strip() != '':
+    argStr += ' --suffix %s' % suffix
+  contents = contents.replace('$(ARGS)',argStr)
   with open(path,'w') as f:
     f.write(contents)
 
