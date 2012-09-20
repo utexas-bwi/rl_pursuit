@@ -4,6 +4,7 @@
 #include "WekaClassifier.h"
 #include "DecisionTree.h"
 #include <factory/ClassifierFactory.h>
+#include <common/Util.h>
 
 void saveSubClassifiers(const std::vector<SubClassifier> &classifiers, const std::string &filename, const std::vector<std::string> &subFilenames) {
   std::ofstream out(filename);
@@ -103,7 +104,7 @@ void convertWekaToDT(ClassifierPtr &c) {
   if (temp != NULL) {
     std::cout << "converting weka->dt" << std::endl;
     // convert to DT
-    std::string filename = tmpnam(NULL);
+    std::string filename = tempFilename();
     temp->saveAsOutput(filename);
     c = createDecisionTree(filename,temp->getFeatures(),false,Json::Value());
     remove(filename.c_str());

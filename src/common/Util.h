@@ -88,4 +88,6 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &vect) {
 void parseCommandLineArgs(int *argc, char ***argv, const std::string &usage, int minArgs=-1, int maxArgs=-1);
 void printCommandLineHelpAndExit();
 
+std::string tempFilename();
+
 #endif /* end of include guard: UTIL_T1FR2WSR */

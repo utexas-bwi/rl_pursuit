@@ -173,3 +173,14 @@ void printCommandLineHelpAndExit() {
   }
   exit(1);
 }
+
+std::string tempFilename() {
+  char filename[] = "/tme/tmpXXXXXX";
+  int fd = mkstemp(filename);
+  if (fd == -1) {
+    std::cerr << "Problem generating filename" << std::endl;
+    exit(19);
+  }
+  close(fd);
+  return std::string(filename);
+}

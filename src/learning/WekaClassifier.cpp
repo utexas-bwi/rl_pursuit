@@ -13,6 +13,7 @@ Modified: 2011-12-26
 #include <unistd.h>
 #include <sys/wait.h>
 #include <boost/lexical_cast.hpp>
+#include <common/Util.h>
 
 const std::string WekaClassifier::WEKA_CMD = std::string("java -DWEKA_HOME=./bin/weka/wekafiles -Djava.library.path=bin/") + COMPILE_ARCH + " -Xmx4G -cp bin/weka:bin/weka/weka.jar WekaBridge";
 int WekaClassifier::classifierCount = 0;
@@ -87,7 +88,7 @@ void WekaClassifier::save(const std::string &filename) const {
 
 void WekaClassifier::saveAsOutput(const std::string &filename) const {
   // convert to DT
-  std::string tempfile = tmpnam(NULL);
+  std::string tempfile = tempFilename();
   outputDescriptionToFile(tempfile);
   int numInitialLinesToRemove = 3;
   std::ifstream in(tempfile.c_str());
