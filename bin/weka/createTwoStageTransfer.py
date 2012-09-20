@@ -3,31 +3,48 @@
 import sys, os, subprocess, re, time
 from trainClassifier import mainOptions as trainClassifierMain
 from trainClassifier import parseArgs
+from common import getUniqueStudents
 
-def addArgs(args,studentInd = None):
-  newArgs = ['twostagetransfer']
+def addArgs(args,suffix='',studentInd = None):
+  newArgs = ['twostagetransfer'+suffix]
   if studentInd is not None:
     newArgs += [str(studentInd)]
   newArgs += args + ['--no-source']
   return newArgs
-  
+ 
+def addSuffix(filename,suffix='-ordering'):
+  base,ext = os.path.splitext(filename)
+  return base + suffix + ext
 
 def main(args=sys.argv[1:]):
+  if '--suffix' in args:
+    ind = args.index('--suffix')
+    suffix = args[ind+1]
+    del args[ind]
+    del args[ind]
+  else:
+    suffix = ''
+
   if '--monitor' in args:
     args.remove('--monitor')
-    return monitorCondor(args)
+    return monitorCondor(args,suffix)
 
-  args = addArgs(args)
+  optionsNoSuffix,_ = parseArgs(addArgs(args))
+
+  args = addArgs(args,suffix)
   options,_ = parseArgs(args)
 
   if os.path.exists(options.saveFile):
     return
 
+  if not(os.path.exists(addSuffix(options.saveFile))) and os.path.exists(addSuffix(optionsNoSuffix.saveFile)):
+    import shutil
+    shutil.copy(addSuffix(optionsNoSuffix.saveFile),addSuffix(options.saveFile))
+
   def repl(x):
     numStudentsToAdd = 1
     filename = ''
-    base,ext = os.path.splitext(options.saveFile)
-    saveFile = base + '-ordering' + ext
+    saveFile = addSuffix(options.saveFile)
     if os.path.exists(saveFile):
       filename = options.saveFile
 
@@ -40,13 +57,13 @@ def main(args=sys.argv[1:]):
 
   trainClassifierMain(options,repl)
 
-def monitorCondor(args):
-  numStudents = 29
+def monitorCondor(args,suffix):
+  numStudents = len(getUniqueStudents())
   jobs = [-1 for i in range(numStudents)]
   unfinished = range(numStudents)
   saveFiles = []
   for studentInd in range(numStudents):
-    options,_ = parseArgs(addArgs(args,studentInd))
+    options,_ = parseArgs(addArgs(args,suffix,studentInd))
     saveFiles.append(options.saveFile)
     
   while len(unfinished) > 0:
@@ -62,12 +79,12 @@ def monitorCondor(args):
           needToRun.append(studentInd)
     # submit new jobs as needed
     for studentInd in needToRun:
-      jobs[studentInd] = submit([str(studentInd)] + args)
+      jobs[studentInd] = submit([str(studentInd)] + args,suffix)
     # good-night sweet prince
     time.sleep(20)
 
-def submit(args):
-  options,_ = parseArgs(addArgs(args))
+def submit(args,suffix):
+  options,_ = parseArgs(addArgs(args,suffix))
   base = 'condor/createTwoStageTransfer'
   orig = os.path.join(base,'base.condor')
   path = os.path.join(base,'jobs/%i.condor' % options.studentInd)

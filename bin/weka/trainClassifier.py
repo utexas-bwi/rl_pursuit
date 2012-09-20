@@ -17,6 +17,7 @@ def getClassifier(c):
     ['twostagetradaboost',True,False],
     ['twostagetradaboost-partial',True,False],
     ['twostagetransfer',True,False],
+    ['twostagetransfer-10',True,False],
     ['tradaboost',True,False],
     ['trbagg',True,True],
     ['trbagg-partialLoad',True,True],
