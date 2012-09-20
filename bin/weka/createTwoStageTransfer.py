@@ -4,12 +4,20 @@ import sys, os, subprocess, re, time
 from trainClassifier import mainOptions as trainClassifierMain
 from trainClassifier import parseArgs
 
+def addArgs(args,studentInd = None):
+  newArgs = ['twostagetransfer']
+  if studentInd is not None:
+    newArgs += [str(studentInd)]
+  newArgs += args + ['--no-source']
+  return newArgs
+  
+
 def main(args=sys.argv[1:]):
-  args = ['twostagetransfer'] + args + ['--no-source']
   if '--monitor' in args:
     args.remove('--monitor')
     return monitorCondor(args)
 
+  args = addArgs(args)
   options,_ = parseArgs(args)
 
   if os.path.exists(options.saveFile):
@@ -39,17 +47,16 @@ def monitorCondor(args):
   needToRun = range(numStudents)
   saveFiles = []
   for studentInd in range(numStudents):
-    tempArgs = args + [str(studentInd)]
-    options,_ = parseArgs(tempArgs)
+    options,_ = parseArgs(addArgs(args,studentInd))
     saveFiles.append(options.saveFile)
     
   while len(unfinished) > 0:
     for studentInd in needToRun:
-      jobs[studentInd] = submit(tempArgs)
+      jobs[studentInd] = submit([str(studentInd)] + args)
     needToRun = []
     # wait on jobs
     time.sleep(20)
-    p = subprocess.Popen(['condor_q','sbarrett'])
+    p = subprocess.Popen(['condor_q','sbarrett'],stdout=subprocess.PIPE)
     out,_ = p.communicate()
     for studentInd in unfinished:
       if out.find(str(jobs[studentInd])) < 0:
@@ -59,7 +66,7 @@ def monitorCondor(args):
           needToRun.append(studentInd)
 
 def submit(args):
-  options,_ = parseArgs(args)
+  options,_ = parseArgs(addArgs(args))
   base = 'condor/createTwoStageTransfer'
   orig = os.path.join(base,'base.condor')
   path = os.path.join(base,'jobs/%i.condor' % options.studentInd)
@@ -73,7 +80,7 @@ def submit(args):
   print 'SUBMITTING ',options.studentInd
   p = subprocess.Popen(['condor_submit',path],stdout=subprocess.PIPE)
   out,_ = p.communicate()
-  jobNum = int(re.findall('cluster (\d+)')[0])
+  jobNum = int(re.findall('cluster (\d+)',out)[0])
   return jobNum
 
 if __name__ == '__main__':
