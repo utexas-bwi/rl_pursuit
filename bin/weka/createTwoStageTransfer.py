@@ -87,10 +87,10 @@ def submit(args,suffix):
   options,_ = parseArgs(addArgs(args,suffix))
   base = 'condor/createTwoStageTransfer'
   orig = os.path.join(base,'base.condor')
-  path = os.path.join(base,'jobs/%i.condor' % options.studentInd)
+  path = os.path.join(base,'jobs/%i%s.condor' % (options.studentInd,suffix))
   with open(orig,'r') as f:
     contents = f.read()
-  contents = contents.replace('$(Process)',str(options.studentInd))
+  contents = contents.replace('$(Process)','%i%s' % (options.studentInd,suffix))
   contents = contents.replace('$(ARGS)',' '.join(args))
   with open(path,'w') as f:
     f.write(contents)
