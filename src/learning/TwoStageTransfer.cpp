@@ -11,7 +11,8 @@ TwoStageTransfer::TwoStageTransfer(const std::vector<Feature> &features, bool ca
   evalOptions(evalOptions),
   model(features,caching,baseLearner,baseLearnerOptions,baseP),
   targetData(numClasses),
-  p(p)
+  p(p),
+  fullyTrained(false)
 {
   assert(p.evalClassifierPath != "");
   assert(p.targetStudent != "");
@@ -44,8 +45,8 @@ void TwoStageTransfer::save(const std::string &filename) const {
     out << weight << std::endl;
   out.close();
   
-  // only save the model if we've considered all the weights
-  if (orderedStudents.size() == studentWeights.size())
+  // only save the model if it's fully trained
+  if (fullyTrained)
     model.save(filename);
 }
 
@@ -77,23 +78,31 @@ bool TwoStageTransfer::load(const std::string &filename) {
 }
   
 void TwoStageTransfer::trainInternal(bool ) {
+  assert(!fullyTrained); // because of the conversion of weka to dt
+
   if (orderedStudents.size() == 0)
     determineOrdering(orderedStudents);
   
   // set the num weights desired
   numWeightsDesired = orderedStudents.size();
+  unsigned int maxNumStudents = (p.maxNumStudents < 0) ? orderedStudents.size() : p.maxNumStudents;
   unsigned int newNum = studentWeights.size() + p.numStudentsToAdd;
   if ((p.numStudentsToAdd >= 0) && (newNum < numWeightsDesired))
     numWeightsDesired = newNum;
+  if (maxNumStudents < numWeightsDesired)
+    numWeightsDesired = maxNumStudents;
+  if (maxNumStudents < studentWeights.size())
+    studentWeights.resize(maxNumStudents);
   
   // process all of the students
   for(unsigned int ind = 0; ind < numWeightsDesired; ind++)
     processStudent(ind);
   
-  if (orderedStudents.size() == studentWeights.size()) {
+  if (studentWeights.size() == maxNumStudents) {
     model.setTrainFinalModel(true);
     model.train();
     model.convertModelFromWekaToDT();
+    fullyTrained = true;
   }
 }
 
@@ -102,7 +111,6 @@ void TwoStageTransfer::classifyInternal(const InstancePtr &instance, Classificat
 }
   
 void TwoStageTransfer::determineOrdering(std::vector<std::string> &orderedStudents) {
-  std::cout << "DET ORDERING" << std::endl;
   std::vector<double> orderedEvals;
   std::set<std::string> students;
   getAvailableStudents(p.studentList,students);
@@ -144,6 +152,7 @@ std::string TwoStageTransfer::getDataPath(const std::string &student) const {
 }
 
 void TwoStageTransfer::processStudent(unsigned int ind) {
+  std::cout << "proc " << ind << std::endl;
   if ((ind < studentWeights.size()) && (studentWeights[ind] < 1e-10))
     return;
   InstanceSet sourceData(numClasses);

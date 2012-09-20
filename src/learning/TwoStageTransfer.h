@@ -14,7 +14,8 @@ public:
   _(std::string,sourceDataPath,sourceDataPath,"") \
   _(std::string,studentList,studentList,"data/newStudents29.txt")\
   _(std::string,targetStudent,targetStudent,"") \
-  _(int,numStudentsToAdd,numStudentsToAdd,-1)
+  _(int,numStudentsToAdd,numStudentsToAdd,-1) \
+  _(int,maxNumStudents,maxNumStudents,-1)
 
   Params_STRUCT(PARAMS)
 #undef PARAMS
@@ -56,6 +57,7 @@ protected:
   std::vector<std::string> orderedStudents;
   std::vector<float> studentWeights;
   unsigned int numWeightsDesired;
+  bool fullyTrained;
 };
 
 #endif /* end of include guard: TWOSTAGETRANSFER_JC2VDL2Z */
