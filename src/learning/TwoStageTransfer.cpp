@@ -138,16 +138,20 @@ std::string TwoStageTransfer::getDataPath(const std::string &student) const {
 }
 
 void TwoStageTransfer::processStudent(unsigned int ind) {
+  if ((ind < studentWeights.size()) && (studentWeights[ind] < 1e-10))
+    return;
   InstanceSet sourceData(numClasses);
   readArff(orderedStudents[ind],sourceData);
-  std::cout << "processStudent " << studentWeights.size() << " " << ind << std::endl;
-  if (studentWeights.size() <= ind) {
+  if (ind >= studentWeights.size()) {
     for (unsigned int i = 0; i < sourceData.size(); i++)
       model.addSourceData(sourceData[i]);
     model.train();
     model.clearSourceData();
     studentWeights.push_back(model.getBestSourceInstanceWeight());
   }
+  if (studentWeights[ind] < 1e-10)
+    return;
+
   // add the data as fixed
   for (unsigned int i = 0; i < sourceData.size(); i++) {
     sourceData[i]->weight = studentWeights[ind];
