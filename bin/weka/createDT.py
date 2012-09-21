@@ -97,8 +97,15 @@ def main(inFile,base,name,stayWeight=None,treeOptions=[],useWeka=False,numInstan
   tmpData = makeTemp('.arff')
   removeFiles = [tmpData]
   try:
-    print 'Removing trial and step features'
-    removeTrialStep(inFile,tmpData,numInstances)
+    with open(inFile,'r') as f:
+      lines = [f.readline() for i in range(5)]
+    content = ' '.join(lines)
+    if 'Trial' not in content:
+      removeFiles.remove(tmpData)
+      tmpData = inFile
+    else:
+      print 'Removing trial and step features'
+      removeTrialStep(inFile,tmpData,numInstances)
     if randomTree:
       tmpDataSampled = makeTemp('-sampled.arff')
       removeFiles.append(tmpDataSampled)
