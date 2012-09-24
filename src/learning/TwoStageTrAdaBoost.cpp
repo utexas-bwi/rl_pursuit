@@ -92,6 +92,8 @@ void TwoStageTrAdaBoost::trainInternal(bool /*incremental*/) {
   // make the real model for the best t
   std::cout << "BEST T: " << bestT << std::endl;
   std::cout << "BEST ERROR: " << bestError << std::endl;
+  float temp;
+  calculateWeights(bestT,temp,bestSourceInstanceWeight);
   if (trainFinalModel) {
     reweightData(bestT);
     model = createModel(-1,foldedTargetData);
@@ -114,15 +116,23 @@ void TwoStageTrAdaBoost::classifyInternal(const InstancePtr &instance, Classific
   model->classify(instance,classification);
 }
 
-void TwoStageTrAdaBoost::reweightData(unsigned int t) {
+void TwoStageTrAdaBoost::calculateWeights(unsigned int t, float &targetWeight, float &sourceWeight) {
   float n = sourceData.size();
   float m = targetData.size();// + fixedData.weight;
   float fracTargetWeight = m / (n + m) + (t / ((float)p.maxBoostingIterations - 1.0)) * (1 - m / (n + m));
   float fracSourceWeight = 1 - fracTargetWeight;
   // per instance
   float totalWeight = m / fracTargetWeight;
-  float targetWeight = fracTargetWeight * totalWeight / m;
-  float sourceWeight = (fracSourceWeight * totalWeight) / n;
+  targetWeight = fracTargetWeight * totalWeight / m;
+  sourceWeight = (fracSourceWeight * totalWeight) / n;
+}
+
+void TwoStageTrAdaBoost::reweightData(unsigned int t) {
+  float targetWeight;
+  float sourceWeight;
+  calculateWeights(t,targetWeight,sourceWeight);
+  float n = sourceData.size();
+  float m = targetData.size();// + fixedData.weight;
   //std::cout << "TARGET WEIGHT: " << targetWeight << "  SOURCE WEIGHT: " << sourceWeight << std::endl;
   std::cout << "totalTarget: " << m * targetWeight << "  totalSource: " << n * sourceWeight << " totalFixed: " << fixedData.weight << std::endl;
   for (unsigned int i = 0; i < sourceData.size(); i++)
@@ -135,7 +145,7 @@ void TwoStageTrAdaBoost::reweightData(unsigned int t) {
   //for (unsigned int i = 0; i < targetData.size(); i++)
     //targetData[i]->weight = targetWeight;
   //targetData.weight = m *  targetWeight;
-  bestSourceInstanceWeight = sourceWeight;
+  //bestSourceInstanceWeight = sourceWeight;
 }
 
 double TwoStageTrAdaBoost::calcError(ClassifierPtr newModel, InstanceSet &data) {
@@ -163,14 +173,14 @@ ClassifierPtr TwoStageTrAdaBoost::createModel(int fold, std::vector<InstanceSet>
     for (unsigned int i = 0; i < sourceData.size(); i++)
       newModel->addSourceData(sourceData[i]);
   }
+  for (unsigned int i = 0; i < fixedData.size(); i++)
+    newModel->addSourceData(fixedData[i]);
   for (unsigned int i = 0; i < p.numFolds; i++) {
     if ((int)i == fold)
       continue;
     for (unsigned int j = 0; j < folds[i].size(); j++)
       newModel->addData(folds[i][j]);
   }
-  for (unsigned int i = 0; i < fixedData.size(); i++)
-    newModel->addSourceData(fixedData[i]);
   newModel->train(false);
   return newModel;
 }

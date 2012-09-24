@@ -44,6 +44,7 @@ public:
 protected:
   virtual void trainInternal(bool incremental);
   virtual void classifyInternal(const InstancePtr &instance, Classification &classification);
+  virtual void calculateWeights(unsigned int t, float &targetWeight, float &sourceWeight);
   virtual void reweightData(unsigned int t);
   virtual double calcError(ClassifierPtr newModel, InstanceSet &data);
 

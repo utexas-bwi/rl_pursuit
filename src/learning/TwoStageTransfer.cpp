@@ -153,6 +153,7 @@ std::string TwoStageTransfer::getDataPath(const std::string &student) const {
 }
 
 void TwoStageTransfer::processStudent(unsigned int ind) {
+  std::cout << "processStudent " << ind << std::endl;
   if ((ind < studentWeights.size()) && (studentWeights[ind] < 1e-10))
     return;
   InstanceSet sourceData(numClasses);
@@ -165,9 +166,10 @@ void TwoStageTransfer::processStudent(unsigned int ind) {
     model.clearSourceData();
     studentWeights.push_back(model.getBestSourceInstanceWeight());
   }
+  std::cout << "studentWeights[" << ind << "] " << studentWeights[ind] << std::endl;
   if (studentWeights[ind] < 1e-10)
     return;
-
+  std::cout << "adding fixed data" << std::endl;
   // add the data as fixed
   for (unsigned int i = 0; i < sourceData.size(); i++) {
     sourceData[i]->weight = studentWeights[ind];
