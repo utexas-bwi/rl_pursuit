@@ -50,6 +50,7 @@ private:
 private:
   pid_t pid;
   static const std::string WEKA_CMD;
+  static const std::string ARCH_DEP_CMD;
   
   std::string memSegName;
   boost::shared_ptr<Communicator> comm;

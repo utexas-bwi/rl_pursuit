@@ -15,7 +15,15 @@ Modified: 2011-12-26
 #include <boost/lexical_cast.hpp>
 #include <common/Util.h>
 
-const std::string WekaClassifier::WEKA_CMD = std::string("java -DWEKA_HOME=./bin/weka/wekafiles -Djava.library.path=bin/") + COMPILE_ARCH + " -Xmx4G -cp bin/weka:bin/weka/weka.jar WekaBridge";
+#if COMPILE_ARCH == 64
+const std::string WekaClassifier::ARCH_DEP_CMD = "64 -Xmx4G";
+#elif COMPILE_ARCH == 32
+const std::string WekaClassifier::ARCH_DEP_CMD = "32 -Xmx2G";
+#else
+#error "COMPILE_ARCH must either be 64 or 32"
+#endif
+
+const std::string WekaClassifier::WEKA_CMD = std::string("java -DWEKA_HOME=./bin/weka/wekafiles -Djava.library.path=bin/") + ARCH_DEP_CMD + " -cp bin/weka:bin/weka/weka.jar WekaBridge";
 int WekaClassifier::classifierCount = 0;
 
 WekaClassifier::WekaClassifier(const std::vector<Feature> &features, bool caching, const std::string &opts) :
