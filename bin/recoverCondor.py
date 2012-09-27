@@ -41,7 +41,7 @@ def main(directory,numJobs,cluster):
       continue
     jobsToRun.append(i)
   
-  print 'Want to run jobs:',
+  print 'Want to run jobs: (%i)' % len(jobsToRun),
   for job in jobsToRun:
     print job,
   print ''
