@@ -3,7 +3,7 @@
 # NEW THOUGHTS: USE THE PDF BACKEND, then use "pdftops -eps filename.pdf" to convert it to an eps - this seems to work better right now - 8/23/12
 # 9/28/12 - USE PDF backend, reinstall the normal version of xpdf, via
 #  sudo apt-get install libpoppler-glib6 libpoppler-qt4-3 libpoppler13 poppler-utils python-poppler libpoppler-glib4 xpdf --reinstall
-# THEN, change the backend to use thicker lines, hack 
+# THEN, change the backend to use thicker lines, hack /usr/lib/pymodules/python2.7/matplotlib/backends/backend_pdf.py
 #   change line ~1065 from "self.output(0.1,Op.setlinewidth)" to "self.output(1.0,Op.setlinewidth)"
 
 # OLD THOUGHTS:
