@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 
 # NEW THOUGHTS: USE THE PDF BACKEND, then use "pdftops -eps filename.pdf" to convert it to an eps - this seems to work better right now - 8/23/12
+# 9/28/12 - USE PDF backend, reinstall the normal version of xpdf, via
+#  sudo apt-get install libpoppler-glib6 libpoppler-qt4-3 libpoppler13 poppler-utils python-poppler libpoppler-glib4 xpdf --reinstall
+# THEN, change the backend to use thicker lines, hack 
+#   change line ~1065 from "self.output(0.1,Op.setlinewidth)" to "self.output(1.0,Op.setlinewidth)"
 
+# OLD THOUGHTS:
 # NOTE: for the PS backend to work correctly, you may need to install a better version of xpdf (the one in ubuntu 11.10 seems to suck), try this: http://ctan.math.utah.edu/ctan/tex-archive/support/xpdf/xpdfbin-linux-3.03.tar.gz
 # NOTE: for better hatching, hack /usr/lib/pymodules/python2.7/matplotlib/backends/backend_ps.py
 #  change line: "0 setlinewidth" to "1 setlinewidth"
