@@ -54,28 +54,40 @@ def getAxisBounds(values,errors,yMinFixed,xOffset):
     yMin = yMinFixed
   return [xMin,xMax,yMin,yMax]
 
-
-def makeBarGraph(values,options):
-
+def setParams(options):
   fontSize = options.fontSize
   tickSize = fontSize
 
   params = {'backend': 'PS','axes.labelsize': fontSize,'text.fontsize': fontSize,'legend.fontsize': fontSize,'xtick.labelsize': tickSize,'ytick.labelsize': tickSize,'text.usetex': True, 'ps.usedistiller': 'xpdf'}
   plt.rcParams.update(params)
+
+def makeLegendOnly(options,filename,lines):
+  setParams(options)
+  plt.figure()
+  plt.axis('off')
+  plt.legend(lines,options.labels)
+
+  if filename is None:
+    plt.show()
+  else:
+    plt.savefig(filename,format='pdf',bbox_inches='tight',pad_inches=0.1)
+
+def makeBarGraph(values,options):
+  setParams(options)
   xOffset = -0.4
 
   plt.figure()
   plt.xticks(options.xtickLocs,options.xtickLabels)
   bounds = getAxisBounds(values,options.errors,options.yMinFixed,xOffset)
   plt.axis(bounds)
+  lines = []
   for x,v in enumerate(values):
-    if options.styleInds is None:
-      styleInd = x
-    else:
-      styleInd = options.styleInds[x]
-    plt.bar(x+xOffset,v,label=options.labels[x],color=options.colors[styleInd],hatch=options.styles[styleInd],yerr=options.errors[x],ecolor='black')
+    styleInd = options.styleInds[x]
+    line = plt.bar(x+xOffset,v,label=options.labels[x],color=options.colors[styleInd],hatch=options.styles[styleInd],yerr=options.errors[x],ecolor='black')
+    lines.append(line)
   if options.legendLoc is not None:
     plt.legend(loc=options.legendLoc)
+
   
   plt.ylabel(options.ylabel)
   plt.xlabel(options.xlabel)
@@ -85,6 +97,7 @@ def makeBarGraph(values,options):
     plt.show()
   else:
     plt.savefig(options.filename,format='pdf',bbox_inches='tight',pad_inches=0.1)
+  return lines
 
 def readFile(filename):
   data = numpy.loadtxt(filename,dtype=float,delimiter=',')
@@ -103,7 +116,7 @@ def main(filenames,options):
     bars.append(vals.mean())
     if options.errors is not None:
       options.errors.append(numpy.std(vals) / numpy.sqrt(len(vals)))
-  makeBarGraph(bars,options)
+  return makeBarGraph(bars,options)
 
 def getMainOpts(**kwargs):
   defaults = {
@@ -124,6 +137,8 @@ def getMainOpts(**kwargs):
   }
   options = Options()
   parseOptions(options,defaults,kwargs,'Main')
+  if options.styleInds is None:
+    options.styleInds = range(10)
   return options
 
 if __name__ == '__main__':
