@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>rl_pursuit</name>
+  <version>0.0.1</version>
+  <description>Samuel Barrett's RL code</description>
+
+  <license>BSD</license>
+
+  <author email="thesambarrett@gmail.com">Samuel Barrett</author>
+  <maintainer email="piyushk@gmail.com">Piyush Khandelwal</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
+
