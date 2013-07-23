@@ -14,8 +14,8 @@
 #include <controller/PredatorGreedyProbabilistic.h>
 #include <controller/PredatorMCTS.h>
 #include <controller/PredatorProbabilisticDestinations.h>
-#include <controller/PredatorStudentCpp.h>
-#include <controller/PredatorStudentPython.h>
+// #include <controller/PredatorStudentCpp.h>
+// #include <controller/PredatorStudentPython.h>
 #include <controller/PredatorSurround.h>
 #include <controller/PredatorSurroundWithPenalties.h>
 #include <controller/PredatorTeammateAware.h>
@@ -155,11 +155,11 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
   else if (NAME_IN_SET("dummy")) {
     Action::Type action = (Action::Type)options.get("action",Action::NOOP).asInt();
     return ptr(new AgentDummy(rng,dims,action));
-  } else if (NAME_IN_SET("perturb","perturbation")) {
-    AgentPerturbation::Perturbation perturbation = getPerturbation(trialNum,predatorInd,options);
-    std::string baseAgentName = options.get("base","").asString();
-    ptr origAgent = createAgent(rng,dims,baseAgentName,trialNum,predatorInd,options["baseOptions"],rootOptions,baseAgent);
-    return ptr(new AgentPerturbation(rng,dims,origAgent,perturbation));
+  /* } else if (NAME_IN_SET("perturb","perturbation")) { */
+    // AgentPerturbation::Perturbation perturbation = getPerturbation(trialNum,predatorInd,options);
+    // std::string baseAgentName = options.get("base","").asString();
+    // ptr origAgent = createAgent(rng,dims,baseAgentName,trialNum,predatorInd,options["baseOptions"],rootOptions,baseAgent);
+    // return ptr(new AgentPerturbation(rng,dims,origAgent,perturbation));
   } else if (NAME_IN_SET("mixed")) {
     Json::Value types = options["types"];
     std::string typeName;
@@ -200,7 +200,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
     classifier->setRNG(rng);
 
     return ptr(new PredatorClassifier(rng,dims,classifier,filename,trainingPeriod,trainIncremental));
-  } else if (NAME_IN_SET("student")) {
+/*  } else if (NAME_IN_SET("student")) {
     std::string student = getStudentForTrial(trialNum,options);
     if ((predatorInd < 0) || (predatorInd >= 4)) {
       std::cerr << "createAgent: ERROR: bad predator ind specified for student: " << student << std::endl;
@@ -210,6 +210,7 @@ boost::shared_ptr<Agent> createAgent(boost::shared_ptr<RNG> rng, const Point2D &
       return ptr(new PredatorStudentCpp(rng,dims,student,predatorInd));
     else
       return ptr(new PredatorStudentPython(rng,dims,student,predatorInd));
+*/
   } else if (NAME_IN_SET("mcts","uct")) {
     Json::Value plannerOptions = rootOptions["planner"];
     // process the depth if necessary

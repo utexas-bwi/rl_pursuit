@@ -27,11 +27,6 @@ TEMPLATE_TARGETS := $(filter-out weka, $(TARGETS))
 MODULES := common controller factory learning model planning
 SOURCES := $(wildcard $(patsubst %, $(SOURCE_DIR)/%/*.cpp, $(MODULES)))
 SOURCES := $(filter-out $(SOURCE_DIR)/learning/WekaBridge.cpp,$(SOURCES)) # don't compile weka bridge, it's an abomination and will be handled separately
-SOURCE_STUDENTS := $(wildcard $(SOURCE_DIR)/studentAgents/agents/*/Predator.cpp)
-SOURCE_STUDENTS += $(wildcard $(SOURCE_DIR)/studentAgents/agentsNew/*/cppPredator/MyPredator.cpp)
-SOURCES += $(SOURCE_STUDENTS)
-# objects
-OBJECTS_STUDENT := $(patsubst $(SOURCE_DIR)/%, $(BUILD_DIR)/%, $(SOURCE_STUDENTS:.cpp=.o))
 # flags
 FLAGS_NO_STD = -W -Wall -Werror -pedantic-errors -O3 -I$(SOURCE_DIR) -I$(INCLUDE_DIR) -I/usr/include/python$(PYTHON_VERSION)
 FLAGS = $(FLAGS_NO_STD) -std=c++0x
@@ -102,8 +97,6 @@ endif
 endif
 endif
 
-# change the flags for the students
-$(OBJECTS_STUDENT) : FLAGS = $(STUDENT_FLAGS)
 # compile the objects
 $(OBJECTS_ALL):
 	@mkdir -p $(dir $@)
