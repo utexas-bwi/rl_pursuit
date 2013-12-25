@@ -6,11 +6,11 @@ Created:  2011-10-18
 Modified: 2011-10-18
 */
 
-#include <gtest/gtest.h>
-#include <controller/ModelUpdaterBayes.h>
+#include <rl_pursuit/gtest/gtest.h>
+#include <rl_pursuit/controller/ModelUpdaterBayes.h>
 #include "AgentDummyTest.h"
-#include <factory/PlanningFactory.h>
-#include <factory/WorldFactory.h>
+#include <rl_pursuit/factory/PlanningFactory.h>
+#include <rl_pursuit/factory/WorldFactory.h>
 
 class ModelUpdaterBayesTest: public ::testing::Test {
 public:

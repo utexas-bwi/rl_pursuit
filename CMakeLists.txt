@@ -26,12 +26,12 @@ link_directories(
 )
 
 file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
-  src/common/*.cpp
-  src/controller/*.cpp
-  src/factory/*.cpp
-  src/learning/*.cpp
-  src/model/*.cpp
-  src/planning/*.cpp
+  src/rl_pursuit/common/*.cpp
+  #src/rl_pursuit/controller/*.cpp #piyushk: commented out because of ModelUpdator duplication
+  #src/rl_pursuit/factory/*.cpp
+  #src/rl_pursuit/learning/*.cpp
+  #src/rl_pursuit/model/*.cpp
+  #src/rl_pursuit/planning/*.cpp
 )
 
 ## The main rl_pursuit library
@@ -45,7 +45,7 @@ target_link_libraries(rl_pursuit
 )
 
 ## Build all the test executables
-foreach(exec main runClassifier trainClassifier)
-  add_executable(${exec} src/main/${exec}.cpp)
-  target_link_libraries(${exec} rl_pursuit)
-endforeach(exec)
+## foreach(exec main runClassifier trainClassifier)
+##   add_executable(${exec} src/main/${exec}.cpp)
+##   target_link_libraries(${exec} rl_pursuit)
+## endforeach(exec)

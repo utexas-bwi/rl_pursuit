@@ -6,9 +6,9 @@ Created:  2011-08-29
 Modified: 2011-08-29
 */
 
-#include <gtest/gtest.h>
-#include <model/WorldModel.h>
-#include <factory/WorldFactory.h>
+#include <rl_pursuit/gtest/gtest.h>
+#include <rl_pursuit/model/WorldModel.h>
+#include <rl_pursuit/factory/WorldFactory.h>
 
 class WorldModelTest: public ::testing::Test {
 public:

@@ -11,10 +11,10 @@ Modified: 2012-02-02
 #include <fstream>
 #include <iomanip>
 #include <boost/lexical_cast.hpp>
-#include <json/json.h>
-#include <factory/WorldFactory.h>
-#include <common/Util.h>
-#include <learning/OutputDT.h>
+#include <rl_pursuit/json/json.h>
+#include <rl_pursuit/factory/WorldFactory.h>
+#include <rl_pursuit/common/Util.h>
+#include <rl_pursuit/learning/OutputDT.h>
 
 void displaySummary(double timePassed, const std::vector<std::vector<unsigned int> > &numSteps);
 void displayStepsPerTrial(bool displayStepsPerEpisodeQ, const std::vector<unsigned int> &numStepsPerTrial);

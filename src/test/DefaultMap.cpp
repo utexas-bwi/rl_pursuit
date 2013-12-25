@@ -6,8 +6,8 @@ Created:  2011-08-29
 Modified: 2011-08-29
 */
 
-#include <gtest/gtest.h>
-#include <common/DefaultMap.h>
+#include <rl_pursuit/gtest/gtest.h>
+#include <rl_pursuit/common/DefaultMap.h>
 
 #if (__GNUC__ == 4) && (__GNUC_MINOR__ == 4)
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <learning/ArffReader.h>
+#include <rl_pursuit/learning/ArffReader.h>
 
 int main(int argc, const char *argv[]) {
   std::string usage = "Usage: analyzeTrainingData trainingData [file2 ...]";

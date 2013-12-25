@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <gflags/gflags.h>
-#include <factory/ClassifierFactory.h>
-#include <common/Util.h>
-#include <learning/ArffReader.h>
+#include <rl_pursuit/gflags/gflags.h>
+#include <rl_pursuit/factory/ClassifierFactory.h>
+#include <rl_pursuit/common/Util.h>
+#include <rl_pursuit/learning/ArffReader.h>
 
 DEFINE_bool(train,true,"Train after adding data");
 

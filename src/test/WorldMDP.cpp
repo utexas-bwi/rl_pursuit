@@ -6,13 +6,13 @@ Created:  2011-09-09
 Modified: 2011-09-09
 */
 
-#include <gtest/gtest.h>
-#include <controller/WorldMDP.h>
-#include <common/RNG.h>
-#include <model/WorldModel.h>
-#include <controller/World.h>
-#include <factory/WorldFactory.h>
-#include <factory/PlanningFactory.h>
+#include <rl_pursuit/gtest/gtest.h>
+#include <rl_pursuit/controller/WorldMDP.h>
+#include <rl_pursuit/common/RNG.h>
+#include <rl_pursuit/model/WorldModel.h>
+#include <rl_pursuit/controller/World.h>
+#include <rl_pursuit/factory/WorldFactory.h>
+#include <rl_pursuit/factory/PlanningFactory.h>
 #include "AgentDummyTest.h"
 
 TEST(WorldMDP,GetSetPositions) {

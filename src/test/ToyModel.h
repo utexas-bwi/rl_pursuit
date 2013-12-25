@@ -9,7 +9,7 @@ Created:  2011-08-23
 Modified: 2011-08-23
 */
 
-#include <planning/Model.h>
+#include <rl_pursuit/planning/Model.h>
 
 typedef int State;
 typedef unsigned int Action;

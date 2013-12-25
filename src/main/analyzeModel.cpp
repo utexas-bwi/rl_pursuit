@@ -2,12 +2,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <common/Point2D.h>
-#include <common/RNG.h>
-#include <common/Util.h>
-#include <controller/World.h>
-#include <factory/AgentFactory.h>
-#include <factory/WorldFactory.h>
+#include <rl_pursuit/common/Point2D.h>
+#include <rl_pursuit/common/RNG.h>
+#include <rl_pursuit/common/Util.h>
+#include <rl_pursuit/controller/World.h>
+#include <rl_pursuit/factory/AgentFactory.h>
+#include <rl_pursuit/factory/WorldFactory.h>
 
 std::vector<boost::shared_ptr<Agent> > createModels(boost::shared_ptr<RNG> rng, const char *modelJson, const Point2D &dims) {
   Json::Value options;

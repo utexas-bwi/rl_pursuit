@@ -1,10 +1,10 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 
-#include <learning/Common.h>
-#include <learning/ArffReader.h>
-#include <learning/WekaClassifier.h>
-#include <common/Util.h>
+#include <rl_pursuit/learning/Common.h>
+#include <rl_pursuit/learning/ArffReader.h>
+#include <rl_pursuit/learning/WekaClassifier.h>
+#include <rl_pursuit/common/Util.h>
 
 std::vector<Feature> getFeatures() {
   std::ifstream in("data/dt/blank.arff");

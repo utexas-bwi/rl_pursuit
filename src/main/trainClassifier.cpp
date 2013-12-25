@@ -2,14 +2,14 @@
 #include <vector>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <gflags/gflags.h>
+#include <rl_pursuit/gflags/gflags.h>
 
-#include <learning/Common.h>
-#include <learning/ArffReader.h>
-#include <learning/TwoStageTrAdaBoost.h>
-#include <factory/ClassifierFactory.h>
-#include <factory/AgentFactory.h>
-#include <common/Util.h>
+#include <rl_pursuit/learning/Common.h>
+#include <rl_pursuit/learning/ArffReader.h>
+#include <rl_pursuit/learning/TwoStageTrAdaBoost.h>
+#include <rl_pursuit/factory/ClassifierFactory.h>
+#include <rl_pursuit/factory/AgentFactory.h>
+#include <rl_pursuit/common/Util.h>
 
 DEFINE_double(fracSourceData,1.0,"Frac of source data to use");
 

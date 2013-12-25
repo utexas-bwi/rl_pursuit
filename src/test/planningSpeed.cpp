@@ -1,8 +1,8 @@
 #include <iostream>
 #include "ToyModel.h"
-#include <planning/UCTEstimator.h>
-#include <planning/MCTS.h>
-#include <common/Util.h>
+#include <rl_pursuit/planning/UCTEstimator.h>
+#include <rl_pursuit/planning/MCTS.h>
+#include <rl_pursuit/common/Util.h>
 
 int main()
 {

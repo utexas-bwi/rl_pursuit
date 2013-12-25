@@ -6,10 +6,10 @@ Created:  2011-08-29
 Modified: 2011-08-29
 */
 
-#include <gtest/gtest.h>
+#include <rl_pursuit/gtest/gtest.h>
 #include <set>
-#include <common/RNG.h>
-#include <planning/UCTEstimator.h>
+#include <rl_pursuit/common/RNG.h>
+#include <rl_pursuit/planning/UCTEstimator.h>
 
 class TestUCT : public ::testing::Test {
 public:

@@ -1,6 +1,6 @@
-#include <learning/WekaParser.h>
-#include <learning/DecisionTree.h>
-#include <learning/ArffReader.h>
+#include <rl_pursuit/learning/WekaParser.h>
+#include <rl_pursuit/learning/DecisionTree.h>
+#include <rl_pursuit/learning/ArffReader.h>
 #include <fstream>
 #include <string>
 #include <iostream>

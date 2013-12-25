@@ -7,12 +7,12 @@ Modified: 2011-08-22
 */
 
 #include <iostream>
-#include <model/WorldModel.h>
-#include <model/AgentModel.h>
-#include <controller/World.h>
-#include <common/RNG.h>
-#include <common/Util.h>
-#include <controller/AgentFactory.h>
+#include <rl_pursuit/model/WorldModel.h>
+#include <rl_pursuit/model/AgentModel.h>
+#include <rl_pursuit/controller/World.h>
+#include <rl_pursuit/common/RNG.h>
+#include <rl_pursuit/common/Util.h>
+#include <rl_pursuit/controller/AgentFactory.h>
 
 //boost::shared_ptr<Agent> genMCTSPred(const Point2D &dims) {
   //UCTEstimator<Observation> *valueEstimator = new UCTEstimator<Observation>(rng,Actions::NUM_ACTIONS,0.8,0.9,1.0,0,0,0,9999);

@@ -8,11 +8,11 @@ Modified: 2011-11-21
 
 #include <iostream>
 #include <fstream>
-#include <gflags/gflags.h>
+#include <rl_pursuit/gflags/gflags.h>
 
-#include <common/Util.h>
-#include <learning/DecisionTree.h>
-#include <factory/ClassifierFactory.h>
+#include <rl_pursuit/common/Util.h>
+#include <rl_pursuit/learning/DecisionTree.h>
+#include <rl_pursuit/factory/ClassifierFactory.h>
 
 DEFINE_double(minGain,0.0001,"Minimum gain ratio for splitting nodes of the DT");
 DEFINE_int32(minInstances,2,"Minimum number of instances per leaf");

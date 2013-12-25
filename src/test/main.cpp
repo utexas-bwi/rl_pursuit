@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <rl_pursuit/gtest/gtest.h>
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

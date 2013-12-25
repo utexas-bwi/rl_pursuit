@@ -9,7 +9,7 @@ Created:  2011-10-17
 Modified: 2011-10-17
 */
 
-#include <controller/AgentDummy.h>
+#include <rl_pursuit/controller/AgentDummy.h>
 
 class AgentDummyTest: public AgentDummy {
 public:
