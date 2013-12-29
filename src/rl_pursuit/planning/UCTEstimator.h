@@ -24,6 +24,12 @@ Modified: 2013-08-08
 #include <rl_pursuit/common/Util.h>
 #include <rl_pursuit/common/Params.h>
 
+#ifdef UCT_DEBUG
+#define UCT_OUTPUT(x) std::cout << x << std::endl
+#else
+#define UCT_OUTPUT(x) ((void) 0)
+#endif
+
 template<class State, class Action>
 class UCTEstimator: public ValueEstimator<State, Action> {
 public:
@@ -421,13 +427,14 @@ template<class State, class Action>
 void UCTEstimator<State,Action>::printValues(const State &state) {
   StateIter it = stateInfos.find(state);
   if (it == stateInfos.end()) {
-    std::cout << "No values to print" << std::endl;
+    UCT_OUTPUT("No values to print");
     return;
   }
   StateInfo *stateInfo = &(it->second);
   Action a;
   bool actionValid = true;
-  std::cout << "Vals(" << stateInfo->stateVisits << "): ";
+  std::stringstream ss;
+  ss << "Vals(" << stateInfo->stateVisits << "): ";
   for (this->model->getFirstAction(state,a); actionValid; actionValid = this->model->getNextAction(state,a)) {
     unsigned int numVisits = 0;
     StateActionInfo *stateActionInfo = NULL;
@@ -436,9 +443,9 @@ void UCTEstimator<State,Action>::printValues(const State &state) {
       stateActionInfo = &(ita->second);
     if (stateActionInfo != NULL)
       numVisits = stateActionInfo->visits;
-    std::cout << calcActionValue(stateActionInfo,stateInfo,false) << "(" << numVisits << ") ";
+    ss << calcActionValue(stateActionInfo,stateInfo,false) << "(" << numVisits << ") ";
   }
-  std::cout << std::endl;
+  UCT_OUTPUT(ss.str());
 }
 
 #endif /* end of include guard: UCTESTIMATOR_8N1RY426 */
