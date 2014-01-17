@@ -27,7 +27,7 @@ SET_FROM_JSON(std::string,asString)
 #define PARAM_DECL(type,var,key,val) type var;
 #define PARAM_INIT(type,var,key,val) var = val;
 #define PARAM_SET(type,var,key,val) setFromJson(opts,#key,var);
-#define PARAM_OUT(type,var,key,val) os << "var: " << p.var << " ";
+#define PARAM_OUT(type,var,key,val) os << #var << ": " << p.var << " ";
 
 #define Params_STRUCT(params) \
   struct Params {\
