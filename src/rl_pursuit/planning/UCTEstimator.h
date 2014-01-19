@@ -15,6 +15,8 @@ Modified: 2013-08-08
 #include <sstream>
 #include <utility>
 #include <cmath>
+#include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include "ValueEstimator.h"
@@ -46,6 +48,8 @@ public:
     unsigned int visits;
     float val;
     unsigned int rolloutVisits;
+    std::map<State,unsigned int> next_state_visits;
+    std::map<State,float> next_state_val;
   };
 
   struct StateInfo {
@@ -87,7 +91,8 @@ public:
   _(unsigned int,initialStateVisits,initialStateVisits,0) \
   _(unsigned int,initialStateActionVisits,initialStateActionVisits,0) \
   _(float,unseenValue,unseenValue,999999) \
-  _(bool,theoreticallyCorrectLambda,theoreticallyCorrectLambda,true)
+  _(bool,theoreticallyCorrectLambda,theoreticallyCorrectLambda,true) \
+  _(bool,useImportanceSampling,useImportanceSampling,false)
 
   Params_STRUCT(PARAMS);
 #undef PARAMS
@@ -108,7 +113,7 @@ protected:
   virtual float calcActionValue(StateActionInfo *stateActionInfo, StateInfo *stateInfo, bool useBounds);
   void checkInternals();
   virtual Action selectAction(const State &state, bool useBounds);
-  float updateStateAction(const State &state, StateActionInfo *stateActionInfo, StateInfo *stateInfo, float newQ);
+  float updateStateAction(const State &state, const Action &action, const State &next_state, StateActionInfo *stateActionInfo, StateInfo *stateInfo, float newQ);
   void printValues(const State &state);
 
 protected:
@@ -279,7 +284,9 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
 
 template<class State, class Action>
 Action UCTEstimator<State,Action>::selectWorldAction(const State &state) {
+#ifdef UCT_DEBUG
   printValues(state);
+#endif
   Action action = selectAction(state,false);
   return action;
 }
@@ -322,21 +329,51 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state, StateInfo
 }
 
 template<class State, class Action>
-float UCTEstimator<State,Action>::updateStateAction(const State &state, StateActionInfo *stateActionInfo, StateInfo *stateInfo, float newQ){
-  float learnRate = 1.0 / (1.0 + stateActionInfo->visits);
+float UCTEstimator<State,Action>::updateStateAction(const State &state, const Action& action, const State &next_state, StateActionInfo *stateActionInfo, StateInfo *stateInfo, float newQ){
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateInfo->stateVisits++;
   stateActionInfo->visits++;
   stateInfo->lastVisit = numPruneCalls;
   float retVal = 0;
-  if (p.theoreticallyCorrectLambda)
-    retVal = p.lambda * newQ + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
+  if (!p.useImportanceSampling) {
+    float learnRate = 1.0 / (stateActionInfo->visits);
+    if (p.theoreticallyCorrectLambda)
+      retVal = p.lambda * newQ + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
 
-  stateActionInfo->val += learnRate * (newQ - stateActionInfo->val);
-  
-  if (!p.theoreticallyCorrectLambda)
-    retVal = p.lambda * newQ + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
-  //std::cout << " --> " << values[key] << std::endl;
+    stateActionInfo->val += learnRate * (newQ - stateActionInfo->val);
+    
+    if (!p.theoreticallyCorrectLambda)
+      retVal = p.lambda * newQ + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
+    //std::cout << " --> " << values[key] << std::endl;
+  } else {
+    if (stateActionInfo->next_state_visits.find(next_state) ==
+        stateActionInfo->next_state_visits.end()) {
+      stateActionInfo->next_state_visits[next_state] = 0;
+      stateActionInfo->next_state_val[next_state] = 0.0f;
+    }
+    stateActionInfo->next_state_visits[next_state]++;
+    float learnRate = 1.0 / (stateActionInfo->next_state_visits[next_state]);
+    stateActionInfo->next_state_val[next_state] += 
+      learnRate * (newQ - stateActionInfo->next_state_val[next_state]);
+
+    float probability_sum = 0;
+    float value_sum = 0;
+    BOOST_FOREACH(const State& next_state, 
+        stateActionInfo->next_state_val | boost::adaptors::map_keys) {
+      float probability = this->model->getTransitionProbability(state, action, next_state);
+      probability_sum += probability;
+      value_sum += probability * stateActionInfo->next_state_val[next_state];
+    }
+
+    float value = value_sum / probability_sum;
+    if (p.theoreticallyCorrectLambda)
+      retVal = p.lambda * value + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
+
+    stateActionInfo->val = value;
+    
+    if (!p.theoreticallyCorrectLambda)
+      retVal = p.lambda * value + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
+  }
   return retVal;
 }
 
@@ -355,14 +392,16 @@ void UCTEstimator<State,Action>::finishRollout(const State &state, bool terminal
   else
     futureVal = maxValueForState(state,stateInfo);
 
+  State next_state = state;
   for (int i = (int)history.size() - 1; i >= 0; i--) {
     StateAction key(history[i].state,history[i].action);
     newQ = history[i].reward +  p.gamma * futureVal;
     if ((history[i].stateActionInfo->rolloutVisits) == 1) {
-      newQ = updateStateAction(history[i].state,history[i].stateActionInfo,history[i].stateInfo,newQ);
+      newQ = updateStateAction(history[i].state,history[i].action,next_state,history[i].stateActionInfo,history[i].stateInfo,newQ);
     }
     history[i].stateActionInfo->rolloutVisits--;
     futureVal = newQ;
+    next_state = history[i].state;
   }
 }
 
@@ -443,7 +482,22 @@ void UCTEstimator<State,Action>::printValues(const State &state) {
       stateActionInfo = &(ita->second);
     if (stateActionInfo != NULL)
       numVisits = stateActionInfo->visits;
-    ss << calcActionValue(stateActionInfo,stateInfo,false) << "(" << numVisits << ") ";
+    ss << calcActionValue(stateActionInfo,stateInfo,false) << "(" << numVisits << ")";
+    typedef std::pair<State, unsigned int> StateUIPair;
+    if (p.useImportanceSampling) {
+      ss << "-";
+      std::stringstream ss2;
+      unsigned int total_visits = 0;
+      float experential_value = 0.0f;
+      BOOST_FOREACH(const StateUIPair &v, stateActionInfo->next_state_visits) {
+        ss2 << stateActionInfo->next_state_val[v.first] << "/" << v.second << ",";
+        total_visits += v.second;
+        experential_value += stateActionInfo->next_state_val[v.first] * v.second;
+      }
+      experential_value /= total_visits;
+      ss << "(" << experential_value << "/" << total_visits << ")-(" <<
+        ss2.str() << ")";
+    }
   }
   UCT_OUTPUT(ss.str());
 }
