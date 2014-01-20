@@ -91,7 +91,7 @@ public:
   _(unsigned int,initialStateVisits,initialStateVisits,0) \
   _(unsigned int,initialStateActionVisits,initialStateActionVisits,0) \
   _(float,unseenValue,unseenValue,999999) \
-  _(bool,theoreticallyCorrectLambda,theoreticallyCorrectLambda,true) \
+  _(bool,theoreticallyCorrectLambda,theoreticallyCorrectLambda,false) \
   _(bool,useImportanceSampling,useImportanceSampling,false)
 
   Params_STRUCT(PARAMS);
