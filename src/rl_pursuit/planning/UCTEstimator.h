@@ -352,9 +352,10 @@ float UCTEstimator<State,Action>::updateStateAction(const State &state, const Ac
       stateActionInfo->next_state_val[next_state] = 0.0f;
     }
     stateActionInfo->next_state_visits[next_state]++;
-    float learnRate = 1.0 / (stateActionInfo->next_state_visits[next_state]);
-    stateActionInfo->next_state_val[next_state] += 
-      learnRate * (newQ - stateActionInfo->next_state_val[next_state]);
+    //float learnRate = 1.0 / (stateActionInfo->next_state_visits[next_state]);
+    // stateActionInfo->next_state_val[next_state] += 
+    //   learnRate * (newQ - stateActionInfo->next_state_val[next_state]);
+    stateActionInfo->next_state_val[next_state] = newQ;
 
     float probability_sum = 0;
     float value_sum = 0;
