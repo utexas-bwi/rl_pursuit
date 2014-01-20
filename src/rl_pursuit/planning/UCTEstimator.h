@@ -337,6 +337,7 @@ float UCTEstimator<State,Action>::updateStateAction(const State &state, const Ac
   float retVal = 0;
   if (!p.useImportanceSampling) {
     float learnRate = 1.0 / (stateActionInfo->visits);
+    if (learnRate < 0.01) learnRate = 0.01;
     if (p.theoreticallyCorrectLambda)
       retVal = p.lambda * newQ + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
 
