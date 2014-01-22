@@ -361,7 +361,10 @@ float UCTEstimator<State,Action>::updateStateAction(const State &state, const Ac
     float value_sum = 0;
     BOOST_FOREACH(const State& next_state, 
         stateActionInfo->next_state_val | boost::adaptors::map_keys) {
-      float probability = this->model->getTransitionProbability(state, action, next_state);
+      //float probability = this->model->getTransitionProbability(state, action, next_state);
+      float probability = 
+        ((float) stateActionInfo->next_state_visits[next_state]) /
+        ((float) stateActionInfo->visits);
       probability_sum += probability;
       value_sum += probability * stateActionInfo->next_state_val[next_state];
     }
