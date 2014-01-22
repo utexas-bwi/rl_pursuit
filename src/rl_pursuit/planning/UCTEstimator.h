@@ -429,7 +429,7 @@ float UCTEstimator<State,Action>::calcActionValue(StateActionInfo *stateActionIn
     if (useBounds)
       return p.unseenValue;
     else
-      return p.initialValue;
+      return -BIGNUM;//p.initialValue;
   }
   //std::cout << "calcActionValue: " << stateInfo->stateVisits << " " << stateActionInfo->visits << " " << stateActionInfo->val << std::endl;
   if (useBounds) {

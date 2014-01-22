@@ -76,7 +76,7 @@ public:
   MCTS (ValuePtr valueEstimator, ModelUpdaterPtr modelUpdater, StateMappingPtr stateMapping, const Params &p);
   virtual ~MCTS () {}
 
-  unsigned int search(const State &startState);
+  unsigned int search(const State &startState, unsigned int& termination_count);
   Action selectWorldAction(const State &state);
   void restart();
   std::string generateDescription(unsigned int indentation = 0);
@@ -86,7 +86,7 @@ public:
 
 private:
   void checkInternals();
-  void rollout(const State &startState);
+  bool rollout(const State &startState);
 
 private:
   ValuePtr valueEstimator;
@@ -111,17 +111,20 @@ MCTS<State,Action>::MCTS (ValuePtr valueEstimator, ModelUpdaterPtr modelUpdater,
 }
 
 template<class State, class Action>
-unsigned int MCTS<State,Action>::search(const State &startState) {
+unsigned int MCTS<State,Action>::search(const State &startState, unsigned int& termination_count) {
   endPlanningTime = getTime() + p.maxPlanningTime;
   unsigned int playout;
   MCTS_RESET_TIMINGS();
   MCTS_TIC(TOTAL);
+
+  termination_count = 0;
   for (playout = 0; (p.maxPlayouts == 0) || (playout < p.maxPlayouts); playout++) {
     MCTS_OUTPUT("-----------------------------------");
     MCTS_OUTPUT("ROLLOUT: " << playout);
     if ((p.maxPlanningTime > 0) && (getTime() > endPlanningTime))
       break;
-    rollout(startState);
+    bool terminal = rollout(startState);
+    if (terminal) ++termination_count;
     MCTS_OUTPUT("-----------------------------------");
   }
   MCTS_TOC(TOTAL);
@@ -172,7 +175,7 @@ void MCTS<State,Action>::checkInternals() {
 }
 
 template<class State, class Action>
-void MCTS<State,Action>::rollout(const State &startState) {
+bool MCTS<State,Action>::rollout(const State &startState) {
   MCTS_OUTPUT("------------START ROLLOUT--------------");
   MCTS_TIC(SELECT_MODEL);
   ModelPtr model = modelUpdater->selectModel(startState);
@@ -215,6 +218,7 @@ void MCTS<State,Action>::rollout(const State &startState) {
   valueEstimator->finishRollout(state,terminal);
   MCTS_TOC(FINISH_ROLLOUT);
   MCTS_OUTPUT("------------STOP  ROLLOUT--------------");
+  return terminal;
 }
 
 #endif /* end of include guard: MCTS_MJ647W13 */
