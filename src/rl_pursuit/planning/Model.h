@@ -25,8 +25,6 @@ public:
   virtual void getFirstAction(const State &state, Action &action) = 0;
   virtual bool getNextAction(const State &state, Action &action) = 0; // returns true if there is a next action, else false
 
-  virtual float getTransitionProbability(const State &state, const Action &action, const State &next_state) = 0; 
-
   virtual std::string generateDescription(unsigned int indentation = 0) = 0;
 };
 
