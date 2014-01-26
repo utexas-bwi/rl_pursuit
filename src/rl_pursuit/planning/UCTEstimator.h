@@ -317,7 +317,8 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state, StateInfo
   for (this->model->getFirstAction(state,a); actionValid; actionValid = this->model->getNextAction(state,a)) {
     StateActionIter ita = stateInfo->actionInfos.find(a);
     StateActionInfo *stateActionInfo = &(ita->second);
-    if (ita == stateInfo->actionInfos.end()) {
+    if (ita == stateInfo->actionInfos.end() ||
+        stateActionInfo->visits == 0) {
       // unseen state action
       stateActionInfo = NULL;
     }
