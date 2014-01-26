@@ -226,7 +226,8 @@ void UCTEstimator<State,Action>::visit(const State &state, const Action &action,
 template<class State, class Action>
 Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBounds) {
   StateIter it = stateInfos.find(state);
-  if (it == stateInfos.end()) {
+  if (it == stateInfos.end() ||
+      it->second.stateVisits == 0) {
     //std::cout << "selectAction: NULL" << std::endl;
     // select randomly
     std::vector<Action> maxActions;
@@ -248,11 +249,12 @@ Action UCTEstimator<State,Action>::selectAction(const State &state, bool useBoun
   //std::cout << "selectAction: ";
   for (this->model->getFirstAction(state,a); actionValid; actionValid = this->model->getNextAction(state,a)) {
     StateActionIter ita = stateInfo->actionInfos.find(a);
-    StateActionInfo *stateActionInfo = &(ita->second);
-    if (ita == stateInfo->actionInfos.end()) {
-      // unseen state action
-      stateActionInfo = NULL;
-      //std::cout << "UNKNOWN ACTION" << std::endl;
+    StateActionInfo* stateActionInfo = NULL;
+    if (ita != stateInfo->actionInfos.end()) {
+      stateActionInfo = &(ita->second);
+      if (stateActionInfo->visits == 0) {
+        stateActionInfo = NULL;
+      }
     }
     //std::cout << "VISI: " << ita->second.visits << std::endl;
     val = calcActionValue(stateActionInfo,stateInfo,useBounds);
@@ -314,18 +316,30 @@ float UCTEstimator<State,Action>::maxValueForState(const State &state, StateInfo
 
   Action a;
   bool actionValid = true;
+  int totalVisits = 0;
   for (this->model->getFirstAction(state,a); actionValid; actionValid = this->model->getNextAction(state,a)) {
     StateActionIter ita = stateInfo->actionInfos.find(a);
-    StateActionInfo *stateActionInfo = &(ita->second);
-    if (ita == stateInfo->actionInfos.end() ||
-        stateActionInfo->visits == 0) {
-      // unseen state action
-      stateActionInfo = NULL;
+    StateActionInfo* stateActionInfo = NULL;
+    if (ita != stateInfo->actionInfos.end()) {
+      stateActionInfo = &(ita->second);
+      totalVisits += stateActionInfo->visits;
+      if (stateActionInfo->visits == 0) {
+        stateActionInfo = NULL;
+      }
     }
     float val = calcActionValue(stateActionInfo,stateInfo,false);
     if (val > maxVal)
       maxVal = val;
   }
+
+  if (totalVisits == 0) {
+    // We hit this state early in the rollout, so stateInfo != NULL,
+    // and if totalVists == 0, then either we are using the correct lambda
+    // formulation, or this was also the last state in the same or previous 
+    // rollout.
+    return p.initialValue;
+  }
+
   return maxVal;
 }
 
@@ -333,30 +347,33 @@ template<class State, class Action>
 float UCTEstimator<State,Action>::updateStateAction(const State &state, const Action& action, const State &next_state, StateActionInfo *stateActionInfo, StateInfo *stateInfo, float newQ){
   //std::cout << "update(" << key.first <<"," << key.second << ") = " << values[key];
   stateInfo->stateVisits++;
-  stateActionInfo->visits++;
   stateInfo->lastVisit = numPruneCalls;
   float retVal = 0;
   if (!p.useImportanceSampling) {
-    float learnRate = 1.0 / (stateActionInfo->visits);
+
     if (p.theoreticallyCorrectLambda)
       retVal = p.lambda * newQ + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
 
+    stateActionInfo->visits++;
+    float learnRate = 1.0 / (stateActionInfo->visits);
     stateActionInfo->val += learnRate * (newQ - stateActionInfo->val);
     
     if (!p.theoreticallyCorrectLambda)
       retVal = p.lambda * newQ + (1.0 - p.lambda) * maxValueForState(state,stateInfo);
     //std::cout << " --> " << values[key] << std::endl;
+    
   } else {
     if (stateActionInfo->next_state_visits.find(next_state) ==
         stateActionInfo->next_state_visits.end()) {
       stateActionInfo->next_state_visits[next_state] = 0;
       stateActionInfo->next_state_val[next_state] = 0.0f;
     }
+    stateActionInfo->visits++;
     stateActionInfo->next_state_visits[next_state]++;
-    // float learnRate = 1.0 / (stateActionInfo->next_state_visits[next_state]);
-    // stateActionInfo->next_state_val[next_state] += 
-    //   learnRate * (newQ - stateActionInfo->next_state_val[next_state]);
-    stateActionInfo->next_state_val[next_state] = newQ;
+    float learnRate = 1.0 / (stateActionInfo->next_state_visits[next_state]);
+    stateActionInfo->next_state_val[next_state] += 
+      learnRate * (newQ - stateActionInfo->next_state_val[next_state]);
+    //stateActionInfo->next_state_val[next_state] = newQ;
 
     float probability_sum = 0;
     float value_sum = 0;
