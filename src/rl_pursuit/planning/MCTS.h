@@ -185,6 +185,7 @@ bool MCTS<State,Action>::rollout(const State &startState) {
   Action action;
   float reward;
   bool terminal = false;
+  int depth_count;
   MCTS_TIC(SET_MODEL);
   valueEstimator->setModel(model);
   MCTS_TOC(SET_MODEL);
@@ -194,7 +195,7 @@ bool MCTS<State,Action>::rollout(const State &startState) {
   
   stateMapping->map(state); // discretize state
 
-  for (unsigned int depth = 0; (depth < p.maxDepth) || (p.maxDepth == 0); depth++) {
+  for (unsigned int depth = 0; (depth < p.maxDepth) || (p.maxDepth == 0); depth+=depth_count) {
     MCTS_OUTPUT("MCTS State: " << state << " " << "DEPTH: " << depth);
     if (terminal || ((p.maxPlanningTime > 0) && (getTime() > endPlanningTime)))
       break;
@@ -204,7 +205,7 @@ bool MCTS<State,Action>::rollout(const State &startState) {
     MCTS_TOC(SELECT_PLANNING_ACTION);
     //std::cout << action << std::endl;
     MCTS_TIC(TAKE_ACTION);
-    model->takeAction(action,reward,newState,terminal);
+    model->takeAction(action,reward,newState,terminal, depth_count);
     MCTS_TOC(TAKE_ACTION);
     modelUpdater->updateSimulationAction(action,newState);
     MCTS_TIC(VISIT);
