@@ -495,7 +495,7 @@ void UCTEstimator<State,Action>::printValues(const State &state) {
   Action a;
   bool actionValid = true;
   std::stringstream ss;
-  ss << "Vals(" << stateInfo->stateVisits << "): ";
+  ss << "Vals(" << stateInfo->stateVisits << "): " << std::endl;
   for (this->model->getFirstAction(state,a); actionValid; actionValid = this->model->getNextAction(state,a)) {
     unsigned int numVisits = 0;
     StateActionInfo *stateActionInfo = NULL;
@@ -504,7 +504,7 @@ void UCTEstimator<State,Action>::printValues(const State &state) {
       stateActionInfo = &(ita->second);
     if (stateActionInfo != NULL)
       numVisits = stateActionInfo->visits;
-    ss << calcActionValue(stateActionInfo,stateInfo,false) << "(" << numVisits << ")";
+    ss << "  " << a << ": " << calcActionValue(stateActionInfo,stateInfo,false) << "(" << numVisits << ")" << std::endl;
     typedef std::pair<State, unsigned int> StateUIPair;
     if (p.useImportanceSampling) {
       ss << "-";
