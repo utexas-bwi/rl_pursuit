@@ -425,6 +425,7 @@ void UCTEstimator<State,Action>::finishRollout(const State &state, bool terminal
     futureVal = newQ;
     next_state = history[i].state;
   }
+  
 }
 
 template<class State, class Action>
@@ -496,6 +497,7 @@ void UCTEstimator<State,Action>::printValues(const State &state) {
   bool actionValid = true;
   std::stringstream ss;
   ss << "Vals(" << stateInfo->stateVisits << "): " << std::endl;
+  int count = 0;
   for (this->model->getFirstAction(state,a); actionValid; actionValid = this->model->getNextAction(state,a)) {
     unsigned int numVisits = 0;
     StateActionInfo *stateActionInfo = NULL;
@@ -504,7 +506,7 @@ void UCTEstimator<State,Action>::printValues(const State &state) {
       stateActionInfo = &(ita->second);
     if (stateActionInfo != NULL)
       numVisits = stateActionInfo->visits;
-    ss << "  " << a << ": " << calcActionValue(stateActionInfo,stateInfo,false) << "(" << numVisits << ")" << std::endl;
+    ss << "  " << count << ":" << a << ": " << calcActionValue(stateActionInfo,stateInfo,false) << "(" << numVisits << ")" << std::endl;
     typedef std::pair<State, unsigned int> StateUIPair;
     if (p.useImportanceSampling) {
       ss << "-";
@@ -520,6 +522,7 @@ void UCTEstimator<State,Action>::printValues(const State &state) {
       ss << "(" << experential_value << "/" << total_visits << ")-(" <<
         ss2.str() << ")";
     }
+    ++count;
   }
   UCT_OUTPUT(ss.str());
 }
